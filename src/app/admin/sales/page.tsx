@@ -142,7 +142,7 @@ export default function SalesHistoryPage() {
                 </TableCell>
                 <TableCell>{sale.model} {sale.variant}</TableCell>
                 <TableCell>
-                  <span className="text-xs bg-secondary px-2 py-1 rounded">
+                  <span className="text-xs bg-zinc-900 border border-white/10 px-2 py-1 rounded">
                     {getBranchDetails(sale.branchId)?.name || 'Main'}
                   </span>
                 </TableCell>
@@ -172,7 +172,6 @@ export default function SalesHistoryPage() {
               Detailed GST invoice view for {selectedSale?.customerName} - Invoice No: {selectedSale?.invoiceNo}.
             </DialogDescription>
           </DialogHeader>
-          {/* Increased internal padding from 12mm to 20mm for better print margins */}
           <div className="print-container relative bg-white p-[20mm] text-black">
             <div className="flex justify-between items-start border-b-4 border-primary pb-6 mb-8">
               <div className="flex gap-4">
@@ -273,7 +272,6 @@ export default function SalesHistoryPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
