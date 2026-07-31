@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Box, FileText, Users, LogOut, Zap, Settings, MapPin, CalendarCheck } from 'lucide-react';
+import { LayoutDashboard, Box, FileText, Users, LogOut, Zap, Settings, MapPin, CalendarCheck, UserCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -24,6 +24,7 @@ export function AdminSidebar() {
   ];
 
   if (isMainAdmin) {
+    navItems.push({ label: 'User Management', icon: UserCog, href: '/admin/users' });
     navItems.push({ label: 'Branches', icon: MapPin, href: '/admin/branches' });
     navItems.push({ label: 'Showroom Settings', icon: Settings, href: '/admin/settings' });
   }
