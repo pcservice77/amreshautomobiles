@@ -1,13 +1,23 @@
 "use client"
 
 import { useState } from 'react';
-import { Search, Eye, X, Zap, Activity, Trash2, Download, Receipt } from 'lucide-react';
+import { Search, Eye, Trash2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
-import { useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
+import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -15,9 +25,9 @@ import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function SalesHistoryPage() {
   const firestore = useFirestore();
-  const { user } = useUser();
   const [search, setSearch] = useState('');
   const [selectedSale, setSelectedSale] = useState<any>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const salesQuery = useMemoFirebase(() => {
@@ -39,16 +49,13 @@ export default function SalesHistoryPage() {
     (s.model as string)?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDeleteSale = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!firestore || !id) return;
-    if (confirm('Permanently delete this invoice?')) {
-      const docRef = doc(firestore, 'sales', id);
-      deleteDoc(docRef)
-        .then(() => toast({ title: 'Invoice Deleted' }))
-        .catch(() => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'delete' })));
-    }
+  const executeDelete = () => {
+    if (!firestore || !deleteId) return;
+    const docRef = doc(firestore, 'sales', deleteId);
+    deleteDoc(docRef)
+      .then(() => toast({ title: 'Invoice Deleted' }))
+      .catch(() => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'delete' })));
+    setDeleteId(null);
   };
 
   const amountToWords = (amount: number) => {
@@ -106,7 +113,10 @@ export default function SalesHistoryPage() {
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="sm" onClick={() => setSelectedSale(sale)}><Eye className="h-4 w-4 mr-2" /> View</Button>
-                    <Button variant="ghost" size="icon" className="text-destructive" onClick={(e) => handleDeleteSale(sale.id, e)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="text-destructive" onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteId(sale.id);
+                    }}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -195,6 +205,22 @@ export default function SalesHistoryPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this invoice record.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground">Delete Record</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

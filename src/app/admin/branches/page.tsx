@@ -1,12 +1,22 @@
 "use client"
 
 import { useState, useRef } from 'react';
-import { Plus, Search, MapPin, Phone, Mail, Trash2, Edit2, Upload, X, Loader2, Building } from 'lucide-react';
+import { Plus, Search, MapPin, Phone, Trash2, Edit2, Loader2, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from 'react-hook-form';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -34,6 +44,7 @@ export default function BranchesPage() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingBranch, setEditingBranch] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const branchesQuery = useMemoFirebase(() => {
@@ -100,16 +111,13 @@ export default function BranchesPage() {
     }
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!firestore || !id) return;
-    if (confirm('Permanently remove this showroom?')) {
-      const branchRef = doc(firestore, 'branches', id);
-      deleteDoc(branchRef)
-        .then(() => toast({ title: 'Branch Removed' }))
-        .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: branchRef.path, operation: 'delete' })));
-    }
+  const executeDelete = () => {
+    if (!firestore || !deleteId) return;
+    const branchRef = doc(firestore, 'branches', deleteId);
+    deleteDoc(branchRef)
+      .then(() => toast({ title: 'Branch Removed' }))
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: branchRef.path, operation: 'delete' })));
+    setDeleteId(null);
   };
 
   const filteredBranches = (branches || []).filter(b => 
@@ -122,7 +130,7 @@ export default function BranchesPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-headline font-bold">Showroom Locations</h1>
-          <p className="text-muted-foreground">Manage branch offices and photos.</p>
+          <p className="text-muted-foreground">Manage branch offices with professional square logos.</p>
         </div>
         <Dialog open={isAddOpen || !!editingBranch} onOpenChange={(open) => {
           if (!open) {
@@ -155,20 +163,34 @@ export default function BranchesPage() {
                   </div>
                 </div>
                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-                <p className="text-xs text-muted-foreground mt-2">Square format recommended (Max 5MB)</p>
+                <p className="text-xs text-muted-foreground mt-2">Square format required (Max 5MB)</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Input placeholder="Branch Name" {...form.register('name')} />
-                <Input placeholder="Full Address" {...form.register('address')} />
-                <Input placeholder="City" {...form.register('city')} />
-                <Input placeholder="Pincode" {...form.register('pincode')} />
-                <Input placeholder="Contact" {...form.register('contact')} />
-                <Input placeholder="Email" {...form.register('email')} />
-              </div>
-              <Button onClick={form.handleSubmit(onSubmit)} className="w-full h-12" disabled={isUploading}>
-                {editingBranch ? 'Save Changes' : 'Register Showroom'}
-              </Button>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
+                  <FormField control={form.control} name="name" render={({ field }) => (
+                    <FormItem><FormLabel>Branch Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="email" render={({ field }) => (
+                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="contact" render={({ field }) => (
+                    <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="city" render={({ field }) => (
+                    <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="pincode" render={({ field }) => (
+                    <FormItem><FormLabel>Pincode</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="address" render={({ field }) => (
+                    <FormItem className="col-span-2"><FormLabel>Full Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <Button type="submit" className="col-span-2 h-12" disabled={isUploading}>
+                    {editingBranch ? 'Save Changes' : 'Register Showroom'}
+                  </Button>
+                </form>
+              </Form>
             </div>
           </DialogContent>
         </Dialog>
@@ -194,7 +216,10 @@ export default function BranchesPage() {
                   setEditingBranch(branch);
                   form.reset(branch);
                 }}><Edit2 className="h-4 w-4" /></Button>
-                <Button variant="destructive" size="icon" className="h-8 w-8" onClick={(e) => handleDelete(branch.id, e)}><Trash2 className="h-4 w-4" /></Button>
+                <Button variant="destructive" size="icon" className="h-8 w-8" onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteId(branch.id);
+                }}><Trash2 className="h-4 w-4" /></Button>
               </div>
             </div>
             <CardHeader>
@@ -208,6 +233,22 @@ export default function BranchesPage() {
           </Card>
         ))}
       </div>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove this branch location from your records.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground">Remove Branch</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

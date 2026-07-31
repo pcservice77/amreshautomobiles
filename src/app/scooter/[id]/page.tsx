@@ -53,7 +53,7 @@ export default function ScooterDetailsPage() {
     }
   };
 
-  // Safe color processing
+  // Safe color processing to prevent .split() crash
   const colors = typeof scooter.availableColors === 'string' 
     ? scooter.availableColors.split(',').map((c: string) => c.trim()).filter(Boolean) 
     : [];

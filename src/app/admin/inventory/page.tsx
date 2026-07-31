@@ -6,7 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, deleteDoc, doc, setDoc, addDoc } from 'firebase/firestore';
 import { ScooterForm } from '@/components/admin/scooter-form';
 import { useToast } from '@/hooks/use-toast';
@@ -16,12 +26,14 @@ import Image from 'next/image';
 
 export default function InventoryPage() {
   const firestore = useFirestore();
-  const { user } = useUser();
   const { toast } = useToast();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingScooter, setEditingScooter] = useState<any>(null);
   const [search, setSearch] = useState('');
+  
+  // AlertDialog state
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const scootersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -76,28 +88,25 @@ export default function InventoryPage() {
     setEditingScooter(null);
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const executeDelete = () => {
+    if (!firestore || !deleteId) return;
     
-    if (!firestore || !id) return;
-    
-    if (confirm('Permanently remove this model from inventory?')) {
-      const docRef = doc(firestore, 'scooters', id);
-      deleteDoc(docRef)
-        .then(() => {
-          toast({
-            title: 'Model Removed',
-            description: 'Record has been deleted.',
-          });
-        })
-        .catch(async (err) => {
-          errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: docRef.path,
-            operation: 'delete',
-          }));
+    const docRef = doc(firestore, 'scooters', deleteId);
+    deleteDoc(docRef)
+      .then(() => {
+        toast({
+          title: 'Model Removed',
+          description: 'Record has been deleted.',
         });
-    }
+      })
+      .catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete',
+        }));
+      });
+    
+    setDeleteId(null);
   };
 
   const filteredScooters = (scooters || []).filter(s => 
@@ -186,7 +195,10 @@ export default function InventoryPage() {
                     }}>
                       <Edit2 className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={(e) => handleDelete(scooter.id, e)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteId(scooter.id);
+                    }}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -198,6 +210,22 @@ export default function InventoryPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this scooter model from your inventory.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
