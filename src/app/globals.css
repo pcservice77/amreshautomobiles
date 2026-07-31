@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -52,7 +51,7 @@
   }
   
   html, body {
-    height: auto !important;
+    height: 100% !important;
     width: 210mm !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -62,12 +61,12 @@
     overflow: visible !important;
   }
 
-  /* Universal print hide */
+  /* Hide everything by default */
   body * {
     visibility: hidden !important;
   }
 
-  /* Exemption for print container */
+  /* Exemption for print container and its descendants */
   .print-container, 
   .print-container * {
     visibility: visible !important;
@@ -75,7 +74,7 @@
   }
 
   .print-container {
-    position: absolute !important;
+    position: fixed !important;
     left: 0 !important;
     top: 0 !important;
     width: 210mm !important;
@@ -84,29 +83,32 @@
     padding: 0 !important;
     background: white !important;
     box-shadow: none !important;
+    transform: none !important;
+    z-index: 9999 !important;
   }
 
-  /* Force display table structure */
+  /* Reset Radix Dialog centering for print */
+  [role="dialog"] {
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* Ensure tables render correctly */
   .invoice-table {
     display: table !important;
+    width: 100% !important;
   }
-  .invoice-table thead {
-    display: table-header-group !important;
-  }
-  .invoice-table tbody {
-    display: table-row-group !important;
-  }
-  .invoice-table tr {
-    display: table-row !important;
-  }
-  .invoice-table th, .invoice-table td {
-    display: table-cell !important;
-  }
+  .invoice-table thead { display: table-header-group !important; }
+  .invoice-table tbody { display: table-row-group !important; }
+  .invoice-table tr { display: table-row !important; }
+  .invoice-table th, .invoice-table td { display: table-cell !important; }
 
   .print-hidden,
   button,
   nav,
-  [role="dialog"] > button {
+  .dialog-close-btn {
     display: none !important;
   }
 
@@ -143,4 +145,9 @@
   z-index: 0;
   pointer-events: none;
   white-space: nowrap;
+}
+
+.bg-template {
+  pointer-events: none;
+  user-select: none;
 }
