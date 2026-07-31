@@ -79,13 +79,9 @@
         "email": { "type": "string" },
         "address": { "type": "string" },
         "gstin": { "type": "string" },
-        "bankName": { "type": "string" },
-        "accountName": { "type": "string" },
-        "accountNumber": { "type": "string" },
-        "ifsc": { "type": "string" },
-        "branch": { "type": "string" },
         "useLetterhead": { "type": "boolean" },
-        "letterheadUrl": { "type": "string" }
+        "letterheadUrl": { "type": "string" },
+        "logoUrl": { "type": "string" }
       }
     }
   },

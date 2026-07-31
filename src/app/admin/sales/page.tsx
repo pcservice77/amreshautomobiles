@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from 'react';
-import { Search, Eye, Printer, X, Zap, Activity, Trash2 } from 'lucide-react';
+import { Search, Eye, Printer, X, Zap, Activity, Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -165,7 +165,9 @@ export default function SalesHistoryPage() {
             <div className="flex justify-between items-center">
               <DialogTitle className="text-lg">Official Showroom Invoice</DialogTitle>
               <div className="flex gap-2">
-                <Button variant="outline" className="text-white border-white/20 h-8" onClick={handlePrintBill}><Printer className="h-4 w-4 mr-2" /> Print</Button>
+                <Button variant="outline" className="text-white border-white/20 h-8" onClick={handlePrintBill}>
+                  <Download className="h-4 w-4 mr-2" /> Download / Print
+                </Button>
                 <Button variant="ghost" className="text-white h-8" onClick={() => setSelectedSale(null)}><X className="h-4 w-4" /></Button>
               </div>
             </div>
