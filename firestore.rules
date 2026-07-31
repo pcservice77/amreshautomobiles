@@ -42,13 +42,14 @@ service cloud.firestore {
       allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
       allow create: if isAdmin() || (isAuthenticated() && hasRole('branch_admin'));
       allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
     }
 
     // Branch Rules
     match /branches/{branchId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow update: if isAdmin() || isBranchAdmin(branchId);
+      allow create, delete: if isAdmin();
     }
 
     // Test Ride Booking Rules
@@ -56,7 +57,7 @@ service cloud.firestore {
       allow create: if true;
       allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
       allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
     }
 
     // Showroom Settings Rules

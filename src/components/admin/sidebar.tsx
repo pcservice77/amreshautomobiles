@@ -1,9 +1,8 @@
-
 "use client"
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Box, FileText, Users, LogOut, Zap, Settings, MapPin, CalendarCheck, UserCog } from 'lucide-react';
+import { LayoutDashboard, Box, FileText, Users, LogOut, Zap, Settings, MapPin, CalendarCheck, UserCog, Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -14,6 +13,7 @@ export function AdminSidebar() {
   const { user } = useUser();
 
   const isMainAdmin = user?.role === 'admin';
+  const isBranchAdmin = user?.role === 'branch_admin';
 
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
@@ -23,10 +23,14 @@ export function AdminSidebar() {
     { label: 'Sales History', icon: Users, href: '/admin/sales' },
   ];
 
+  if (isBranchAdmin) {
+    navItems.push({ label: 'My Showroom', icon: Building, href: '/admin/my-branch' });
+  }
+
   if (isMainAdmin) {
     navItems.push({ label: 'User Management', icon: UserCog, href: '/admin/users' });
-    navItems.push({ label: 'Branches', icon: MapPin, href: '/admin/branches' });
-    navItems.push({ label: 'Showroom Settings', icon: Settings, href: '/admin/settings' });
+    navItems.push({ label: 'Showroom Locations', icon: MapPin, href: '/admin/branches' });
+    navItems.push({ label: 'Global Settings', icon: Settings, href: '/admin/settings' });
   }
 
   return (
@@ -38,7 +42,7 @@ export function AdminSidebar() {
         <span className="font-headline text-lg font-bold uppercase">AMRESH <span className="text-primary">ADMIN</span></span>
       </div>
 
-      <nav className="flex-1 space-y-2">
+      <nav className="flex-1 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -46,13 +50,13 @@ export function AdminSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all group",
                 isActive 
-                  ? "bg-primary text-primary-foreground" 
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
                   : "text-sidebar-foreground hover:bg-sidebar-accent"
               )}
             >
-              <item.icon className={cn("h-5 w-5", isActive ? "text-primary-foreground" : "text-muted-foreground")} />
+              <item.icon className={cn("h-5 w-5 transition-colors", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-primary")} />
               {item.label}
             </Link>
           );
@@ -60,8 +64,8 @@ export function AdminSidebar() {
       </nav>
 
       <div className="pt-6 border-t border-sidebar-border space-y-2">
-        <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-sidebar-accent transition-colors">
-          <Zap className="h-5 w-5" />
+        <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-sidebar-accent transition-colors group">
+          <Zap className="h-5 w-5 group-hover:text-primary" />
           View Site
         </Link>
         <button 
