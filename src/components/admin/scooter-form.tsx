@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef } from 'react';
@@ -9,7 +8,7 @@ import { Sparkles, Loader2, Save, Upload, X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { generateScooterDescription } from '@/ai/flows/generate-scooter-description';
 import { useToast } from '@/hooks/use-toast';
 import { Scooter } from '@/lib/db-mock';
@@ -17,22 +16,24 @@ import Image from 'next/image';
 
 const formSchema = z.object({
   model: z.string().min(2, 'Model name is required'),
-  tagline: z.string().optional(),
+  tagline: z.string().default(''),
   range: z.string().min(1, 'Range is required'),
   price: z.string().min(1, 'Price is required'),
-  topSpeed: z.string().optional(),
-  batteryType: z.string().optional(),
-  batteryCapacity: z.string().optional(),
-  voltage: z.string().optional(),
-  category: z.string().optional(),
-  batterySystem: z.string().optional(),
-  chargingTime: z.string().optional(),
+  topSpeed: z.string().default(''),
+  batteryType: z.string().default(''),
+  batteryCapacity: z.string().default(''),
+  voltage: z.string().default(''),
+  category: z.string().default(''),
+  batterySystem: z.string().default(''),
+  chargingTime: z.string().default(''),
   description: z.string().min(10, 'Description is too short'),
   images: z.array(z.string()).min(1, 'At least one image is required'),
+  availableColors: z.string().default(''),
+  brochureUrl: z.string().default(''),
 });
 
 interface ScooterFormProps {
-  initialData?: Scooter;
+  initialData?: any;
   onSubmit: (data: any) => Promise<void>;
 }
 
@@ -44,20 +45,22 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialData || {
-      model: '',
-      tagline: '',
-      range: '',
-      price: '',
-      topSpeed: '',
-      batteryType: '',
-      batteryCapacity: '',
-      voltage: '',
-      category: '',
-      batterySystem: '',
-      chargingTime: '',
-      description: '',
-      images: [],
+    defaultValues: {
+      model: initialData?.model || '',
+      tagline: initialData?.tagline || '',
+      range: initialData?.range || '',
+      price: initialData?.price || '',
+      topSpeed: initialData?.topSpeed || '',
+      batteryType: initialData?.batteryType || '',
+      batteryCapacity: initialData?.batteryCapacity || '',
+      voltage: initialData?.voltage || '',
+      category: initialData?.category || '',
+      batterySystem: initialData?.batterySystem || '',
+      chargingTime: initialData?.chargingTime || '',
+      description: initialData?.description || '',
+      images: initialData?.images || [],
+      availableColors: initialData?.availableColors || '',
+      brochureUrl: initialData?.brochureUrl || '',
     },
   });
 
@@ -247,7 +250,7 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
             control={form.control}
             name="batteryType"
             render={({ field }) => (
-              <FormItem><FormLabel>Battery Type</FormLabel><FormControl><Input placeholder="Lithium-ion / Lead Acid" {...field} /></FormControl></FormItem>
+              <FormItem><FormLabel>Battery Type</FormLabel><FormControl><Input placeholder="Lithium-ion" {...field} /></FormControl></FormItem>
             )}
           />
           <FormField
@@ -261,14 +264,14 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
             control={form.control}
             name="category"
             render={({ field }) => (
-              <FormItem><FormLabel>Category</FormLabel><FormControl><Input placeholder="Low Speed / High Speed" {...field} /></FormControl></FormItem>
+              <FormItem><FormLabel>Category</FormLabel><FormControl><Input placeholder="High Speed" {...field} /></FormControl></FormItem>
             )}
           />
           <FormField
             control={form.control}
             name="batterySystem"
             render={({ field }) => (
-              <FormItem><FormLabel>Battery System</FormLabel><FormControl><Input placeholder="Swappable / Fixed" {...field} /></FormControl></FormItem>
+              <FormItem><FormLabel>Battery System</FormLabel><FormControl><Input placeholder="Swappable" {...field} /></FormControl></FormItem>
             )}
           />
           <FormField
@@ -276,6 +279,31 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
             name="chargingTime"
             render={({ field }) => (
               <FormItem><FormLabel>Charging Time</FormLabel><FormControl><Input placeholder="4 hours" {...field} /></FormControl></FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="availableColors"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Available Colors</FormLabel>
+                <FormControl><Input placeholder="Red, Black, Silver..." {...field} /></FormControl>
+                <FormDescription>Comma separated list of colors.</FormDescription>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="brochureUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Brochure Drive Link</FormLabel>
+                <FormControl><Input placeholder="https://drive.google.com/..." {...field} /></FormControl>
+                <FormDescription>Link to PDF specifications brochure.</FormDescription>
+              </FormItem>
             )}
           />
         </div>

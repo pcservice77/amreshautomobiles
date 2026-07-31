@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -81,13 +80,20 @@ export default function BranchesPage() {
     }
   };
 
-  const handleDelete = (id: string) => {
-    if (!firestore || !confirm('Delete this branch?')) return;
-    const branchRef = doc(firestore, 'branches', id);
-    deleteDoc(branchRef)
-      .catch(err => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: branchRef.path, operation: 'delete' }));
-      });
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!firestore) return;
+    if (confirm('Are you sure you want to delete this branch showroom location?')) {
+      const branchRef = doc(firestore, 'branches', id);
+      deleteDoc(branchRef)
+        .then(() => {
+          toast({ title: 'Branch Removed', description: 'Showroom location deleted.' });
+        })
+        .catch(err => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: branchRef.path, operation: 'delete' }));
+        });
+    }
   };
 
   const filteredBranches = branches?.filter(b => 
@@ -179,7 +185,7 @@ export default function BranchesPage() {
                   }}>
                     <Edit2 className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(branch.id)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => handleDelete(branch.id, e)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

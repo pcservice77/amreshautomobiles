@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useParams, useRouter } from 'next/navigation';
@@ -17,7 +16,8 @@ import {
   Layers, 
   CheckCircle2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Palette
 } from 'lucide-react';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -54,6 +54,8 @@ export default function ScooterDetailsPage() {
       setActiveImageIdx((prev) => (prev - 1 + scooter.images.length) % scooter.images.length);
     }
   };
+
+  const colors = scooter.availableColors ? scooter.availableColors.split(',').map((c: string) => c.trim()) : [];
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-20">
@@ -95,7 +97,7 @@ export default function ScooterDetailsPage() {
               ) : (
                 <div className="w-full h-full bg-secondary flex items-center justify-center">No Image Available</div>
               )}
-              <div className="absolute top-6 left-6 flex gap-2">
+              <div className="absolute top-6 left-6 flex flex-col gap-2">
                 <Badge className="bg-primary/90 backdrop-blur-md text-[10px] font-black uppercase tracking-widest px-3 py-1">New Edition</Badge>
                 <Badge className="bg-accent/90 backdrop-blur-md text-[10px] font-black uppercase tracking-widest px-3 py-1">Eco Smart</Badge>
               </div>
@@ -116,12 +118,32 @@ export default function ScooterDetailsPage() {
                 </button>
               ))}
             </div>
+
+            {/* Available Colors */}
+            {colors.length > 0 && (
+              <div className="bg-card/40 border border-white/5 p-6 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-primary">
+                  <Palette className="h-5 w-5" />
+                  <h4 className="font-bold">Available Colors</h4>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {colors.map((color: string, i: number) => (
+                    <Badge key={i} variant="secondary" className="px-4 py-1 font-medium bg-secondary/50 border-white/5">
+                      {color}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Info Section */}
           <div className="flex flex-col">
             <div className="mb-8">
-              <h1 className="text-5xl md:text-6xl font-headline font-bold mb-2 tracking-tight">{scooter.model}</h1>
+              <div className="flex justify-between items-start">
+                 <h1 className="text-5xl md:text-6xl font-headline font-bold mb-2 tracking-tight">{scooter.model}</h1>
+                 <p className="text-3xl font-black text-primary">{scooter.price}</p>
+              </div>
               <p className="text-primary font-headline text-xl font-medium tracking-wide">{scooter.tagline || 'Reliable Energy'}</p>
             </div>
 
@@ -130,17 +152,26 @@ export default function ScooterDetailsPage() {
             </p>
 
             <div className="grid grid-cols-1 gap-4 mb-10">
-              <Button size="lg" className="h-16 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-[0.98]">
-                <ShoppingCart className="mr-2 h-5 w-5" /> Buy Now
-              </Button>
+              <Link href="/test-ride" className="w-full">
+                <Button size="lg" className="h-16 text-lg font-bold w-full bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-[0.98]">
+                  <ShoppingCart className="mr-2 h-5 w-5" /> Buy Now
+                </Button>
+              </Link>
               <Link href="/test-ride" className="w-full">
                 <Button variant="secondary" size="lg" className="h-16 text-lg font-bold w-full bg-secondary hover:bg-secondary/80 transition-all border border-white/5">
                   <CalendarDays className="mr-2 h-5 w-5" /> Book Test Ride
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="h-14 text-sm font-bold border-primary/20 text-primary hover:bg-primary/5 transition-all">
-                <Download className="mr-2 h-4 w-4" /> Download Brochure
-              </Button>
+              {scooter.brochureUrl && (
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="h-14 text-sm font-bold border-primary/20 text-primary hover:bg-primary/5 transition-all"
+                  onClick={() => window.open(scooter.brochureUrl, '_blank')}
+                >
+                  <Download className="mr-2 h-4 w-4" /> Download Brochure
+                </Button>
+              )}
             </div>
 
             {/* Technical Specifications */}

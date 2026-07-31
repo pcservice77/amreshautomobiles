@@ -21,13 +21,9 @@ export default function SalesHistoryPage() {
   const { toast } = useToast();
 
   const salesQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    const baseRef = collection(firestore, 'sales');
-    if (user.role === 'branch_admin' && user.assignedBranchId) {
-      return query(baseRef, where('branchId', '==', user.assignedBranchId));
-    }
-    return baseRef;
-  }, [firestore, user]);
+    if (!firestore) return null;
+    return collection(firestore, 'sales');
+  }, [firestore]);
 
   const showroomRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -47,7 +43,9 @@ export default function SalesHistoryPage() {
     window.print();
   };
 
-  const handleDeleteSale = (id: string) => {
+  const handleDeleteSale = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!firestore) return;
     if (confirm('Are you sure you want to delete this invoice record permanently?')) {
       const docRef = doc(firestore, 'sales', id);
@@ -148,7 +146,7 @@ export default function SalesHistoryPage() {
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="sm" onClick={() => setSelectedSale(sale)}><Eye className="h-4 w-4 mr-2" /> View</Button>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => handleDeleteSale(sale.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={(e) => handleDeleteSale(sale.id, e)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </TableCell>
               </TableRow>

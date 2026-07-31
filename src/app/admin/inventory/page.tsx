@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -76,9 +75,12 @@ export default function InventoryPage() {
     setEditingScooter(null);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!firestore) return;
-    if (confirm('Are you sure you want to remove this model?')) {
+    
+    if (confirm('Are you sure you want to remove this model from inventory?')) {
       const docRef = doc(firestore, 'scooters', id);
       deleteDoc(docRef)
         .then(() => {
@@ -200,7 +202,7 @@ export default function InventoryPage() {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDelete(scooter.id)}
+                        onClick={(e) => handleDelete(scooter.id, e)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
