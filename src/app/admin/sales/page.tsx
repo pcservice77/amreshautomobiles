@@ -1,7 +1,8 @@
+
 "use client"
 
 import { useState } from 'react';
-import { Search, Eye, X, Zap, Activity, Trash2, Printer, Download, Landmark } from 'lucide-react';
+import { Search, Eye, X, Zap, Activity, Trash2, Download, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,7 +10,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { format } from 'date-fns';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, deleteDoc } from 'firebase/firestore';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -39,13 +39,13 @@ export default function SalesHistoryPage() {
     (s.model as string)?.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
-  const handlePrint = () => {
+  const handleDownloadPDF = () => {
     window.print();
   };
 
   const handleDeleteSale = (id: string) => {
     if (!firestore) return;
-    if (confirm('Are you sure you want to delete this invoice permanently?')) {
+    if (confirm('Are you sure you want to delete this invoice record permanently?')) {
       const docRef = doc(firestore, 'sales', id);
       deleteDoc(docRef)
         .then(() => {
@@ -143,8 +143,8 @@ export default function SalesHistoryPage() {
                 <TableCell className="font-bold">₹ {sale.price?.toLocaleString()}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedSale(sale)}><Eye className="h-4 w-4 mr-2" /> View Bill</Button>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10" onClick={() => handleDeleteSale(sale.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedSale(sale)}><Eye className="h-4 w-4 mr-2" /> View</Button>
+                    <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => handleDeleteSale(sale.id)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -158,16 +158,13 @@ export default function SalesHistoryPage() {
       <Dialog open={!!selectedSale} onOpenChange={(open) => !open && setSelectedSale(null)}>
         <DialogContent className="max-w-[210mm] w-full max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none">
           <DialogHeader className="p-4 border-b print:hidden bg-secondary text-white sticky top-0 z-50">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center w-full">
               <DialogTitle className="text-lg">Amresh Automobile Invoice</DialogTitle>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="text-white border-white/20 h-9" onClick={handlePrint}>
-                  <Printer className="h-4 w-4 mr-2" /> Print Bill
+                <Button variant="default" size="sm" className="bg-primary text-white" onClick={handleDownloadPDF}>
+                  <Download className="h-4 w-4 mr-2" /> Download as PDF
                 </Button>
-                <Button variant="outline" size="sm" className="text-white border-white/20 h-9" onClick={handlePrint}>
-                  <Download className="h-4 w-4 mr-2" /> Save as PDF
-                </Button>
-                <Button variant="ghost" size="icon" className="text-white h-9 w-9" onClick={() => setSelectedSale(null)}><X className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon" className="text-white" onClick={() => setSelectedSale(null)}><X className="h-5 w-5" /></Button>
               </div>
             </div>
           </DialogHeader>
@@ -180,12 +177,11 @@ export default function SalesHistoryPage() {
               margin: '0 auto',
             }}
           >
-            {/* Background Template Image */}
             {isTemplateMode && (
               <img 
                 src={showroom.letterheadUrl} 
-                className="absolute inset-0 w-full h-full object-fill z-0 bg-template" 
-                alt="Invoice Background Template"
+                className="absolute inset-0 w-full h-full object-fill z-0" 
+                alt="Invoice Template"
               />
             )}
             
@@ -203,26 +199,26 @@ export default function SalesHistoryPage() {
                     )}
                   </div>
                   <div className="space-y-1">
-                    <h1 className="text-4xl font-black text-primary tracking-tighter uppercase leading-none">{showroom?.name || 'AMRESH AUTOMOBILE'}</h1>
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">{showroom?.tagline || 'Drive Electric • Live Smart'}</p>
-                    <div className="mt-3 text-[10px] leading-snug text-gray-700 font-bold max-w-[280px]">
-                      <p>{showroom?.address || 'Padampur, Khunti, Jharkhand'}</p>
-                      <p>Contact: {showroom?.contact || '9798910854'}</p>
+                    <h1 className="text-3xl font-black text-primary uppercase leading-none">{showroom?.name || 'AMRESH AUTOMOBILE'}</h1>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{showroom?.tagline || 'Drive Electric • Live Smart'}</p>
+                    <div className="mt-3 text-[10px] leading-snug text-gray-800 font-bold max-w-[300px]">
+                      <p>{showroom?.address || 'Village Padampur, Khunti, Jharkhand - 834004'}</p>
+                      <p>Mob: {showroom?.contact || '9798910854'}</p>
                       <p>Email: {showroom?.email || 'amreshautomobile@gmail.com'}</p>
-                      {showroom?.gstin && <p className="text-black text-[10px] mt-1 uppercase border-t border-gray-200 pt-1">GSTIN: {showroom.gstin}</p>}
+                      {showroom?.gstin && <p className="text-black text-[10px] mt-1 uppercase border-t border-gray-100 pt-1">GSTIN: {showroom.gstin}</p>}
                     </div>
                   </div>
                 </div>
                 
                 <div className="text-right">
-                  <h2 className="text-5xl font-black text-black uppercase tracking-tighter leading-none mb-4">INVOICE</h2>
+                  <h2 className="text-5xl font-black text-black uppercase leading-none mb-4 tracking-tighter">INVOICE</h2>
                   <div className="space-y-1">
-                    <div className="inline-block bg-gray-50 px-3 py-1 rounded-lg border border-gray-200">
-                      <p className="text-[9px] font-bold text-gray-400 uppercase">Invoice Number</p>
-                      <p className="text-base font-black text-primary tracking-tight">{selectedSale?.invoiceNo}</p>
+                    <div className="inline-block bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                      <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Number</p>
+                      <p className="text-base font-black text-primary">{selectedSale?.invoiceNo}</p>
                     </div>
-                    <div className="text-right pr-2 pt-1">
-                      <p className="text-[9px] font-bold text-gray-400 uppercase">Date</p>
+                    <div className="text-right pt-1">
+                      <p className="text-[8px] font-black text-gray-400 uppercase">Date</p>
                       <p className="text-[11px] font-black">{selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'dd/MM/yyyy') : 'N/A'}</p>
                     </div>
                   </div>
@@ -231,123 +227,124 @@ export default function SalesHistoryPage() {
 
               {/* Watermark */}
               <div className="invoice-watermark">
-                <Zap className="h-[250px] w-[250px] text-primary/5" />
+                <Receipt className="h-[300px] w-[300px] text-primary/5" />
               </div>
 
-              {/* Customer & Vehicle Info Boxes */}
-              <div className="grid grid-cols-2 gap-6 mb-6">
-                <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50/20">
-                  <h4 className="text-[9px] font-black text-primary uppercase tracking-widest border-b border-primary/10 pb-2 mb-3">Customer Details</h4>
-                  <div className="space-y-1.5 text-[11px]">
-                    <p className="text-lg font-black uppercase text-black leading-none">{selectedSale?.customerName}</p>
+              {/* Customer & Vehicle Info */}
+              <div className="grid grid-cols-2 gap-8 mb-8">
+                <div className="border border-black rounded-2xl p-5 bg-gray-50/20">
+                  <h4 className="text-[9px] font-black text-primary uppercase tracking-widest border-b border-primary/20 pb-2 mb-4">Buyer Details</h4>
+                  <div className="space-y-2 text-[11px]">
+                    <p className="text-lg font-black uppercase text-black leading-tight">{selectedSale?.customerName}</p>
                     {selectedSale?.customerFatherName && <p className="text-gray-600 font-bold uppercase text-[9px]">C/O: {selectedSale.customerFatherName}</p>}
-                    <p className="leading-snug text-gray-700 font-medium">{selectedSale?.address}, {selectedSale?.city}, {selectedSale?.state} - {selectedSale?.pin}</p>
-                    <div className="pt-2 space-y-0.5">
-                      <p><span className="text-gray-400 uppercase text-[9px] w-16 inline-block">Mobile:</span> <span className="font-black text-black">{selectedSale?.mobile}</span></p>
-                      <p><span className="text-gray-400 uppercase text-[9px] w-16 inline-block">{selectedSale?.idType || 'ID'}:</span> <span className="font-black text-black">{selectedSale?.idNumber}</span></p>
+                    <p className="text-gray-700 font-bold uppercase leading-relaxed">{selectedSale?.address}, {selectedSale?.city}, {selectedSale?.state} - {selectedSale?.pin}</p>
+                    <div className="pt-2 grid grid-cols-2 gap-2 text-[10px] font-black">
+                      <p><span className="text-gray-400 uppercase text-[8px] block">Mobile</span> {selectedSale?.mobile}</p>
+                      <p><span className="text-gray-400 uppercase text-[8px] block">{selectedSale?.idType || 'ID'}</span> {selectedSale?.idNumber}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50/20">
-                  <h4 className="text-[9px] font-black text-primary uppercase tracking-widest border-b border-primary/10 pb-2 mb-3">Vehicle Details</h4>
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px]">
-                    <div className="col-span-2 mb-1">
+                <div className="border border-black rounded-2xl p-5 bg-gray-50/20">
+                  <h4 className="text-[9px] font-black text-primary uppercase tracking-widest border-b border-primary/20 pb-2 mb-4">Vehicle Specs</h4>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[10px]">
+                    <div className="col-span-2">
                       <p className="text-lg font-black text-primary uppercase leading-none">{selectedSale?.model}</p>
-                      <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{selectedSale?.variant || 'Standard Edition'}</p>
+                      <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{selectedSale?.variant || 'Electric Edition'}</p>
                     </div>
-                    <div><span className="text-gray-400 uppercase text-[8px] block">Color</span> <span className="font-black text-black uppercase">{selectedSale?.color || '-'}</span></div>
-                    <div><span className="text-gray-400 uppercase text-[8px] block">Battery</span> <span className="font-black text-black uppercase">{selectedSale?.batteryType || '-'}</span></div>
-                    <div className="col-span-2"><span className="text-gray-400 uppercase text-[8px] block">Chassis Number</span> <span className="font-mono font-black text-black text-xs uppercase">{selectedSale?.chassisNumber}</span></div>
-                    <div className="col-span-2"><span className="text-gray-400 uppercase text-[8px] block">Motor Number</span> <span className="font-black text-black text-[9px] uppercase">{selectedSale?.motorNumber || '-'}</span></div>
+                    <div><span className="text-gray-400 uppercase text-[8px] block">Color</span> <span className="font-black text-black uppercase">{selectedSale?.color || 'N/A'}</span></div>
+                    <div><span className="text-gray-400 uppercase text-[8px] block">Battery</span> <span className="font-black text-black uppercase">{selectedSale?.batteryType || 'N/A'}</span></div>
+                    <div className="col-span-2"><span className="text-gray-400 uppercase text-[8px] block">Chassis Number</span> <span className="font-mono font-black text-black text-xs">{selectedSale?.chassisNumber}</span></div>
                     <div><span className="text-gray-400 uppercase text-[8px] block">Reg No.</span> <span className="font-black text-black uppercase">{selectedSale?.registrationNumber || 'APPLIED'}</span></div>
                     <div><span className="text-gray-400 uppercase text-[8px] block">Range</span> <span className="font-black text-black uppercase">{selectedSale?.claimedRange || '-'}</span></div>
                   </div>
                 </div>
               </div>
 
-              {/* Invoice Item Table */}
+              {/* Table */}
               <div className="flex-1 min-h-[300px]">
-                <table className="w-full invoice-table border-collapse rounded-xl overflow-hidden border border-black">
+                <table className="w-full invoice-table border-collapse border border-black rounded-xl overflow-hidden">
                   <thead>
                     <tr>
-                      <th className="w-12 text-center py-2">Sr.</th>
-                      <th className="text-left py-2 px-3">Description</th>
-                      <th className="w-24 text-center py-2">HSN</th>
-                      <th className="w-16 text-center py-2">Qty</th>
-                      <th className="w-28 text-right py-2 px-3">Rate</th>
-                      <th className="w-32 text-right py-2 px-3">Amount</th>
+                      <th className="w-12 text-center py-3 bg-primary text-white border border-black">Sr.</th>
+                      <th className="text-left py-3 px-4 bg-primary text-white border border-black">Description</th>
+                      <th className="w-24 text-center py-3 bg-primary text-white border border-black">HSN</th>
+                      <th className="w-16 text-center py-3 bg-primary text-white border border-black">Qty</th>
+                      <th className="w-32 text-right py-3 px-4 bg-primary text-white border border-black">Rate</th>
+                      <th className="w-32 text-right py-3 px-4 bg-primary text-white border border-black">Total</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-black">
-                    <tr className="min-h-[200px] align-top">
-                      <td className="text-center font-black pt-3">01</td>
-                      <td className="p-3">
-                        <p className="font-black text-sm uppercase leading-tight">{selectedSale?.model}</p>
-                        <p className="text-[8px] font-bold text-gray-500 uppercase mt-0.5">{selectedSale?.variant || 'Electric Mobility Vehicle'}</p>
+                    <tr className="align-top">
+                      <td className="text-center font-black pt-4 border border-black">01</td>
+                      <td className="p-4 border border-black">
+                        <p className="font-black text-sm uppercase text-black">{selectedSale?.model}</p>
+                        <p className="text-[9px] font-bold text-gray-500 uppercase mt-1">{selectedSale?.variant || 'High Efficiency Mobility'}</p>
                       </td>
-                      <td className="text-center font-mono font-bold pt-3">{selectedSale?.hsn || '871160'}</td>
-                      <td className="text-center font-black pt-3">01</td>
-                      <td className="text-right font-mono font-bold pt-3 px-3">₹ {selectedSale?.price?.toLocaleString()}.00</td>
-                      <td className="text-right font-mono font-black text-black pt-3 px-3">₹ {selectedSale?.price?.toLocaleString()}.00</td>
+                      <td className="text-center font-mono font-bold pt-4 border border-black">{selectedSale?.hsn || '871160'}</td>
+                      <td className="text-center font-black pt-4 border border-black">01</td>
+                      <td className="text-right font-mono font-bold pt-4 px-4 border border-black">₹ {selectedSale?.price?.toLocaleString()}.00</td>
+                      <td className="text-right font-mono font-black pt-4 px-4 border border-black">₹ {selectedSale?.price?.toLocaleString()}.00</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              {/* Totals and Footer */}
-              <div className="flex justify-between items-start pt-6 border-t border-gray-100">
-                <div className="w-3/5 space-y-5">
+              {/* Bottom Info */}
+              <div className="flex justify-between items-start pt-8 border-t border-gray-100 mt-auto">
+                <div className="w-3/5 space-y-6">
                   <div>
-                    <p className="text-[9px] font-black text-gray-400 uppercase italic mb-0.5 tracking-widest">Amount in Words</p>
-                    <p className="text-[11px] font-black text-primary uppercase leading-tight border-b-2 border-primary/10 pb-2">Rupees {amountToWords(selectedSale?.price || 0)} Only</p>
+                    <p className="text-[9px] font-black text-gray-400 uppercase italic mb-1">Amount in Words</p>
+                    <p className="text-[12px] font-black text-primary uppercase leading-tight border-b-2 border-primary/10 pb-2">
+                      Rupees {amountToWords(selectedSale?.price || 0)} Only
+                    </p>
                   </div>
                   
-                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                    <h5 className="text-[9px] font-black uppercase text-primary mb-3 flex items-center gap-2">
-                      <Activity className="h-3 w-3" /> Settlement Details
+                  <div className="p-5 bg-gray-50 rounded-2xl border border-gray-200">
+                    <h5 className="text-[10px] font-black uppercase text-primary mb-3 flex items-center gap-2">
+                      <Activity className="h-4 w-4" /> Settlement
                     </h5>
-                    <div className="text-[9px] space-y-1 font-bold uppercase">
-                      <div className="flex justify-between border-b border-gray-200 pb-0.5"><span>Payment Mode:</span> <span className="text-black font-black">{selectedSale?.paymentMethod}</span></div>
+                    <div className="text-[10px] space-y-2 font-bold uppercase">
+                      <div className="flex justify-between border-b border-gray-200 pb-1"><span>Mode</span> <span className="text-black font-black">{selectedSale?.paymentMethod}</span></div>
                       {selectedSale?.paymentMethod === 'Finance' && (
                         <>
-                          <div className="flex justify-between border-b border-gray-200 pb-0.5"><span>Financier:</span> <span className="text-black font-black">{selectedSale?.financeCompany}</span></div>
-                          <div className="flex justify-between border-b border-gray-200 pb-0.5"><span>Loan Amount:</span> <span className="text-black font-black">₹ {selectedSale?.loanAmount?.toLocaleString()}</span></div>
+                          <div className="flex justify-between border-b border-gray-200 pb-1"><span>Financier</span> <span className="text-black font-black">{selectedSale?.financeCompany}</span></div>
+                          <div className="flex justify-between border-b border-gray-200 pb-1"><span>Loan</span> <span className="text-black font-black">₹ {selectedSale?.loanAmount?.toLocaleString()}</span></div>
                         </>
                       )}
-                      {selectedSale?.utrNumber && <div className="flex justify-between"><span>Reference:</span> <span className="text-black font-mono font-black">{selectedSale.utrNumber}</span></div>}
+                      {selectedSale?.utrNumber && <div className="flex justify-between"><span>Reference</span> <span className="text-black font-mono font-black">{selectedSale.utrNumber}</span></div>}
                     </div>
                   </div>
 
-                  <div className="text-[8px] text-gray-400 font-bold space-y-0.5 uppercase leading-tight opacity-70">
-                    <p>* Goods once sold will not be returned.</p>
-                    <p>* Warranty covered as per manufacturer policy.</p>
-                    <p>* All disputes subject to Khunti (Jharkhand) jurisdiction.</p>
+                  <div className="text-[8px] text-gray-400 font-bold uppercase leading-tight opacity-80">
+                    <p>* Goods sold cannot be returned or exchanged.</p>
+                    <p>* Warranty applies as per manufacturer terms.</p>
+                    <p>* Jurisdiction for disputes: Khunti (JH).</p>
                   </div>
                 </div>
 
-                <div className="w-1/3 bg-gray-50 rounded-2xl overflow-hidden border border-black">
-                  <div className="p-4 space-y-2 text-[11px] font-bold">
-                    <div className="flex justify-between"><span className="text-gray-500 uppercase text-[9px]">Sub Total</span> <span>₹ {selectedSale?.price?.toLocaleString()}.00</span></div>
-                    <div className="flex justify-between"><span className="text-gray-500 uppercase text-[9px]">GST (0%)</span> <span>₹ 0.00</span></div>
+                <div className="w-1/3 bg-gray-50 rounded-3xl overflow-hidden border-2 border-black">
+                  <div className="p-5 space-y-2 text-[12px] font-black text-gray-700">
+                    <div className="flex justify-between"><span>Sub Total</span> <span>₹ {selectedSale?.price?.toLocaleString()}.00</span></div>
+                    <div className="flex justify-between text-gray-400"><span>GST (0%)</span> <span>₹ 0.00</span></div>
                   </div>
-                  <div className="bg-primary p-4 text-white text-center">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-0.5 opacity-90">Grand Total</p>
+                  <div className="bg-primary p-5 text-white text-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest mb-1 opacity-80">Final Amount</p>
                     <p className="text-3xl font-black">₹ {selectedSale?.price?.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
 
               {/* Signatures */}
-              <div className="mt-auto pt-12 flex justify-between items-end pb-2">
+              <div className="pt-16 flex justify-between items-end">
                 <div className="text-center">
-                  <div className="w-48 border-t border-gray-300 mb-1"></div>
-                  <p className="text-[8px] font-black uppercase text-gray-400 tracking-widest">Customer Signature</p>
+                  <div className="w-48 border-t border-gray-300 mb-2"></div>
+                  <p className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Buyer Signature</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-[10px] font-black uppercase mb-12 text-primary tracking-tighter">For {showroom?.name || 'AMRESH AUTOMOBILE'}</p>
-                  <div className="w-56 border-t-2 border-black mb-1"></div>
-                  <p className="text-[9px] font-black uppercase tracking-widest">Authorised Signatory</p>
+                  <p className="text-[11px] font-black uppercase mb-16 text-primary">For {showroom?.name || 'AMRESH AUTOMOBILE'}</p>
+                  <div className="w-64 border-t-2 border-black mb-2"></div>
+                  <p className="text-[10px] font-black uppercase tracking-widest">Authorized Signatory</p>
                 </div>
               </div>
             </div>

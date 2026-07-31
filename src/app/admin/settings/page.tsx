@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useRef, useState } from 'react';
@@ -47,8 +48,8 @@ export default function ShowroomSettingsPage() {
   const form = useForm<z.infer<typeof settingsSchema>>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      name: 'AMRESH AUTOMOBILE',
-      tagline: 'Drive Electric • Live Smart',
+      name: '',
+      tagline: '',
       contact: '',
       email: '',
       address: '',
@@ -140,7 +141,7 @@ export default function ShowroomSettingsPage() {
                 <div className="flex flex-col items-center mb-6">
                   <div className="relative h-24 w-24 bg-secondary rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-white/10 group">
                     {form.watch('logoUrl') ? (
-                      <Image src={form.watch('logoUrl') || ''} alt="Logo" fill className="object-contain p-2" />
+                      <Image src={form.watch('logoUrl') || ''} alt="Logo" fill className="object-contain p-2" unoptimized />
                     ) : (
                       <Zap className="h-10 w-10 text-muted-foreground" />
                     )}
@@ -156,25 +157,25 @@ export default function ShowroomSettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                   )} />
                   <FormField control={form.control} name="tagline" render={({ field }) => (
-                    <FormItem><FormLabel>Tagline / Motto</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Tagline / Motto</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                   )} />
                 </div>
                 
                 <FormField control={form.control} name="gstin" render={({ field }) => (
-                  <FormItem><FormLabel>GSTIN</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
+                  <FormItem><FormLabel>GSTIN</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                 )} />
                 <FormField control={form.control} name="address" render={({ field }) => (
-                  <FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
+                  <FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                 )} />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="contact" render={({ field }) => (
-                    <FormItem><FormLabel>Contact</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Contact</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                   )} />
                   <FormField control={form.control} name="email" render={({ field }) => (
-                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                   )} />
                 </div>
               </CardContent>
@@ -210,7 +211,7 @@ export default function ShowroomSettingsPage() {
                   <div className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-lg p-6 hover:bg-white/5 transition-colors group relative">
                     {form.watch('letterheadUrl') ? (
                       <div className="relative w-full max-w-[200px] aspect-[1/1.4] rounded-md overflow-hidden border">
-                        <Image src={form.watch('letterheadUrl') || ''} alt="Template Preview" fill className="object-contain" />
+                        <Image src={form.watch('letterheadUrl') || ''} alt="Template Preview" fill className="object-contain" unoptimized />
                         <button type="button" onClick={() => form.setValue('letterheadUrl', '')} className="absolute top-1 right-1 bg-destructive p-1 rounded-full text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                           <X className="h-4 w-4" />
                         </button>
