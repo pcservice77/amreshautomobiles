@@ -3,22 +3,30 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Box, FileText, Users, LogOut, Zap, Settings } from 'lucide-react';
+import { LayoutDashboard, Box, FileText, Users, LogOut, Zap, Settings, MapPin, CalendarCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
-
-const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
-  { label: 'Inventory', icon: Box, href: '/admin/inventory' },
-  { label: 'Billing', icon: FileText, href: '/admin/billing' },
-  { label: 'Sales History', icon: Users, href: '/admin/sales' },
-  { label: 'Showroom Settings', icon: Settings, href: '/admin/settings' },
-];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const auth = useAuth();
+  const { user } = useUser();
+
+  const isMainAdmin = user?.role === 'admin';
+
+  const navItems = [
+    { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
+    { label: 'Bookings', icon: CalendarCheck, href: '/admin/bookings' },
+    { label: 'Inventory', icon: Box, href: '/admin/inventory' },
+    { label: 'Billing', icon: FileText, href: '/admin/billing' },
+    { label: 'Sales History', icon: Users, href: '/admin/sales' },
+  ];
+
+  if (isMainAdmin) {
+    navItems.push({ label: 'Branches', icon: MapPin, href: '/admin/branches' });
+    navItems.push({ label: 'Showroom Settings', icon: Settings, href: '/admin/settings' });
+  }
 
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border h-screen sticky top-0 flex flex-col p-6">

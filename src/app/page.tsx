@@ -1,3 +1,4 @@
+
 "use client"
 
 import Image from 'next/image';
@@ -8,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap } from 'lucide-react';
+import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap, Calendar } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function Home() {
   const firestore = useFirestore();
@@ -18,12 +20,18 @@ export default function Home() {
     return collection(firestore, 'scooters');
   }, [firestore]);
 
+  const branchesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'branches');
+  }, [firestore]);
+
   const showroomRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return doc(firestore, 'settings', 'showroom');
   }, [firestore]);
 
   const { data: scooters, loading } = useCollection(scootersQuery);
+  const { data: branches } = useCollection(branchesQuery);
   const { data: showroom } = useDoc(showroomRef);
 
   return (
@@ -56,12 +64,16 @@ export default function Home() {
               Experience the power of sustainable engineering at <strong>Amresh Automobiles</strong>. We bring you the finest selection of electric scooters designed for speed, comfort, and zero emissions.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 text-lg">
-                Explore Models
-              </Button>
-              <Button size="lg" variant="outline" className="border-white/10 text-lg hover:bg-white/5">
-                Book Test Ride
-              </Button>
+              <Link href="/#showroom">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 text-lg w-full">
+                  Explore Models
+                </Button>
+              </Link>
+              <Link href="/test-ride">
+                <Button size="lg" variant="outline" className="border-white/10 text-lg hover:bg-white/5 w-full">
+                  Book Test Ride
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -74,12 +86,6 @@ export default function Home() {
             <h2 className="font-headline text-4xl font-bold mb-4">Our Electric <span className="text-primary">Fleet</span></h2>
             <p className="text-muted-foreground">Modern solutions for modern mobility needs.</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="rounded-full">All</Button>
-            <Button variant="ghost" size="sm" className="rounded-full">Performance</Button>
-            <Button variant="ghost" size="sm" className="rounded-full">City</Button>
-            <Button variant="ghost" size="sm" className="rounded-full">Economy</Button>
-          </div>
         </div>
 
         {loading ? (
@@ -89,17 +95,44 @@ export default function Home() {
             {scooters?.map((scooter) => (
               <ScooterCard key={scooter.id} scooter={scooter as any} />
             ))}
-            {scooters?.length === 0 && (
-              <div className="col-span-full text-center text-muted-foreground py-20">
-                New models arriving soon. Stay tuned!
-              </div>
-            )}
           </div>
         )}
       </section>
 
+      {/* Branches Section */}
+      <section className="py-24 bg-card/10">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="font-headline text-4xl font-bold mb-4">Our <span className="text-primary">Showroom Network</span></h2>
+            <p className="text-muted-foreground">Visit us at any of our branches for a personalized experience.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {branches?.map((branch) => (
+              <Card key={branch.id} className="bg-card/40 border-white/5 group hover:border-primary/50 transition-all">
+                <div className="relative h-40">
+                  <Image src={branch.imageUrl || 'https://picsum.photos/seed/br/600/400'} alt={branch.name} fill className="object-cover" />
+                </div>
+                <CardHeader className="p-4">
+                  <CardTitle className="text-lg">{branch.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 space-y-2 text-sm">
+                  <div className="flex items-start gap-2 text-muted-foreground">
+                    <MapPin className="h-4 w-4 text-primary shrink-0" />
+                    <span>{branch.address}, {branch.city} - {branch.pincode}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="h-4 w-4 text-primary" />
+                    <span>{branch.contact}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Feature Section */}
-      <section id="features" className="py-24 bg-card/30 border-y border-white/5">
+      <section id="features" className="py-24 border-y border-white/5">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10">
@@ -130,6 +163,11 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+              <Link href="/test-ride" className="inline-block mt-8">
+                <Button className="gap-2 bg-primary text-primary-foreground">
+                  <Calendar className="h-4 w-4" /> Book a Test Ride
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -165,15 +203,15 @@ export default function Home() {
               <ul className="space-y-4 text-muted-foreground text-sm">
                 <li className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-primary shrink-0" />
-                  <span>{showroom?.address || 'Main Showroom, MG Road, Amresh Automobiles Complex'}</span>
+                  <span>{showroom?.address || 'Main Showroom, Padampur, Khunti'}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-primary shrink-0" />
-                  <span>{showroom?.contact || '+91 98765 43210'}</span>
+                  <span>{showroom?.contact || '+91 97989 10854'}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-primary shrink-0" />
-                  <span>{showroom?.email || 'contact@amreshautomobiles.com'}</span>
+                  <span>{showroom?.email || 'amreshautomobile@gmail.com'}</span>
                 </li>
               </ul>
             </div>
@@ -181,9 +219,9 @@ export default function Home() {
             <div>
               <h4 className="font-bold mb-6 text-lg">Quick Links</h4>
               <ul className="space-y-4 text-muted-foreground text-sm">
-                <li><Link href="#" className="hover:text-primary">Browse Scooters</Link></li>
-                <li><Link href="#" className="hover:text-primary">Service Center</Link></li>
-                <li><Link href="#" className="hover:text-primary">Charging Network</Link></li>
+                <li><Link href="/test-ride" className="hover:text-primary">Book Test Ride</Link></li>
+                <li><Link href="/#showroom" className="hover:text-primary">Browse Scooters</Link></li>
+                <li><Link href="/login" className="hover:text-primary">Employee Login</Link></li>
                 <li><Link href="#" className="hover:text-primary">Privacy Policy</Link></li>
               </ul>
             </div>
@@ -198,7 +236,7 @@ export default function Home() {
             </div>
           </div>
           <div className="py-8 border-t border-white/5 text-center text-muted-foreground text-sm">
-            © 2025 {showroom?.name || 'Amresh Automobiles'}. All rights reserved. Powered by Clean Energy.
+            © 2025 {showroom?.name || 'Amresh Automobiles'}. All rights reserved.
           </div>
         </div>
       </footer>

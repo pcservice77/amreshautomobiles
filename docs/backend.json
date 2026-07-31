@@ -9,7 +9,8 @@
         "uid": { "type": "string" },
         "email": { "type": "string", "format": "email" },
         "name": { "type": "string" },
-        "role": { "type": "string", "enum": ["user", "admin"] }
+        "role": { "type": "string", "enum": ["admin", "branch_admin", "user"] },
+        "assignedBranchId": { "type": "string", "description": "ID of the branch this user manages if they are a branch_admin." }
       },
       "required": ["uid", "email", "role"]
     },
@@ -32,41 +33,49 @@
     },
     "Sale": {
       "title": "Sale",
-      "description": "Record of a scooter sale transaction with full vehicle and customer specs.",
+      "description": "Record of a scooter sale transaction.",
       "type": "object",
       "properties": {
         "invoiceNo": { "type": "string" },
         "customerName": { "type": "string" },
-        "customerFatherName": { "type": "string" },
         "mobile": { "type": "string" },
-        "email": { "type": "string" },
-        "address": { "type": "string" },
-        "city": { "type": "string" },
-        "state": { "type": "string" },
-        "pin": { "type": "string" },
-        "idType": { "type": "string" },
-        "idNumber": { "type": "string" },
         "model": { "type": "string" },
-        "variant": { "type": "string" },
-        "color": { "type": "string" },
-        "batteryType": { "type": "string" },
-        "batteryCapacity": { "type": "string" },
-        "claimedRange": { "type": "string" },
-        "chassisNumber": { "type": "string" },
-        "motorNumber": { "type": "string" },
-        "controllerNumber": { "type": "string" },
-        "vehicleSerialNumber": { "type": "string" },
-        "registrationNumber": { "type": "string" },
         "price": { "type": "number" },
-        "hsn": { "type": "string" },
-        "gstin": { "type": "string" },
-        "paymentMethod": { "type": "string" },
-        "financeCompany": { "type": "string" },
-        "loanAmount": { "type": "number" },
-        "downPayment": { "type": "number" },
-        "utrNumber": { "type": "string" },
+        "branchId": { "type": "string" },
         "soldAt": { "type": "string", "format": "date-time" }
       }
+    },
+    "Branch": {
+      "title": "Branch",
+      "description": "A showroom branch location.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "pincode": { "type": "string" },
+        "contact": { "type": "string" },
+        "email": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["name", "city", "pincode"]
+    },
+    "TestRideBooking": {
+      "title": "Test Ride Booking",
+      "description": "A request for a test ride from a customer.",
+      "type": "object",
+      "properties": {
+        "customerName": { "type": "string" },
+        "mobile": { "type": "string" },
+        "address": { "type": "string" },
+        "scooterModel": { "type": "string" },
+        "branchId": { "type": "string" },
+        "preferredDate": { "type": "string" },
+        "preferredTime": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerName", "mobile", "scooterModel", "branchId", "preferredDate"]
     },
     "ShowroomSettings": {
       "title": "Showroom Settings",
@@ -91,7 +100,7 @@
   "firestore": {
     "/users/{uid}": {
       "schema": "UserProfile",
-      "description": "User profile data including roles."
+      "description": "User profile data including roles and branch assignments."
     },
     "/scooters/{scooterId}": {
       "schema": "Scooter",
@@ -100,6 +109,14 @@
     "/sales/{saleId}": {
       "schema": "Sale",
       "description": "Transaction history."
+    },
+    "/branches/{branchId}": {
+      "schema": "Branch",
+      "description": "List of showroom branch locations."
+    },
+    "/bookings/{bookingId}": {
+      "schema": "TestRideBooking",
+      "description": "Customer test ride bookings."
     },
     "/settings/showroom": {
       "schema": "ShowroomSettings",
