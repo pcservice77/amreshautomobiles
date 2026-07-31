@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -12,6 +13,7 @@ import { ScooterForm } from '@/components/admin/scooter-form';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import Image from 'next/image';
 
 export default function InventoryPage() {
   const firestore = useFirestore();
@@ -125,7 +127,7 @@ export default function InventoryPage() {
               Add New Model
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl bg-card border-white/10">
+          <DialogContent className="max-w-2xl bg-card border-white/10 max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-foreground">
                 {editingScooter ? `Edit ${editingScooter.model}` : 'Add Scooter to Showroom'}
@@ -155,10 +157,10 @@ export default function InventoryPage() {
         <Table>
           <TableHeader className="bg-secondary/50">
             <TableRow>
+              <TableHead>Preview</TableHead>
               <TableHead>Model</TableHead>
               <TableHead>Range</TableHead>
               <TableHead>Price</TableHead>
-              <TableHead>Charging</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -170,17 +172,20 @@ export default function InventoryPage() {
             ) : filteredScooters && filteredScooters.length > 0 ? (
               filteredScooters.map((scooter) => (
                 <TableRow key={scooter.id} className="hover:bg-white/5 transition-colors">
-                  <TableCell className="font-medium text-foreground">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-primary/20 p-1.5 rounded-md">
-                        <Package className="h-4 w-4 text-primary" />
-                      </div>
-                      {scooter.model}
+                  <TableCell>
+                    <div className="relative h-12 w-12 rounded-lg overflow-hidden border border-white/10">
+                      {scooter.images && scooter.images.length > 0 ? (
+                        <Image src={scooter.images[0]} alt={scooter.model} fill className="object-cover" unoptimized />
+                      ) : (
+                        <Package className="h-full w-full p-2 text-muted-foreground" />
+                      )}
                     </div>
+                  </TableCell>
+                  <TableCell className="font-medium text-foreground">
+                    {scooter.model}
                   </TableCell>
                   <TableCell className="text-foreground">{scooter.range}</TableCell>
                   <TableCell className="text-primary font-bold">{scooter.price}</TableCell>
-                  <TableCell className="text-foreground">{scooter.chargingTime || 'N/A'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button 

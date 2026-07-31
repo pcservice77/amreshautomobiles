@@ -2,6 +2,7 @@
 "use client"
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Battery, Gauge, Zap } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,15 +14,20 @@ interface ScooterCardProps {
 }
 
 export function ScooterCard({ scooter }: ScooterCardProps) {
+  const displayImage = scooter.images && scooter.images.length > 0 
+    ? scooter.images[0] 
+    : 'https://picsum.photos/seed/scoot/600/400';
+
   return (
     <Card className="group overflow-hidden border-white/5 bg-card/40 transition-all hover:bg-card/60 hover:border-primary/30">
       <CardHeader className="p-0">
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
-            src={scooter.imageUrl}
+            src={displayImage}
             alt={scooter.model}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
+            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
           <Badge className="absolute top-4 right-4 bg-accent text-accent-foreground font-bold">
@@ -54,9 +60,11 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
         </div>
       </CardContent>
       <CardFooter className="p-6 pt-0">
-        <Button className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all">
-          View Details
-        </Button>
+        <Link href={`/scooter/${scooter.id}`} className="w-full">
+          <Button className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all">
+            View Details
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

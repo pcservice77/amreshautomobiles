@@ -20,16 +20,21 @@
       "type": "object",
       "properties": {
         "model": { "type": "string" },
+        "tagline": { "type": "string" },
         "variant": { "type": "string" },
         "range": { "type": "string" },
         "price": { "type": "string" },
         "topSpeed": { "type": "string" },
         "batteryType": { "type": "string" },
         "batteryCapacity": { "type": "string" },
-        "imageUrl": { "type": "string" },
-        "description": { "type": "string" }
+        "voltage": { "type": "string" },
+        "category": { "type": "string" },
+        "batterySystem": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string" },
+        "features": { "type": "array", "items": { "type": "string" } }
       },
-      "required": ["model", "range", "price", "imageUrl", "description"]
+      "required": ["model", "range", "price", "images", "description"]
     },
     "Sale": {
       "title": "Sale",
