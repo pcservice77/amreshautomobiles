@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for generating compelling product descriptions for electric scooters.
@@ -46,7 +47,7 @@ const prompt = ai.definePrompt({
   name: 'generateScooterDescriptionPrompt',
   input: {schema: GenerateScooterDescriptionInputSchema},
   output: {schema: GenerateScooterDescriptionOutputSchema},
-  prompt: `You are an expert copywriter for an electric scooter showroom named Amresh Volt.
+  prompt: `You are an expert copywriter for an electric scooter showroom named Amresh Automobiles.
 Your task is to create a compelling, professional, and persuasive product description for an electric scooter based on its specifications.
 Highlight the benefits of electric mobility and the unique selling points of the scooter.
 Keep the description concise but informative, aiming for about 150-200 words.

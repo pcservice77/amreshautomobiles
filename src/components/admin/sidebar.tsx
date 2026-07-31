@@ -3,18 +3,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Box, FileText, Users, LogOut, Zap } from 'lucide-react';
+import { LayoutDashboard, Box, FileText, Users, LogOut, Zap, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
   { label: 'Inventory', icon: Box, href: '/admin/inventory' },
   { label: 'Billing', icon: FileText, href: '/admin/billing' },
   { label: 'Sales History', icon: Users, href: '/admin/sales' },
+  { label: 'Showroom Settings', icon: Settings, href: '/admin/settings' },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const auth = useAuth();
 
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border h-screen sticky top-0 flex flex-col p-6">
@@ -22,7 +26,7 @@ export function AdminSidebar() {
         <div className="bg-primary p-1.5 rounded-lg">
           <Zap className="h-5 w-5 text-primary-foreground fill-current" />
         </div>
-        <span className="font-headline text-lg font-bold">VOLT <span className="text-primary">ADMIN</span></span>
+        <span className="font-headline text-lg font-bold uppercase">AMRESH <span className="text-primary">ADMIN</span></span>
       </div>
 
       <nav className="flex-1 space-y-2">
@@ -46,11 +50,18 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      <div className="pt-6 border-t border-sidebar-border">
+      <div className="pt-6 border-t border-sidebar-border space-y-2">
         <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-sidebar-accent transition-colors">
-          <LogOut className="h-5 w-5" />
-          Exit Admin
+          <Zap className="h-5 w-5" />
+          View Site
         </Link>
+        <button 
+          onClick={() => auth && signOut(auth)}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+        >
+          <LogOut className="h-5 w-5" />
+          Sign Out
+        </button>
       </div>
     </div>
   );

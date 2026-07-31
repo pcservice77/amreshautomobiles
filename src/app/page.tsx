@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState } from 'react';
@@ -7,19 +8,15 @@ import { Navbar } from '@/components/navbar';
 import { ScooterCard } from '@/components/scooter-card';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { db, Scooter } from '@/lib/db-mock';
+import { useCollection, useDoc, useFirestore } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap } from 'lucide-react';
 
 export default function Home() {
-  const [scooters, setScooters] = useState<Scooter[]>([]);
-
-  useEffect(() => {
-    const fetchScooters = async () => {
-      const data = await db.getScooters();
-      setScooters(data);
-    };
-    fetchScooters();
-  }, []);
+  const firestore = useFirestore();
+  const scootersQuery = firestore ? collection(firestore, 'scooters') : null;
+  const { data: scooters, loading } = useCollection(scootersQuery);
+  const { data: showroom } = useDoc(firestore ? doc(firestore, 'settings', 'showroom') : null);
 
   return (
     <main className="min-h-screen pb-20">
@@ -30,7 +27,7 @@ export default function Home() {
         <div className="absolute inset-0 z-0">
           <Image
             src={PlaceHolderImages[0].imageUrl}
-            alt="Amresh Volt Hero"
+            alt="Amresh Automobiles Hero"
             fill
             className="object-cover opacity-40"
             priority
@@ -47,7 +44,7 @@ export default function Home() {
               Electrify Your <span className="text-primary italic">Daily Journey.</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-lg leading-relaxed">
-              Experience the power of sustainable engineering. Amresh Volt brings you the finest selection of electric scooters designed for speed, comfort, and zero emissions.
+              Experience the power of sustainable engineering at <strong>Amresh Automobiles</strong>. We bring you the finest selection of electric scooters designed for speed, comfort, and zero emissions.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 text-lg">
@@ -76,11 +73,20 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {scooters.map((scooter) => (
-            <ScooterCard key={scooter.id} scooter={scooter} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-20">Loading our fleet...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {scooters?.map((scooter) => (
+              <ScooterCard key={scooter.id} scooter={scooter as any} />
+            ))}
+            {scooters?.length === 0 && (
+              <div className="col-span-full text-center text-muted-foreground py-20">
+                New models arriving soon. Stay tuned!
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Feature Section */}
@@ -96,7 +102,7 @@ export default function Home() {
               />
             </div>
             <div>
-              <h2 className="font-headline text-4xl font-bold mb-6">Why Choose <span className="text-primary">Amresh Volt?</span></h2>
+              <h2 className="font-headline text-4xl font-bold mb-6">Why Choose <span className="text-primary">Amresh Automobiles?</span></h2>
               <div className="space-y-6">
                 {[
                   { title: "Smart Connectivity", desc: "Integrated app with GPS tracking, remote diagnostics, and OTA updates." },
@@ -126,7 +132,7 @@ export default function Home() {
             <div className="space-y-6">
               <div className="flex items-center gap-2">
                 <Zap className="h-8 w-8 text-primary" />
-                <span className="font-headline text-2xl font-bold tracking-tight">AMRESH VOLT</span>
+                <span className="font-headline text-2xl font-bold tracking-tight uppercase">AMRESH AUTOMOBILES</span>
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Leading the charge towards a greener future. Visit our showroom to test ride the evolution of transport.
@@ -149,15 +155,15 @@ export default function Home() {
               <ul className="space-y-4 text-muted-foreground text-sm">
                 <li className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-primary shrink-0" />
-                  <span>Main Showroom, MG Road,<br />Amresh Automobiles Complex</span>
+                  <span>{showroom?.address || 'Main Showroom, MG Road, Amresh Automobiles Complex'}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-primary shrink-0" />
-                  <span>+91 98765 43210</span>
+                  <span>{showroom?.contact || '+91 98765 43210'}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-primary shrink-0" />
-                  <span>contact@amreshvolt.com</span>
+                  <span>{showroom?.email || 'contact@amreshautomobiles.com'}</span>
                 </li>
               </ul>
             </div>
@@ -182,7 +188,7 @@ export default function Home() {
             </div>
           </div>
           <div className="py-8 border-t border-white/5 text-center text-muted-foreground text-sm">
-            © 2025 Amresh Volt. All rights reserved. Powered by Clean Energy.
+            © 2025 {showroom?.name || 'Amresh Automobiles'}. All rights reserved. Powered by Clean Energy.
           </div>
         </div>
       </footer>

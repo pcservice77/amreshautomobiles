@@ -1,32 +1,26 @@
 
 "use client"
 
-import { useEffect, useState } from 'react';
-import { Search, Download, Eye, Calendar, UserCheck } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Download, Eye, Calendar, UserCheck, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { db, Sale } from '@/lib/db-mock';
 import { format } from 'date-fns';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 export default function SalesHistoryPage() {
-  const [sales, setSales] = useState<Sale[]>([]);
+  const firestore = useFirestore();
+  const { data: sales, loading } = useCollection(firestore ? collection(firestore, 'sales') : null);
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    const fetchSales = async () => {
-      const data = await db.getSales();
-      setSales(data);
-    };
-    fetchSales();
-  }, []);
-
-  const filteredSales = sales.filter(s => 
-    s.customerName.toLowerCase().includes(search.toLowerCase()) ||
-    s.mobile.includes(search) ||
-    s.model.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredSales = sales?.filter(s => 
+    (s.customerName as string)?.toLowerCase().includes(search.toLowerCase()) ||
+    (s.mobile as string)?.includes(search) ||
+    (s.model as string)?.toLowerCase().includes(search.toLowerCase())
+  ) || [];
 
   return (
     <div className="space-y-6">
@@ -67,14 +61,18 @@ export default function SalesHistoryPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredSales.length > 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-20">Loading sales data...</TableCell>
+              </TableRow>
+            ) : filteredSales.length > 0 ? (
               filteredSales.map((sale) => (
                 <TableRow key={sale.id} className="hover:bg-white/5 transition-colors">
                   <TableCell className="font-mono text-xs text-primary">{sale.id}</TableCell>
                   <TableCell className="text-sm">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-3 w-3 text-muted-foreground" />
-                      {format(new Date(sale.soldAt), 'dd MMM yyyy')}
+                      {sale.soldAt ? format(new Date(sale.soldAt), 'dd MMM yyyy') : 'N/A'}
                     </div>
                   </TableCell>
                   <TableCell>

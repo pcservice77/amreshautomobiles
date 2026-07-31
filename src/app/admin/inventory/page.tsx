@@ -7,51 +7,53 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { db, Scooter } from '@/lib/db-mock';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { ScooterForm } from '@/components/admin/scooter-form';
 import { useToast } from '@/hooks/use-toast';
 
 export default function InventoryPage() {
-  const [scooters, setScooters] = useState<Scooter[]>([]);
+  const firestore = useFirestore();
+  const scootersQuery = firestore ? collection(firestore, 'scooters') : null;
+  const { data: scooters, loading } = useCollection(scootersQuery);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [search, setSearch] = useState('');
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchScooters();
-  }, []);
-
-  const fetchScooters = async () => {
-    const data = await db.getScooters();
-    setScooters(data);
-  };
-
   const handleAddScooter = async (data: any) => {
-    await db.addScooter({
-      ...data,
-      features: ['Standard Features']
-    });
-    setIsAddOpen(false);
-    fetchScooters();
-    toast({
-      title: 'Scooter Added',
-      description: `${data.model} has been added to the showroom.`,
-    });
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to remove this model?')) {
-      await db.deleteScooter(id);
-      fetchScooters();
-      toast({
-        title: 'Scooter Removed',
-        description: 'The model was deleted from inventory.',
+    if (!firestore) return;
+    try {
+      await addDoc(collection(firestore, 'scooters'), {
+        ...data,
+        features: data.features || ['Standard Features']
       });
+      setIsAddOpen(false);
+      toast({
+        title: 'Scooter Added',
+        description: `${data.model} has been added to the showroom.`,
+      });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to add scooter.' });
     }
   };
 
-  const filteredScooters = scooters.filter(s => 
-    s.model.toLowerCase().includes(search.toLowerCase())
+  const handleDelete = async (id: string) => {
+    if (!firestore) return;
+    if (confirm('Are you sure you want to remove this model?')) {
+      try {
+        await deleteDoc(doc(firestore, 'scooters', id));
+        toast({
+          title: 'Scooter Removed',
+          description: 'The model was deleted from inventory.',
+        });
+      } catch (e) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete scooter.' });
+      }
+    }
+  };
+
+  const filteredScooters = scooters?.filter(s => 
+    (s.model as string).toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -101,7 +103,11 @@ export default function InventoryPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredScooters.length > 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-12">Loading inventory...</TableCell>
+              </TableRow>
+            ) : filteredScooters && filteredScooters.length > 0 ? (
               filteredScooters.map((scooter) => (
                 <TableRow key={scooter.id} className="hover:bg-white/5 transition-colors">
                   <TableCell className="font-medium">

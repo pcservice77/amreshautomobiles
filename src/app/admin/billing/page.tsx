@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { db, Scooter } from '@/lib/db-mock';
+import { useFirestore, useCollection, useDoc } from '@/firebase';
+import { collection, addDoc, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
@@ -27,17 +28,11 @@ const billSchema = z.object({
 });
 
 export default function BillingPage() {
-  const [scooters, setScooters] = useState<Scooter[]>([]);
+  const firestore = useFirestore();
+  const { data: scooters } = useCollection(firestore ? collection(firestore, 'scooters') : null);
+  const { data: showroom } = useDoc(firestore ? doc(firestore, 'settings', 'showroom') : null);
   const { toast } = useToast();
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchScooters = async () => {
-      const data = await db.getScooters();
-      setScooters(data);
-    };
-    fetchScooters();
-  }, []);
 
   const form = useForm<z.infer<typeof billSchema>>({
     resolver: zodResolver(billSchema),
@@ -54,8 +49,9 @@ export default function BillingPage() {
   });
 
   const onSubmit = async (data: z.infer<typeof billSchema>) => {
+    if (!firestore) return;
     try {
-      await db.addSale({
+      await addDoc(collection(firestore, 'sales'), {
         ...data,
         soldAt: new Date().toISOString(),
       });
@@ -75,26 +71,38 @@ export default function BillingPage() {
 
   const watchModel = form.watch('model');
   useEffect(() => {
-    if (watchModel) {
+    if (watchModel && scooters) {
       const selected = scooters.find(s => s.model === watchModel);
       if (selected) {
-        form.setValue('price', selected.price);
+        form.setValue('price', selected.price as string);
       }
     }
   }, [watchModel, scooters, form]);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <div>
+      <div className="print:hidden">
         <h1 className="text-3xl font-headline font-bold">Digital Billing Engine</h1>
         <p className="text-muted-foreground">Generate official sales invoices for customers.</p>
+      </div>
+
+      {/* Showroom Header for Invoice */}
+      <div className="hidden print:block text-center border-b pb-8 mb-8">
+        <h1 className="text-4xl font-bold uppercase">{showroom?.name || 'AMRESH AUTOMOBILES'}</h1>
+        <p>{showroom?.address}</p>
+        <p>Contact: {showroom?.contact} | Email: {showroom?.email}</p>
+        <div className="mt-4 text-xl font-bold border-t pt-4">TAX INVOICE / SALE BILL</div>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {/* Customer Details */}
-          <Card className="bg-card/40 border-white/5">
-            <CardHeader className="flex flex-row items-center gap-2">
+          <Card className="bg-card/40 border-white/5 print:border-none print:shadow-none">
+            <CardHeader className="flex flex-row items-center gap-2 print:hidden">
               <User className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">Customer Information</CardTitle>
             </CardHeader>
@@ -144,8 +152,8 @@ export default function BillingPage() {
           </Card>
 
           {/* ID Details */}
-          <Card className="bg-card/40 border-white/5">
-            <CardHeader className="flex flex-row items-center gap-2">
+          <Card className="bg-card/40 border-white/5 print:border-none print:shadow-none">
+            <CardHeader className="flex flex-row items-center gap-2 print:hidden">
               <CreditCard className="h-5 w-5 text-accent" />
               <CardTitle className="text-lg">Identification Details</CardTitle>
             </CardHeader>
@@ -190,8 +198,8 @@ export default function BillingPage() {
           </Card>
 
           {/* Vehicle Details */}
-          <Card className="bg-card/40 border-white/5">
-            <CardHeader className="flex flex-row items-center gap-2">
+          <Card className="bg-card/40 border-white/5 print:border-none print:shadow-none">
+            <CardHeader className="flex flex-row items-center gap-2 print:hidden">
               <Bike className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">Vehicle Assignment</CardTitle>
             </CardHeader>
@@ -209,8 +217,8 @@ export default function BillingPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {scooters.map(s => (
-                          <SelectItem key={s.id} value={s.model}>{s.model}</SelectItem>
+                        {scooters?.map(s => (
+                          <SelectItem key={s.id} value={s.model as string}>{s.model as string}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -247,15 +255,20 @@ export default function BillingPage() {
             </CardContent>
           </Card>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-4 pt-4 print:hidden">
             <Button type="submit" size="lg" className="flex-1 gap-2 bg-primary text-primary-foreground">
               <Save className="h-5 w-5" />
               Finalize Sale & Save
             </Button>
-            <Button type="button" variant="outline" size="lg" className="gap-2 border-white/10" onClick={() => window.print()}>
+            <Button type="button" variant="outline" size="lg" className="gap-2 border-white/10" onClick={handlePrint}>
               <Printer className="h-5 w-5" />
               Print Invoice
             </Button>
+          </div>
+          
+          <div className="hidden print:block mt-12 text-sm text-center text-muted-foreground border-t pt-8">
+            <p>Thank you for choosing Amresh Automobiles for your electric mobility needs.</p>
+            <p>This is a computer generated invoice.</p>
           </div>
         </form>
       </Form>

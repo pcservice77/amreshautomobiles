@@ -1,0 +1,83 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Extended user information stored in Firestore.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Scooter": {
+      "title": "Scooter",
+      "description": "Details of an electric scooter model.",
+      "type": "object",
+      "properties": {
+        "model": { "type": "string" },
+        "range": { "type": "string" },
+        "price": { "type": "string" },
+        "topSpeed": { "type": "string" },
+        "batteryCapacity": { "type": "string" },
+        "chargingTime": { "type": "string" },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "imageUrl": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["model", "range", "price", "imageUrl", "description"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "Record of a scooter sale transaction.",
+      "type": "object",
+      "properties": {
+        "customerName": { "type": "string" },
+        "mobile": { "type": "string" },
+        "address": { "type": "string" },
+        "idType": { "type": "string" },
+        "idNumber": { "type": "string" },
+        "model": { "type": "string" },
+        "chassisNumber": { "type": "string" },
+        "price": { "type": "string" },
+        "soldAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerName", "mobile", "model", "price", "soldAt"]
+    },
+    "ShowroomSettings": {
+      "title": "Showroom Settings",
+      "description": "Global settings for the showroom details.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "contact": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User profile data including roles."
+    },
+    "/scooters/{scooterId}": {
+      "schema": "Scooter",
+      "description": "Inventory of electric scooters."
+    },
+    "/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "Transaction history."
+    },
+    "/settings/showroom": {
+      "schema": "ShowroomSettings",
+      "description": "Showroom contact and name details."
+    }
+  }
+}
