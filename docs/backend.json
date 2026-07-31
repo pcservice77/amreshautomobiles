@@ -19,12 +19,12 @@
       "type": "object",
       "properties": {
         "model": { "type": "string" },
+        "variant": { "type": "string" },
         "range": { "type": "string" },
         "price": { "type": "string" },
         "topSpeed": { "type": "string" },
+        "batteryType": { "type": "string" },
         "batteryCapacity": { "type": "string" },
-        "chargingTime": { "type": "string" },
-        "features": { "type": "array", "items": { "type": "string" } },
         "imageUrl": { "type": "string" },
         "description": { "type": "string" }
       },
@@ -32,21 +32,41 @@
     },
     "Sale": {
       "title": "Sale",
-      "description": "Record of a scooter sale transaction.",
+      "description": "Record of a scooter sale transaction with full vehicle and customer specs.",
       "type": "object",
       "properties": {
+        "invoiceNo": { "type": "string" },
         "customerName": { "type": "string" },
+        "customerFatherName": { "type": "string" },
         "mobile": { "type": "string" },
+        "email": { "type": "string" },
         "address": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "pin": { "type": "string" },
         "idType": { "type": "string" },
         "idNumber": { "type": "string" },
         "model": { "type": "string" },
+        "variant": { "type": "string" },
+        "color": { "type": "string" },
+        "batteryType": { "type": "string" },
+        "batteryCapacity": { "type": "string" },
+        "claimedRange": { "type": "string" },
         "chassisNumber": { "type": "string" },
-        "price": { "type": "string" },
+        "motorNumber": { "type": "string" },
+        "controllerNumber": { "type": "string" },
+        "vehicleSerialNumber": { "type": "string" },
+        "registrationNumber": { "type": "string" },
+        "price": { "type": "number" },
+        "hsn": { "type": "string" },
         "gstin": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "financeCompany": { "type": "string" },
+        "loanAmount": { "type": "number" },
+        "downPayment": { "type": "number" },
+        "utrNumber": { "type": "string" },
         "soldAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["customerName", "mobile", "model", "price", "soldAt"]
+      }
     },
     "ShowroomSettings": {
       "title": "Showroom Settings",
@@ -54,10 +74,18 @@
       "type": "object",
       "properties": {
         "name": { "type": "string" },
+        "tagline": { "type": "string" },
         "contact": { "type": "string" },
         "email": { "type": "string" },
         "address": { "type": "string" },
-        "gstin": { "type": "string" }
+        "gstin": { "type": "string" },
+        "bankName": { "type": "string" },
+        "accountName": { "type": "string" },
+        "accountNumber": { "type": "string" },
+        "ifsc": { "type": "string" },
+        "branch": { "type": "string" },
+        "useLetterhead": { "type": "boolean" },
+        "letterheadUrl": { "type": "string" }
       }
     }
   },

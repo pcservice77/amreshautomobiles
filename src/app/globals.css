@@ -1,37 +1,38 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 229 22% 10%;
-    --foreground: 210 20% 98%;
-    --card: 229 22% 12%;
-    --card-foreground: 210 20% 98%;
-    --popover: 229 22% 10%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 227 100% 72%;
-    --primary-foreground: 229 22% 10%;
-    --secondary: 229 22% 18%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 229 22% 18%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 197 100% 57%;
-    --accent-foreground: 229 22% 10%;
+    --background: 0 0% 100%;
+    --foreground: 229 22% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 229 22% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 229 22% 10%;
+    --primary: 142 69% 34%; /* Amresh Green #1E8E3E */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 229 22% 96%;
+    --secondary-foreground: 229 22% 10%;
+    --muted: 229 22% 96%;
+    --muted-foreground: 215 20% 45%;
+    --accent: 142 69% 34%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 229 22% 20%;
-    --input: 229 22% 20%;
-    --ring: 227 100% 72%;
-    --radius: 0.75rem;
-    --sidebar-background: 229 22% 8%;
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-primary: 227 100% 72%;
-    --sidebar-primary-foreground: 229 22% 10%;
-    --sidebar-accent: 229 22% 15%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 229 22% 15%;
-    --sidebar-ring: 227 100% 72%;
+    --border: 229 22% 90%;
+    --input: 229 22% 90%;
+    --ring: 142 69% 34%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 229 22% 5%;
+    --foreground: 210 20% 98%;
+    --card: 229 22% 7%;
+    --card-foreground: 210 20% 98%;
+    --primary: 142 69% 45%;
+    --border: 229 22% 15%;
   }
 }
 
@@ -41,44 +42,59 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
-}
-
-.glass-card {
-  @apply bg-card/60 backdrop-blur-md border border-white/10;
-}
-
-.electric-gradient {
-  background: linear-gradient(135deg, #708FFF 0%, #24C0FF 100%);
 }
 
 @media print {
-  /* Hide everything by default */
-  body * {
-    visibility: hidden;
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
   }
-  /* Show only the printable invoice and its children */
-  #printable-invoice, #printable-invoice * {
-    visibility: visible;
-  }
-  /* Ensure the printable area takes up the whole page */
-  #printable-invoice {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 20px;
-    background-color: white !important;
+  body {
+    background: white !important;
     color: black !important;
-    border: none !important;
-  }
-  /* Hide any dialog overlays or sidebars during print */
-  [role="dialog"], [data-radix-portal] {
-    background: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   .print-hide {
     display: none !important;
   }
+  .print-only {
+    display: block !important;
+  }
+  .print-container {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    background: white;
+  }
+  .invoice-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    opacity: 0.08;
+    z-index: 0;
+    font-size: 120px;
+    font-weight: 900;
+    pointer-events: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+}
+
+.invoice-table th {
+  @apply bg-primary text-primary-foreground font-bold uppercase py-2 px-3 text-xs border border-black;
+}
+
+.invoice-table td {
+  @apply py-2 px-3 text-sm border border-black;
+}
+
+.summary-total {
+  background-color: #1E8E3E !important;
+  color: white !important;
+  font-weight: 800;
 }

@@ -5,11 +5,12 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Save, Building, Hash } from 'lucide-react';
+import { Save, Building, Landmark, Image as ImageIcon, ToggleLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription as UICardDesc } from '@/components/ui/card';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -17,11 +18,18 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 const settingsSchema = z.object({
-  name: z.string().min(2, 'Showroom name is required'),
-  contact: z.string().min(1, 'Contact number is required'),
-  email: z.string().email('Invalid email address'),
-  address: z.string().min(5, 'Address is required'),
+  name: z.string().min(2, 'Required'),
+  tagline: z.string().optional(),
+  contact: z.string().min(1, 'Required'),
+  email: z.string().email(),
+  address: z.string().min(5, 'Required'),
   gstin: z.string().optional(),
+  bankName: z.string().optional(),
+  accountName: z.string().optional(),
+  accountNumber: z.string().optional(),
+  ifsc: z.string().optional(),
+  branch: z.string().optional(),
+  useLetterhead: z.boolean().default(false),
 });
 
 export default function ShowroomSettingsPage() {
@@ -38,31 +46,24 @@ export default function ShowroomSettingsPage() {
   const form = useForm<z.infer<typeof settingsSchema>>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      name: '',
-      contact: '',
-      email: '',
-      address: '',
-      gstin: '',
+      name: 'AMRESH AUTOMOBILE',
+      tagline: 'Drive Electric • Live Smart',
+      useLetterhead: false,
     },
   });
 
   useEffect(() => {
     if (showroom) {
       form.reset({
-        name: showroom.name || '',
-        contact: showroom.contact || '',
-        email: showroom.email || '',
-        address: showroom.address || '',
-        gstin: showroom.gstin || '',
-      });
+        ...showroom,
+        useLetterhead: !!showroom.useLetterhead,
+      } as any);
     }
   }, [showroom, form]);
 
   const onSubmit = (data: z.infer<typeof settingsSchema>) => {
     if (!firestore) return;
-    
     const docRef = doc(firestore, 'settings', 'showroom');
-    
     setDoc(docRef, data, { merge: true })
       .catch(async (err) => {
         const permissionError = new FirestorePermissionError({
@@ -72,108 +73,114 @@ export default function ShowroomSettingsPage() {
         });
         errorEmitter.emit('permission-error', permissionError);
       });
-
-    toast({ 
-      title: 'Settings Saved', 
-      description: 'Business information update initiated.' 
-    });
+    toast({ title: 'Settings Saved', description: 'Showroom details updated successfully.' });
   };
 
-  if (fetching) return <div className="p-8 text-center text-muted-foreground">Fetching configurations...</div>;
+  if (fetching) return <div className="p-8 text-center text-muted-foreground">Loading configurations...</div>;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-headline font-bold">Showroom Configuration</h1>
-        <p className="text-muted-foreground">Manage your business information used for billing and identity.</p>
+    <div className="max-w-4xl mx-auto space-y-8 pb-20">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-headline font-bold">Business Configuration</h1>
+          <p className="text-muted-foreground">Manage your showroom identity, bank details, and printing preferences.</p>
+        </div>
       </div>
 
-      <Card className="bg-card/40 border-white/5">
-        <CardHeader className="flex flex-row items-center gap-3">
-          <div className="bg-accent/20 p-2 rounded-lg">
-            <Building className="h-6 w-6 text-accent" />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="border-white/5">
+              <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20">
+                <Building className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg text-primary font-bold">Showroom Identity</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                <FormField control={form.control} name="name" render={({ field }) => (
+                  <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
+                <FormField control={form.control} name="tagline" render={({ field }) => (
+                  <FormItem><FormLabel>Tagline / Moto</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
+                <FormField control={form.control} name="gstin" render={({ field }) => (
+                  <FormItem><FormLabel>GSTIN</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
+                <FormField control={form.control} name="address" render={({ field }) => (
+                  <FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField control={form.control} name="contact" render={({ field }) => (
+                    <FormItem><FormLabel>Contact</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                  )} />
+                  <FormField control={form.control} name="email" render={({ field }) => (
+                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                  )} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-white/5">
+              <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20">
+                <Landmark className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg text-primary font-bold">Bank Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                <FormField control={form.control} name="bankName" render={({ field }) => (
+                  <FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
+                <FormField control={form.control} name="accountName" render={({ field }) => (
+                  <FormItem><FormLabel>Account Holder Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
+                <FormField control={form.control} name="accountNumber" render={({ field }) => (
+                  <FormItem><FormLabel>Account Number</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField control={form.control} name="ifsc" render={({ field }) => (
+                    <FormItem><FormLabel>IFSC Code</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                  )} />
+                  <FormField control={form.control} name="branch" render={({ field }) => (
+                    <FormItem><FormLabel>Branch</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                  )} />
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <div>
-            <CardTitle className="text-lg">Business Identity</CardTitle>
-            <CardDescription>These details appear on customer invoices.</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+          <Card className="border-white/5">
+            <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20">
+              <ToggleLeft className="h-5 w-5 text-primary" />
+              <CardTitle className="text-lg text-primary font-bold">Print Preferences</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
               <FormField
                 control={form.control}
-                name="name"
+                name="useLetterhead"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Showroom Name</FormLabel>
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Use Pre-printed Letterhead</FormLabel>
+                      <FormDescription>
+                        Enable this if you print on paper that already has your logo and address.
+                      </FormDescription>
+                    </div>
                     <FormControl>
-                      <Input placeholder="Amresh Automobiles" {...field} className="border-white/10" />
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="gstin"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>GSTIN Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter GSTIN (Optional)" {...field} className="border-white/10" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="contact"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contact Phone</FormLabel>
-                    <FormControl>
-                      <Input placeholder="+91 XXXXX XXXXX" {...field} className="border-white/10" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Business Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="contact@amreshautomobiles.com" {...field} className="border-white/10" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Street, City, Pin" {...field} className="border-white/10" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full gap-2">
-                <Save className="h-4 w-4" />
-                Save Changes
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+
+          <Button type="submit" size="lg" className="w-full h-14 bg-primary text-primary-foreground font-bold text-lg">
+            <Save className="mr-2 h-6 w-6" />
+            Save Configuration
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 }
