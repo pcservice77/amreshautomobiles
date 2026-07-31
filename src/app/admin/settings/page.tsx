@@ -5,12 +5,12 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Save, Building, Landmark, Image as ImageIcon, ToggleLeft } from 'lucide-react';
+import { Save, Building, Landmark, ToggleLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription as UICardDesc } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -48,6 +48,15 @@ export default function ShowroomSettingsPage() {
     defaultValues: {
       name: 'AMRESH AUTOMOBILE',
       tagline: 'Drive Electric • Live Smart',
+      contact: '',
+      email: '',
+      address: '',
+      gstin: '',
+      bankName: '',
+      accountName: '',
+      accountNumber: '',
+      ifsc: '',
+      branch: '',
       useLetterhead: false,
     },
   });
@@ -55,9 +64,19 @@ export default function ShowroomSettingsPage() {
   useEffect(() => {
     if (showroom) {
       form.reset({
-        ...showroom,
+        name: showroom.name || 'AMRESH AUTOMOBILE',
+        tagline: showroom.tagline || '',
+        contact: showroom.contact || '',
+        email: showroom.email || '',
+        address: showroom.address || '',
+        gstin: showroom.gstin || '',
+        bankName: showroom.bankName || '',
+        accountName: showroom.accountName || '',
+        accountNumber: showroom.accountNumber || '',
+        ifsc: showroom.ifsc || '',
+        branch: showroom.branch || '',
         useLetterhead: !!showroom.useLetterhead,
-      } as any);
+      });
     }
   }, [showroom, form]);
 
@@ -82,16 +101,16 @@ export default function ShowroomSettingsPage() {
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Business Configuration</h1>
-          <p className="text-muted-foreground">Manage your showroom identity, bank details, and printing preferences.</p>
+          <h1 className="text-3xl font-headline font-bold text-foreground">Business Configuration</h1>
+          <p className="text-muted-foreground text-foreground">Manage your showroom identity, bank details, and printing preferences.</p>
         </div>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card className="border-white/5">
-              <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-foreground">
+            <Card className="border-white/5 bg-card">
+              <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20 rounded-t-lg">
                 <Building className="h-5 w-5 text-primary" />
                 <CardTitle className="text-lg text-primary font-bold">Showroom Identity</CardTitle>
               </CardHeader>
@@ -119,8 +138,8 @@ export default function ShowroomSettingsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-white/5">
-              <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20">
+            <Card className="border-white/5 bg-card">
+              <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20 rounded-t-lg">
                 <Landmark className="h-5 w-5 text-primary" />
                 <CardTitle className="text-lg text-primary font-bold">Bank Details</CardTitle>
               </CardHeader>
@@ -146,8 +165,8 @@ export default function ShowroomSettingsPage() {
             </Card>
           </div>
 
-          <Card className="border-white/5">
-            <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20">
+          <Card className="border-white/5 bg-card text-foreground">
+            <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20 rounded-t-lg">
               <ToggleLeft className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg text-primary font-bold">Print Preferences</CardTitle>
             </CardHeader>

@@ -5,13 +5,12 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Printer, Save, User, CreditCard, Bike, Zap, Receipt, Banknote, CreditCardIcon, Landmark } from 'lucide-react';
+import { Save, User, Bike, Receipt, Landmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, doc, serverTimestamp, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -56,7 +55,6 @@ const billSchema = z.object({
 export default function BillingPage() {
   const firestore = useFirestore();
   const [isSaved, setIsSaved] = useState(false);
-  const [lastInvoiceId, setLastInvoiceId] = useState('');
   
   const scootersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -78,17 +76,33 @@ export default function BillingPage() {
     resolver: zodResolver(billSchema),
     defaultValues: {
       customerName: '',
+      customerFatherName: '',
       mobile: '',
+      email: '',
       address: '',
       city: 'Khunti',
       state: 'Jharkhand',
       pin: '834004',
       idType: 'Aadhar',
+      idNumber: '',
       model: '',
+      variant: '',
       color: '',
-      paymentMethod: 'Cash',
-      hsn: '871160',
+      batteryType: 'Lithium-ion',
+      batteryCapacity: '',
+      claimedRange: '',
+      chassisNumber: '',
+      motorNumber: '',
+      controllerNumber: '',
+      vehicleSerialNumber: '',
+      registrationNumber: '',
       price: 0,
+      hsn: '871160',
+      paymentMethod: 'Cash',
+      financeCompany: '',
+      loanAmount: 0,
+      downPayment: 0,
+      utrNumber: '',
     },
   });
 
@@ -98,7 +112,9 @@ export default function BillingPage() {
     const snap = await getDocs(q);
     if (snap.empty) return 'AA/26-27/000001';
     const last = snap.docs[0].data().invoiceNo || 'AA/26-27/000000';
-    const num = parseInt(last.split('/').pop()) + 1;
+    const parts = last.split('/');
+    const lastNumStr = parts.pop() || '000000';
+    const num = parseInt(lastNumStr) + 1;
     return `AA/26-27/${num.toString().padStart(6, '0')}`;
   };
 
@@ -116,7 +132,6 @@ export default function BillingPage() {
 
     addDoc(collection(firestore, 'sales'), saleData)
       .then(() => {
-        setLastInvoiceId(invNo);
         setIsSaved(true);
         toast({ title: 'Invoice Saved', description: `Invoice ${invNo} generated.` });
       })
@@ -152,7 +167,7 @@ export default function BillingPage() {
   }, [watchModel, scooters, form]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-20">
+    <div className="max-w-6xl mx-auto space-y-8 pb-20 text-foreground">
       <div className="flex justify-between items-center print:hidden">
         <div>
           <h1 className="text-3xl font-headline font-bold">Amresh Automobile Billing</h1>
@@ -164,8 +179,8 @@ export default function BillingPage() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:hidden">
           {/* Customer Details */}
-          <Card className="shadow-sm border-white/5">
-            <CardHeader className="flex flex-row items-center gap-2 bg-secondary/30">
+          <Card className="shadow-sm border-white/5 bg-card">
+            <CardHeader className="flex flex-row items-center gap-2 bg-secondary/30 rounded-t-lg">
               <User className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">1. Customer Information</CardTitle>
             </CardHeader>
@@ -211,8 +226,8 @@ export default function BillingPage() {
           </Card>
 
           {/* Vehicle Details */}
-          <Card className="shadow-sm border-white/5">
-            <CardHeader className="flex flex-row items-center gap-2 bg-secondary/30">
+          <Card className="shadow-sm border-white/5 bg-card">
+            <CardHeader className="flex flex-row items-center gap-2 bg-secondary/30 rounded-t-lg">
               <Bike className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">2. Vehicle Specifications</CardTitle>
             </CardHeader>
@@ -246,8 +261,8 @@ export default function BillingPage() {
           </Card>
 
           {/* Price & Payment */}
-          <Card className="shadow-sm border-white/5 lg:col-span-2">
-            <CardHeader className="flex flex-row items-center gap-2 bg-secondary/30">
+          <Card className="shadow-sm border-white/5 lg:col-span-2 bg-card">
+            <CardHeader className="flex flex-row items-center gap-2 bg-secondary/30 rounded-t-lg">
               <Landmark className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">3. Price & Payment Details</CardTitle>
             </CardHeader>
