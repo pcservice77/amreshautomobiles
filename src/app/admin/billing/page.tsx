@@ -1,10 +1,11 @@
+
 "use client"
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { FileText, Printer, Save, User, CreditCard, Bike } from 'lucide-react';
+import { Printer, Save, User, CreditCard, Bike } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -30,6 +31,7 @@ const billSchema = z.object({
 
 export default function BillingPage() {
   const firestore = useFirestore();
+  const [isSaved, setIsSaved] = useState(false);
   
   const scootersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -66,10 +68,18 @@ export default function BillingPage() {
     
     const saleData = {
       ...data,
+      gstin: showroom?.gstin || '',
       soldAt: new Date().toISOString(),
     };
 
     addDoc(collection(firestore, 'sales'), saleData)
+      .then(() => {
+        setIsSaved(true);
+        toast({
+          title: 'Bill Recorded',
+          description: `Invoice for ${data.customerName} saved. Preparing to print...`,
+        });
+      })
       .catch(async (err) => {
         const permissionError = new FirestorePermissionError({
           path: 'sales',
@@ -78,13 +88,17 @@ export default function BillingPage() {
         });
         errorEmitter.emit('permission-error', permissionError);
       });
-
-    toast({
-      title: 'Bill Recorded',
-      description: `Invoice for ${data.customerName} has been queued for sync.`,
-    });
-    router.push('/admin/sales');
   };
+
+  useEffect(() => {
+    if (isSaved) {
+      window.print();
+      // After printing (or cancelling), we can redirect
+      setTimeout(() => {
+        router.push('/admin/sales');
+      }, 1000);
+    }
+  }, [isSaved, router]);
 
   const watchModel = form.watch('model');
   useEffect(() => {
@@ -111,13 +125,33 @@ export default function BillingPage() {
         <h1 className="text-4xl font-bold uppercase">{showroom?.name || 'AMRESH AUTOMOBILES'}</h1>
         <p>{showroom?.address}</p>
         <p>Contact: {showroom?.contact} | Email: {showroom?.email}</p>
+        {showroom?.gstin && <p className="font-bold">GSTIN: {showroom.gstin}</p>}
         <div className="mt-4 text-xl font-bold border-t pt-4">TAX INVOICE / SALE BILL</div>
+      </div>
+
+      <div className="hidden print:block mb-8">
+        <div className="grid grid-cols-2 gap-8 text-sm">
+          <div className="space-y-1">
+            <h4 className="font-bold border-b pb-1 mb-2">BILL TO</h4>
+            <p><span className="font-semibold">Customer:</span> {form.getValues('customerName')}</p>
+            <p><span className="font-semibold">Mobile:</span> {form.getValues('mobile')}</p>
+            <p><span className="font-semibold">Address:</span> {form.getValues('address')}</p>
+            <p><span className="font-semibold">{form.getValues('idType')}:</span> {form.getValues('idNumber')}</p>
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-bold border-b pb-1 mb-2">VEHICLE DETAILS</h4>
+            <p><span className="font-semibold">Model:</span> {form.getValues('model')}</p>
+            <p><span className="font-semibold">Chassis No:</span> {form.getValues('chassisNumber')}</p>
+            <p><span className="font-semibold">Date:</span> {new Date().toLocaleDateString()}</p>
+            <p className="text-lg font-bold mt-2">TOTAL AMOUNT: {form.getValues('price')}</p>
+          </div>
+        </div>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Card className="bg-card/40 border-white/5 print:border-none print:shadow-none">
-            <CardHeader className="flex flex-row items-center gap-2 print:hidden">
+          <Card className="bg-card/40 border-white/5 print:hidden">
+            <CardHeader className="flex flex-row items-center gap-2">
               <User className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">Customer Information</CardTitle>
             </CardHeader>
@@ -166,8 +200,8 @@ export default function BillingPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/40 border-white/5 print:border-none print:shadow-none">
-            <CardHeader className="flex flex-row items-center gap-2 print:hidden">
+          <Card className="bg-card/40 border-white/5 print:hidden">
+            <CardHeader className="flex flex-row items-center gap-2">
               <CreditCard className="h-5 w-5 text-accent" />
               <CardTitle className="text-lg">Identification Details</CardTitle>
             </CardHeader>
@@ -211,8 +245,8 @@ export default function BillingPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/40 border-white/5 print:border-none print:shadow-none">
-            <CardHeader className="flex flex-row items-center gap-2 print:hidden">
+          <Card className="bg-card/40 border-white/5 print:hidden">
+            <CardHeader className="flex flex-row items-center gap-2">
               <Bike className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">Vehicle Assignment</CardTitle>
             </CardHeader>

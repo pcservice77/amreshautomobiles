@@ -43,6 +43,7 @@
         "model": { "type": "string" },
         "chassisNumber": { "type": "string" },
         "price": { "type": "string" },
+        "gstin": { "type": "string" },
         "soldAt": { "type": "string", "format": "date-time" }
       },
       "required": ["customerName", "mobile", "model", "price", "soldAt"]
@@ -55,7 +56,8 @@
         "name": { "type": "string" },
         "contact": { "type": "string" },
         "email": { "type": "string" },
-        "address": { "type": "string" }
+        "address": { "type": "string" },
+        "gstin": { "type": "string" }
       }
     }
   },

@@ -1,10 +1,11 @@
+
 "use client"
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Save, Building, Loader2 } from 'lucide-react';
+import { Save, Building, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -20,6 +21,7 @@ const settingsSchema = z.object({
   contact: z.string().min(1, 'Contact number is required'),
   email: z.string().email('Invalid email address'),
   address: z.string().min(5, 'Address is required'),
+  gstin: z.string().optional(),
 });
 
 export default function ShowroomSettingsPage() {
@@ -40,6 +42,7 @@ export default function ShowroomSettingsPage() {
       contact: '',
       email: '',
       address: '',
+      gstin: '',
     },
   });
 
@@ -50,6 +53,7 @@ export default function ShowroomSettingsPage() {
         contact: showroom.contact || '',
         email: showroom.email || '',
         address: showroom.address || '',
+        gstin: showroom.gstin || '',
       });
     }
   }, [showroom, form]);
@@ -105,6 +109,19 @@ export default function ShowroomSettingsPage() {
                     <FormLabel>Showroom Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Amresh Automobiles" {...field} className="border-white/10" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="gstin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GSTIN Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter GSTIN (Optional)" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
