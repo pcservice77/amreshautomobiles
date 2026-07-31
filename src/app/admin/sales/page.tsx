@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -173,7 +172,8 @@ export default function SalesHistoryPage() {
               Detailed GST invoice view for {selectedSale?.customerName} - Invoice No: {selectedSale?.invoiceNo}.
             </DialogDescription>
           </DialogHeader>
-          <div className="print-container relative bg-white p-[12mm] text-black">
+          {/* Increased internal padding from 12mm to 20mm for better print margins */}
+          <div className="print-container relative bg-white p-[20mm] text-black">
             <div className="flex justify-between items-start border-b-4 border-primary pb-6 mb-8">
               <div className="flex gap-4">
                 <div className="bg-primary p-2 rounded-xl h-16 w-16 flex items-center justify-center relative overflow-hidden">
