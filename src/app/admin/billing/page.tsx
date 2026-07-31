@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -15,6 +14,8 @@ import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { collection, addDoc, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const billSchema = z.object({
   customerName: z.string().min(3, 'Customer name is required'),
@@ -48,25 +49,29 @@ export default function BillingPage() {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof billSchema>) => {
+  const onSubmit = (data: z.infer<typeof billSchema>) => {
     if (!firestore) return;
-    try {
-      await addDoc(collection(firestore, 'sales'), {
-        ...data,
-        soldAt: new Date().toISOString(),
+    
+    const saleData = {
+      ...data,
+      soldAt: new Date().toISOString(),
+    };
+
+    addDoc(collection(firestore, 'sales'), saleData)
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: 'sales',
+          operation: 'create',
+          requestResourceData: saleData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
       });
-      toast({
-        title: 'Bill Generated',
-        description: `Invoice for ${data.customerName} has been recorded.`,
-      });
-      router.push('/admin/sales');
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Billing Failed',
-        description: 'Could not generate the bill. Please try again.',
-      });
-    }
+
+    toast({
+      title: 'Bill Recorded',
+      description: `Invoice for ${data.customerName} has been queued for sync.`,
+    });
+    router.push('/admin/sales');
   };
 
   const watchModel = form.watch('model');
@@ -90,7 +95,6 @@ export default function BillingPage() {
         <p className="text-muted-foreground">Generate official sales invoices for customers.</p>
       </div>
 
-      {/* Showroom Header for Invoice */}
       <div className="hidden print:block text-center border-b pb-8 mb-8">
         <h1 className="text-4xl font-bold uppercase">{showroom?.name || 'AMRESH AUTOMOBILES'}</h1>
         <p>{showroom?.address}</p>
@@ -100,7 +104,6 @@ export default function BillingPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {/* Customer Details */}
           <Card className="bg-card/40 border-white/5 print:border-none print:shadow-none">
             <CardHeader className="flex flex-row items-center gap-2 print:hidden">
               <User className="h-5 w-5 text-primary" />
@@ -114,7 +117,7 @@ export default function BillingPage() {
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <Input placeholder="John Doe" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -127,7 +130,7 @@ export default function BillingPage() {
                   <FormItem>
                     <FormLabel>Mobile Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="9876543210" {...field} />
+                      <Input placeholder="9876543210" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -141,7 +144,7 @@ export default function BillingPage() {
                     <FormItem>
                       <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input placeholder="H.No, Street, City, State" {...field} />
+                        <Input placeholder="H.No, Street, City, State" {...field} className="border-white/10" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -151,7 +154,6 @@ export default function BillingPage() {
             </CardContent>
           </Card>
 
-          {/* ID Details */}
           <Card className="bg-card/40 border-white/5 print:border-none print:shadow-none">
             <CardHeader className="flex flex-row items-center gap-2 print:hidden">
               <CreditCard className="h-5 w-5 text-accent" />
@@ -166,7 +168,7 @@ export default function BillingPage() {
                     <FormLabel>ID Proof Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="border-white/10">
                           <SelectValue placeholder="Select ID Type" />
                         </SelectTrigger>
                       </FormControl>
@@ -188,7 +190,7 @@ export default function BillingPage() {
                   <FormItem>
                     <FormLabel>ID Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter ID number" {...field} />
+                      <Input placeholder="Enter ID number" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -197,7 +199,6 @@ export default function BillingPage() {
             </CardContent>
           </Card>
 
-          {/* Vehicle Details */}
           <Card className="bg-card/40 border-white/5 print:border-none print:shadow-none">
             <CardHeader className="flex flex-row items-center gap-2 print:hidden">
               <Bike className="h-5 w-5 text-primary" />
@@ -212,7 +213,7 @@ export default function BillingPage() {
                     <FormLabel>Scooter Model</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="border-white/10">
                           <SelectValue placeholder="Select Model" />
                         </SelectTrigger>
                       </FormControl>
@@ -233,7 +234,7 @@ export default function BillingPage() {
                   <FormItem>
                     <FormLabel>Chassis Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="VOLT-XXXXX" {...field} />
+                      <Input placeholder="VOLT-XXXXX" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -246,7 +247,7 @@ export default function BillingPage() {
                   <FormItem>
                     <FormLabel>Sale Price</FormLabel>
                     <FormControl>
-                      <Input placeholder="₹ 0.00" {...field} />
+                      <Input placeholder="₹ 0.00" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState } from 'react';
@@ -13,6 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useFirestore, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const settingsSchema = z.object({
   name: z.string().min(2, 'Showroom name is required'),
@@ -25,7 +26,6 @@ export default function ShowroomSettingsPage() {
   const firestore = useFirestore();
   const { data: showroom, loading: fetching } = useDoc(firestore ? doc(firestore, 'settings', 'showroom') : null);
   const { toast } = useToast();
-  const [saving, setSaving] = useState(false);
 
   const form = useForm<z.infer<typeof settingsSchema>>({
     resolver: zodResolver(settingsSchema),
@@ -48,20 +48,28 @@ export default function ShowroomSettingsPage() {
     }
   }, [showroom, form]);
 
-  const onSubmit = async (data: z.infer<typeof settingsSchema>) => {
+  const onSubmit = (data: z.infer<typeof settingsSchema>) => {
     if (!firestore) return;
-    setSaving(true);
-    try {
-      await setDoc(doc(firestore, 'settings', 'showroom'), data, { merge: true });
-      toast({ title: 'Settings Updated', description: 'Showroom details saved successfully.' });
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update settings.' });
-    } finally {
-      setSaving(false);
-    }
+    
+    const docRef = doc(firestore, 'settings', 'showroom');
+    
+    setDoc(docRef, data, { merge: true })
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+
+    toast({ 
+      title: 'Settings Saved', 
+      description: 'Business information update initiated.' 
+    });
   };
 
-  if (fetching) return <div className="p-8">Loading settings...</div>;
+  if (fetching) return <div className="p-8 text-center text-muted-foreground">Fetching configurations...</div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
@@ -90,7 +98,7 @@ export default function ShowroomSettingsPage() {
                   <FormItem>
                     <FormLabel>Showroom Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Amresh Automobiles" {...field} />
+                      <Input placeholder="Amresh Automobiles" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -103,7 +111,7 @@ export default function ShowroomSettingsPage() {
                   <FormItem>
                     <FormLabel>Contact Phone</FormLabel>
                     <FormControl>
-                      <Input placeholder="+91 XXXXX XXXXX" {...field} />
+                      <Input placeholder="+91 XXXXX XXXXX" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -116,7 +124,7 @@ export default function ShowroomSettingsPage() {
                   <FormItem>
                     <FormLabel>Business Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="contact@amreshautomobiles.com" {...field} />
+                      <Input placeholder="contact@amreshautomobiles.com" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -129,14 +137,14 @@ export default function ShowroomSettingsPage() {
                   <FormItem>
                     <FormLabel>Full Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="Street, City, Pin" {...field} />
+                      <Input placeholder="Street, City, Pin" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full gap-2" disabled={saving}>
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              <Button type="submit" className="w-full gap-2">
+                <Save className="h-4 w-4" />
                 Save Changes
               </Button>
             </form>

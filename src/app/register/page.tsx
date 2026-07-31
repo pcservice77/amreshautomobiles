@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -16,6 +15,8 @@ import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const registerSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -42,19 +43,31 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
 
-      // Create user profile in Firestore
-      await setDoc(doc(firestore, 'users', user.uid), {
+      const userProfile = {
         uid: user.uid,
         email: data.email,
         name: data.name,
-        role: 'user', // Default role
-      });
+        role: 'user',
+      };
+
+      const userRef = doc(firestore, 'users', user.uid);
+      
+      // Critical: Mutation must be non-blocking and catch permissions
+      setDoc(userRef, userProfile)
+        .catch(async (err) => {
+          const permissionError = new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'create',
+            requestResourceData: userProfile,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
 
       toast({ 
-        title: 'Account Created', 
-        description: 'Welcome to Amresh Automobiles! You can now log in.' 
+        title: 'Welcome!', 
+        description: 'Account created. You are being logged in.' 
       });
-      router.push('/login');
+      router.push('/');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -90,7 +103,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <Input placeholder="John Doe" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -103,7 +116,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@example.com" {...field} />
+                      <Input placeholder="name@example.com" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -116,7 +129,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="••••••••" {...field} className="border-white/10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

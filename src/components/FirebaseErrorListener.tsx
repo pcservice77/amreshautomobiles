@@ -10,12 +10,17 @@ export function FirebaseErrorListener() {
 
   useEffect(() => {
     const handlePermissionError = (error: FirestorePermissionError) => {
-      console.error('Firebase Permission Error:', error.context);
+      // Surface the error to the console for the developer overlay to catch
+      // In the agentive loop, this surfaces as a rich contextual error.
       toast({
         variant: 'destructive',
         title: 'Permission Denied',
-        description: `You don't have permission to ${error.context.operation} at ${error.context.path}.`,
+        description: `Access denied for ${error.context.operation} at ${error.context.path}.`,
       });
+      
+      // Throwing the error ensures it hits the Next.js development overlay
+      // providing the specific JSON context required for the AI to fix rules.
+      throw error;
     };
 
     errorEmitter.on('permission-error', handlePermissionError);

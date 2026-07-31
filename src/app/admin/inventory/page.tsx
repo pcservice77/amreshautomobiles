@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Plus, Search, Edit2, Trash2, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +10,8 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { ScooterForm } from '@/components/admin/scooter-form';
 import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function InventoryPage() {
   const firestore = useFirestore();
@@ -22,38 +23,52 @@ export default function InventoryPage() {
 
   const handleAddScooter = async (data: any) => {
     if (!firestore) return;
-    try {
-      await addDoc(collection(firestore, 'scooters'), {
-        ...data,
-        features: data.features || ['Standard Features']
+    
+    const scooterData = {
+      ...data,
+      features: data.features || ['Standard Features']
+    };
+
+    setIsAddOpen(false);
+    
+    addDoc(collection(firestore, 'scooters'), scooterData)
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: 'scooters',
+          operation: 'create',
+          requestResourceData: scooterData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
       });
-      setIsAddOpen(false);
-      toast({
-        title: 'Scooter Added',
-        description: `${data.model} has been added to the showroom.`,
-      });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to add scooter.' });
-    }
+
+    toast({
+      title: 'Success',
+      description: `${data.model} addition initiated.`,
+    });
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!firestore) return;
     if (confirm('Are you sure you want to remove this model?')) {
-      try {
-        await deleteDoc(doc(firestore, 'scooters', id));
-        toast({
-          title: 'Scooter Removed',
-          description: 'The model was deleted from inventory.',
+      const docRef = doc(firestore, 'scooters', id);
+      deleteDoc(docRef)
+        .catch(async (err) => {
+          const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'delete',
+          });
+          errorEmitter.emit('permission-error', permissionError);
         });
-      } catch (e) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete scooter.' });
-      }
+      
+      toast({
+        title: 'Model Removed',
+        description: 'The request to delete the scooter has been sent.',
+      });
     }
   };
 
   const filteredScooters = scooters?.filter(s => 
-    (s.model as string).toLowerCase().includes(search.toLowerCase())
+    (s.model as string || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -70,7 +85,7 @@ export default function InventoryPage() {
               Add New Model
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl bg-card">
+          <DialogContent className="max-w-2xl bg-card border-white/10">
             <DialogHeader>
               <DialogTitle>Add Scooter to Showroom</DialogTitle>
             </DialogHeader>
@@ -84,7 +99,7 @@ export default function InventoryPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Search models..." 
-            className="pl-10" 
+            className="pl-10 border-white/10" 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
