@@ -2,21 +2,24 @@
 "use client"
 
 import { useState } from 'react';
-import { Search, Eye, Calendar, UserCheck, FileText, Printer, X, Zap, Leaf, ShieldCheck, Activity, Landmark } from 'lucide-react';
+import { Search, Eye, Printer, X, Zap, Activity, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, deleteDoc } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function SalesHistoryPage() {
   const firestore = useFirestore();
   const [search, setSearch] = useState('');
   const [selectedSale, setSelectedSale] = useState<any>(null);
+  const { toast } = useToast();
 
   const salesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -39,6 +42,24 @@ export default function SalesHistoryPage() {
 
   const handlePrintBill = () => {
     window.print();
+  };
+
+  const handleDeleteSale = (id: string) => {
+    if (!firestore) return;
+    if (confirm('Are you sure you want to delete this invoice permanently?')) {
+      const docRef = doc(firestore, 'sales', id);
+      deleteDoc(docRef)
+        .then(() => {
+          toast({ title: 'Invoice Deleted', description: 'The record has been removed.' });
+        })
+        .catch(async (err) => {
+          const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'delete',
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
+    }
   };
 
   const amountToWords = (amount: number) => {
@@ -122,7 +143,10 @@ export default function SalesHistoryPage() {
                 <TableCell>{sale.model} {sale.variant}</TableCell>
                 <TableCell className="font-bold">₹ {sale.price?.toLocaleString()}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedSale(sale)}><Eye className="h-4 w-4 mr-2" /> View Bill</Button>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedSale(sale)}><Eye className="h-4 w-4 mr-2" /> Bill</Button>
+                    <Button variant="ghost" size="sm" className="text-destructive" onClick={() => handleDeleteSale(sale.id)}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
                 </TableCell>
               </TableRow>
             )) : (
@@ -182,7 +206,7 @@ export default function SalesHistoryPage() {
                     <h1 className="text-4xl font-black text-primary tracking-tighter uppercase leading-none">{showroom?.name || 'AMRESH AUTOMOBILE'}</h1>
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] mt-1">{showroom?.tagline || 'Drive Electric • Live Smart'}</p>
                     <div className="mt-4 text-[10px] leading-tight text-gray-600 font-medium">
-                      <p>{showroom?.address || 'Village Padampur, PO- Lodhma, Khunti'}</p>
+                      <p>{showroom?.address || 'Padampur, Khunti, Jharkhand'}</p>
                       <p>Mobile: {showroom?.contact || '9798910854'}</p>
                       <p>Email: {showroom?.email || 'amreshautomobile@gmail.com'}</p>
                       {showroom?.gstin && <p className="font-bold text-black mt-1 uppercase">GSTIN: {showroom.gstin}</p>}
@@ -191,7 +215,7 @@ export default function SalesHistoryPage() {
                 </div>
                 
                 <div className="text-right">
-                  <h2 className="text-5xl font-black text-gray-100 uppercase tracking-tighter">INVOICE</h2>
+                  <h2 className="text-5xl font-black text-gray-600 uppercase tracking-tighter">INVOICE</h2>
                   <div className="mt-4 space-y-1">
                     <p className="text-sm font-bold"><span className="text-gray-400">Invoice No:</span> <span className="text-primary">{selectedSale?.invoiceNo}</span></p>
                     <p className="text-sm font-bold"><span className="text-gray-400">Date:</span> {selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'dd/MM/yyyy') : 'N/A'}</p>
@@ -199,7 +223,7 @@ export default function SalesHistoryPage() {
                 </div>
               </div>
 
-              {/* Watermark (Optional Branding) */}
+              {/* Watermark */}
               <div className="invoice-watermark">
                 <Zap className="h-[250px] w-[250px] text-primary/5" />
               </div>
@@ -252,12 +276,6 @@ export default function SalesHistoryPage() {
                       <td className="text-center font-bold">1</td>
                       <td className="p-4">
                         <p className="font-black text-sm uppercase leading-none">{selectedSale?.model} {selectedSale?.variant}</p>
-                        <p className="text-[9px] text-gray-500 mt-1 uppercase tracking-tighter">High-Speed Eco-Friendly Electric Mobility Vehicle</p>
-                        <ul className="mt-3 space-y-1 text-[8px] text-gray-400 font-bold uppercase italic">
-                          <li>- Zero Emissions technology</li>
-                          <li>- Smart Dashboard connectivity</li>
-                          <li>- High Performance Battery Unit</li>
-                        </ul>
                       </td>
                       <td className="text-center font-mono">{selectedSale?.hsn || '871160'}</td>
                       <td className="text-center font-bold">1</td>
@@ -276,7 +294,7 @@ export default function SalesHistoryPage() {
                     <p className="text-sm font-black text-primary uppercase leading-tight border-b-2 border-primary/10 pb-2">Rupees {amountToWords(selectedSale?.price || 0)} Only</p>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                       <h5 className="text-[10px] font-black uppercase text-primary mb-3 flex items-center gap-2">
                         <Activity className="h-3 w-3" /> Payment Status
@@ -290,17 +308,6 @@ export default function SalesHistoryPage() {
                           </>
                         )}
                         {selectedSale?.utrNumber && <p className="flex justify-between"><span>TXN/UTR:</span> <span className="text-black font-mono">{selectedSale.utrNumber}</span></p>}
-                      </div>
-                    </div>
-                    
-                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                      <h5 className="text-[10px] font-black uppercase text-primary mb-3 flex items-center gap-2">
-                        <Landmark className="h-3 w-3" /> Settlement Details
-                      </h5>
-                      <div className="text-[9px] space-y-1 text-gray-600 font-medium">
-                        <p className="text-black font-black uppercase">{showroom?.bankName || '-'}</p>
-                        <p><span className="text-gray-400">A/c:</span> <span className="font-bold">{showroom?.accountNumber || '-'}</span></p>
-                        <p><span className="text-gray-400">IFSC:</span> <span className="font-bold">{showroom?.ifsc || '-'}</span></p>
                       </div>
                     </div>
                   </div>

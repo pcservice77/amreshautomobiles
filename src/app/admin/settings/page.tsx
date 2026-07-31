@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Save, Building, Landmark, ToggleLeft, Image as ImageIcon, Upload, X, Loader2, Zap } from 'lucide-react';
+import { Save, Building, ToggleLeft, Image as ImageIcon, Upload, X, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -25,11 +25,6 @@ const settingsSchema = z.object({
   email: z.string().email(),
   address: z.string().min(5, 'Required'),
   gstin: z.string().optional(),
-  bankName: z.string().optional(),
-  accountName: z.string().optional(),
-  accountNumber: z.string().optional(),
-  ifsc: z.string().optional(),
-  branch: z.string().optional(),
   useLetterhead: z.boolean().default(false),
   letterheadUrl: z.string().optional(),
   logoUrl: z.string().optional(),
@@ -59,11 +54,6 @@ export default function ShowroomSettingsPage() {
       email: '',
       address: '',
       gstin: '',
-      bankName: '',
-      accountName: '',
-      accountNumber: '',
-      ifsc: '',
-      branch: '',
       useLetterhead: false,
       letterheadUrl: '',
       logoUrl: '',
@@ -79,11 +69,6 @@ export default function ShowroomSettingsPage() {
         email: showroom.email || '',
         address: showroom.address || '',
         gstin: showroom.gstin || '',
-        bankName: showroom.bankName || '',
-        accountName: showroom.accountName || '',
-        accountNumber: showroom.accountNumber || '',
-        ifsc: showroom.ifsc || '',
-        branch: showroom.branch || '',
         useLetterhead: !!showroom.useLetterhead,
         letterheadUrl: showroom.letterheadUrl || '',
         logoUrl: showroom.logoUrl || '',
@@ -146,7 +131,7 @@ export default function ShowroomSettingsPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-foreground">
+          <div className="grid grid-cols-1 gap-8 text-foreground">
             <Card className="border-white/5 bg-card">
               <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20 rounded-t-lg">
                 <Building className="h-5 w-5 text-primary" />
@@ -170,12 +155,15 @@ export default function ShowroomSettingsPage() {
                   <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'logoUrl')} />
                 </div>
 
-                <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
-                )} />
-                <FormField control={form.control} name="tagline" render={({ field }) => (
-                  <FormItem><FormLabel>Tagline / Motto</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
-                )} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField control={form.control} name="name" render={({ field }) => (
+                    <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                  )} />
+                  <FormField control={form.control} name="tagline" render={({ field }) => (
+                    <FormItem><FormLabel>Tagline / Motto</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                  )} />
+                </div>
+                
                 <FormField control={form.control} name="gstin" render={({ field }) => (
                   <FormItem><FormLabel>GSTIN</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                 )} />
@@ -188,32 +176,6 @@ export default function ShowroomSettingsPage() {
                   )} />
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
-                  )} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-white/5 bg-card">
-              <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20 rounded-t-lg">
-                <Landmark className="h-5 w-5 text-primary" />
-                <CardTitle className="text-lg text-primary font-bold">Bank Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                <FormField control={form.control} name="bankName" render={({ field }) => (
-                  <FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
-                )} />
-                <FormField control={form.control} name="accountName" render={({ field }) => (
-                  <FormItem><FormLabel>Account Holder Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
-                )} />
-                <FormField control={form.control} name="accountNumber" render={({ field }) => (
-                  <FormItem><FormLabel>Account Number</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
-                )} />
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField control={form.control} name="ifsc" render={({ field }) => (
-                    <FormItem><FormLabel>IFSC Code</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
-                  )} />
-                  <FormField control={form.control} name="branch" render={({ field }) => (
-                    <FormItem><FormLabel>Branch</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                   )} />
                 </div>
               </CardContent>
