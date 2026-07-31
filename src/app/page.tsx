@@ -39,38 +39,40 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-[90vh] flex items-center pt-16">
+      <section className="relative h-[85vh] md:h-[95vh] flex items-center pt-16 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
             src={PlaceHolderImages[0].imageUrl}
             alt="Amresh Automobiles Hero"
             fill
-            className="object-cover opacity-40"
+            className="object-cover md:object-fill opacity-70"
             priority
             data-ai-hint="electric scooter"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
+          {/* Enhanced blending gradients */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent" />
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center rounded-full border border-primary text-primary px-4 py-1 text-xs font-semibold mb-4">
+            <div className="inline-flex items-center rounded-full border border-primary text-primary px-4 py-1 text-xs font-semibold mb-4 bg-primary/10 backdrop-blur-sm">
               Future of Urban Mobility
             </div>
-            <h1 className="font-headline text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            <h1 className="font-headline text-5xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-2xl">
               Electrify Your <span className="text-primary italic">Daily Journey.</span>
             </h1>
-            <p className="text-lg text-muted-foreground mb-8 max-w-lg leading-relaxed">
+            <p className="text-lg text-foreground/90 mb-8 max-w-lg leading-relaxed font-medium drop-shadow-md">
               Experience the power of sustainable engineering at <strong>Amresh Automobiles</strong>. We bring you the finest selection of electric scooters designed for speed, comfort, and zero emissions.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/#showroom">
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 text-lg w-full">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 text-lg w-full shadow-lg shadow-primary/20">
                   Explore Models
                 </Button>
               </Link>
               <Link href="/test-ride">
-                <Button size="lg" variant="outline" className="border-white/10 text-lg hover:bg-white/5 w-full">
+                <Button size="lg" variant="outline" className="border-white/20 text-lg bg-background/20 backdrop-blur-md hover:bg-white/10 w-full">
                   Book Test Ride
                 </Button>
               </Link>
@@ -140,7 +142,7 @@ export default function Home() {
                 src={PlaceHolderImages[4].imageUrl}
                 alt="Showroom"
                 fill
-                className="object-cover"
+                className="object-cover md:object-fill"
                 data-ai-hint="showroom interior"
               />
             </div>
@@ -164,7 +166,7 @@ export default function Home() {
                 ))}
               </div>
               <Link href="/test-ride" className="inline-block mt-8">
-                <Button className="gap-2 bg-primary text-primary-foreground">
+                <Button className="gap-2 bg-primary text-primary-foreground shadow-lg shadow-primary/20">
                   <Calendar className="h-4 w-4" /> Book a Test Ride
                 </Button>
               </Link>
