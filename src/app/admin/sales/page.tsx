@@ -159,7 +159,7 @@ export default function SalesHistoryPage() {
       <Dialog open={!!selectedSale} onOpenChange={(open) => !open && setSelectedSale(null)}>
         <DialogContent className={cn(
           "max-w-[210mm] max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none print:shadow-none print:m-0",
-          "print:max-h-none print:overflow-visible"
+          "print:max-h-none print:overflow-visible print:absolute print:top-0 print:left-0"
         )}>
           <DialogHeader className="p-4 border-b print:hidden bg-secondary text-white">
             <div className="flex justify-between items-center">
@@ -215,7 +215,7 @@ export default function SalesHistoryPage() {
                 </div>
                 
                 <div className="text-right">
-                  <h2 className="text-5xl font-black text-gray-600 uppercase tracking-tighter">INVOICE</h2>
+                  <h2 className="text-5xl font-black text-gray-900 uppercase tracking-tighter">INVOICE</h2>
                   <div className="mt-4 space-y-1">
                     <p className="text-sm font-bold"><span className="text-gray-400">Invoice No:</span> <span className="text-primary">{selectedSale?.invoiceNo}</span></p>
                     <p className="text-sm font-bold"><span className="text-gray-400">Date:</span> {selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'dd/MM/yyyy') : 'N/A'}</p>

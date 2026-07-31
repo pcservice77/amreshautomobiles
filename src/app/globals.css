@@ -61,18 +61,32 @@
     print-color-adjust: exact !important;
   }
 
-  /* Hide everything except the print container */
-  body * {
-    visibility: hidden !important;
+  /* Force hide all UI elements including Radix Dialog Overlays */
+  body > *:not([data-radix-portal]),
+  [data-radix-portal] > *:not([role="dialog"]),
+  .print-hidden,
+  button,
+  nav {
+    display: none !important;
   }
 
-  .print-container, 
-  .print-container * {
-    visibility: visible !important;
+  /* Reset the Dialog content for full page printing */
+  [role="dialog"] {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: white !important;
+    box-shadow: none !important;
   }
 
   .print-container {
-    position: fixed !important;
+    position: absolute !important;
     left: 0 !important;
     top: 0 !important;
     width: 210mm !important;
@@ -81,9 +95,12 @@
     padding: 0 !important;
     overflow: hidden !important;
     background: white !important;
-    z-index: 99999 !important;
-    box-shadow: none !important;
-    transform: none !important;
+    visibility: visible !important;
+    display: block !important;
+  }
+
+  .print-container * {
+    visibility: visible !important;
   }
 
   .invoice-watermark {
@@ -93,17 +110,12 @@
   .bg-primary {
     background-color: #1E8E3E !important;
     color: white !important;
+    print-color-adjust: exact;
   }
 
   .text-primary {
     color: #1E8E3E !important;
-  }
-
-  /* Force display of background images */
-  .bg-template {
-    display: block !important;
-    width: 100% !important;
-    height: 100% !important;
+    print-color-adjust: exact;
   }
 }
 
