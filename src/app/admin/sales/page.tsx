@@ -147,7 +147,7 @@ export default function SalesHistoryPage() {
           </DialogHeader>
           
           <div 
-            className="print-container relative bg-white overflow-hidden" 
+            className="print-container relative bg-white overflow-hidden shadow-2xl mx-auto" 
             id="printable-invoice"
             style={{
               width: '210mm',
@@ -155,24 +155,23 @@ export default function SalesHistoryPage() {
               margin: '0 auto',
             }}
           >
-            {/* Watermark */}
-            <div className="invoice-watermark">
-              <Zap className="h-[200px] w-[200px]" />
-            </div>
-
+            {/* Background Template Image */}
             {isTemplateMode && (
               <img 
                 src={showroom.letterheadUrl} 
-                className="absolute inset-0 w-full h-full object-fill z-0" 
-                alt="Background Format"
+                className="absolute inset-0 w-full h-full object-fill z-0 bg-template" 
+                alt="Invoice Background Template"
               />
             )}
             
-            {/* Content Overlay */}
-            <div className="relative z-10 w-full h-full p-[12mm] flex flex-col">
-              
-              {/* If no template, render Header */}
-              {!isTemplateMode && (
+            {/* Standard Branding (Hidden if using template) */}
+            {!isTemplateMode && (
+              <div className="relative z-10 w-full h-full p-[12mm] flex flex-col">
+                {/* Watermark */}
+                <div className="invoice-watermark">
+                  <Zap className="h-[200px] w-[200px] text-primary/5" />
+                </div>
+
                 <div className="flex justify-between items-start border-b-2 border-primary pb-6 mb-8">
                   <div className="flex gap-4">
                     <div className="bg-primary p-2 rounded-xl">
@@ -182,7 +181,7 @@ export default function SalesHistoryPage() {
                       <h1 className="text-4xl font-black text-primary tracking-tighter uppercase leading-none">{showroom?.name || 'AMRESH AUTOMOBILE'}</h1>
                       <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] mt-1">{showroom?.tagline || 'Drive Electric • Live Smart'}</p>
                       <div className="mt-4 text-[10px] leading-tight text-gray-600 font-medium">
-                        <p>{showroom?.address || 'Village Padampur, Khunti, Jharkhand'}</p>
+                        <p>{showroom?.address || 'Village Padampur, PO- Lodhma, Khunti'}</p>
                         <p>Mobile: {showroom?.contact || '9798910854'}</p>
                         <p>Email: {showroom?.email || 'amreshautomobile@gmail.com'}</p>
                         {showroom?.gstin && <p className="font-bold text-black mt-1">GSTIN: {showroom.gstin}</p>}
@@ -191,34 +190,27 @@ export default function SalesHistoryPage() {
                   </div>
                   
                   <div className="text-right">
-                    <h2 className="text-5xl font-black text-gray-100 absolute right-[12mm] top-[12mm] uppercase tracking-tighter -z-10">INVOICE</h2>
-                    <div className="mt-8 space-y-1">
+                    <h2 className="text-5xl font-black text-gray-100 uppercase tracking-tighter">INVOICE</h2>
+                    <div className="mt-4 space-y-1">
                       <p className="text-sm font-bold"><span className="text-gray-400">Invoice No:</span> <span className="text-primary">{selectedSale?.invoiceNo}</span></p>
                       <p className="text-sm font-bold"><span className="text-gray-400">Date:</span> {selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'dd/MM/yyyy') : 'N/A'}</p>
                     </div>
                   </div>
                 </div>
-              )}
 
-              {/* Data Overlay Section (Works for both modes with different positioning logic) */}
-              <div className={cn("flex-1", isTemplateMode ? "relative" : "space-y-6")}>
-                
-                {/* Mode dependent positioning for Customer and Vehicle boxes */}
-                <div className={cn("grid grid-cols-2 gap-6", isTemplateMode && "absolute top-[52mm] left-0 w-full")}>
-                  {/* Customer Details */}
-                  <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
+                <div className="grid grid-cols-2 gap-8 mb-8">
+                  <div className="border border-gray-200 rounded-xl p-5 bg-gray-50/50">
                     <h4 className="text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/20 pb-2 mb-3">Customer Information</h4>
                     <div className="space-y-1.5 text-[11px]">
                       <p className="text-lg font-black uppercase text-black">{selectedSale?.customerName}</p>
                       <p className="text-gray-600 font-bold">{selectedSale?.customerFatherName ? `S/O, W/O: ${selectedSale.customerFatherName}` : '-'}</p>
-                      <p className="leading-snug"><span className="text-gray-400 uppercase text-[9px]">Address:</span> {selectedSale?.address}, {selectedSale?.city}, {selectedSale?.state} - {selectedSale?.pin}</p>
+                      <p className="leading-snug text-gray-700">{selectedSale?.address}, {selectedSale?.city}, {selectedSale?.state} - {selectedSale?.pin}</p>
                       <p><span className="text-gray-400 uppercase text-[9px]">Mobile:</span> <span className="font-bold">{selectedSale?.mobile}</span></p>
                       <p><span className="text-gray-400 uppercase text-[9px]">{selectedSale?.idType || 'ID'}:</span> {selectedSale?.idNumber}</p>
                     </div>
                   </div>
 
-                  {/* Vehicle Details */}
-                  <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
+                  <div className="border border-gray-200 rounded-xl p-5 bg-gray-50/50">
                     <h4 className="text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/20 pb-2 mb-3">Vehicle Specifications</h4>
                     <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px]">
                       <div className="col-span-2">
@@ -235,9 +227,8 @@ export default function SalesHistoryPage() {
                   </div>
                 </div>
 
-                {/* Table Section */}
-                <div className={cn(isTemplateMode && "absolute top-[108mm] left-0 w-full")}>
-                  <table className="w-full invoice-table border-collapse rounded-lg overflow-hidden border-2 border-primary">
+                <div className="flex-1">
+                  <table className="w-full invoice-table border-collapse rounded-lg overflow-hidden border-2 border-black">
                     <thead>
                       <tr>
                         <th className="w-12 text-center">Sr.</th>
@@ -254,24 +245,17 @@ export default function SalesHistoryPage() {
                         <td className="p-4">
                           <p className="font-black text-sm uppercase">{selectedSale?.model} {selectedSale?.variant}</p>
                           <p className="text-[10px] text-gray-400 mt-1 italic">High-Speed Eco-Friendly Electric Mobility Vehicle</p>
-                          <div className="flex gap-4 mt-2">
-                            <div className="flex items-center gap-1 text-[9px] font-bold text-primary"><Leaf className="h-3 w-3" /> Zero Emission</div>
-                            <div className="flex items-center gap-1 text-[9px] font-bold text-primary"><ShieldCheck className="h-3 w-3" /> Certified Safe</div>
-                          </div>
                         </td>
                         <td className="text-center">{selectedSale?.hsn || '871160'}</td>
                         <td className="text-center">1</td>
                         <td className="text-right font-mono">₹ {selectedSale?.price?.toLocaleString()}.00</td>
                         <td className="text-right font-mono font-bold text-black">₹ {selectedSale?.price?.toLocaleString()}.00</td>
                       </tr>
-                      {/* Empty row for spacing */}
-                      <tr className="h-20"><td colSpan={6} className="border-none"></td></tr>
                     </tbody>
                   </table>
                 </div>
 
-                {/* Totals Section */}
-                <div className={cn("flex justify-between items-start pt-6", isTemplateMode && "absolute bottom-[85mm] left-0 w-full px-2")}>
+                <div className="flex justify-between items-start pt-8">
                   <div className="w-2/3 space-y-4">
                     <div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase italic">Amount in Words:</p>
@@ -305,10 +289,9 @@ export default function SalesHistoryPage() {
                   </div>
 
                   <div className="w-1/3 bg-gray-50 rounded-xl overflow-hidden border-2 border-gray-100">
-                    <div className="p-3 space-y-2 text-[11px] font-bold">
+                    <div className="p-4 space-y-3 text-[11px] font-bold">
                       <div className="flex justify-between"><span className="text-gray-400">Subtotal:</span> <span>₹ {selectedSale?.price?.toLocaleString()}.00</span></div>
-                      <div className="flex justify-between"><span className="text-gray-400">GST (Inclusive):</span> <span>₹ 0.00</span></div>
-                      <div className="flex justify-between"><span className="text-gray-400">Round Off:</span> <span>₹ 0.00</span></div>
+                      <div className="flex justify-between"><span className="text-gray-400">Tax/GST:</span> <span>₹ 0.00</span></div>
                     </div>
                     <div className="bg-primary p-4 text-white text-center">
                       <p className="text-[10px] font-bold uppercase tracking-widest mb-1">Grand Total</p>
@@ -317,38 +300,86 @@ export default function SalesHistoryPage() {
                   </div>
                 </div>
 
-                {/* Footer Section */}
-                <div className={cn("mt-auto pt-8 flex justify-between items-end", isTemplateMode && "absolute bottom-[20mm] left-0 w-full px-4")}>
-                  <div className="space-y-4">
-                    <div className="text-[9px] text-gray-400 leading-tight">
-                      <p className="font-bold underline text-black mb-1 italic">Terms & Conditions:</p>
-                      <ul className="list-decimal pl-3 space-y-0.5">
-                        <li>Goods once sold will not be taken back.</li>
-                        <li>Warranty as per company policy.</li>
-                        <li>Subject to Khunti Jurisdiction.</li>
-                      </ul>
-                    </div>
-                    <div className="pt-4">
-                      <div className="w-40 border-t border-black mb-1"></div>
-                      <p className="text-[9px] font-black uppercase text-center">Customer Signature</p>
-                    </div>
+                <div className="mt-auto pt-10 flex justify-between items-end">
+                  <div className="text-center">
+                    <div className="w-48 border-t border-black mb-1"></div>
+                    <p className="text-[10px] font-black uppercase">Customer Signature</p>
                   </div>
-
                   <div className="text-center">
                     <p className="text-[10px] font-black uppercase mb-12 text-primary">For {showroom?.name || 'AMRESH AUTOMOBILE'}</p>
                     <div className="w-56 border-t-2 border-black mb-1"></div>
-                    <p className="text-[9px] font-black uppercase tracking-tighter">Authorised Signatory</p>
+                    <p className="text-[9px] font-black uppercase">Authorised Signatory</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Template precision overlay mode */}
+            {isTemplateMode && (
+              <div className="absolute inset-0 z-10 p-[10mm]">
+                {/* Invoice No & Date */}
+                <div className="absolute top-[34mm] right-[10mm] text-right text-xs font-black">
+                  <p className="mb-2 text-primary">{selectedSale?.invoiceNo}</p>
+                  <p>{selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'dd/MM/yyyy') : '-'}</p>
+                </div>
+
+                {/* Customer Details Box */}
+                <div className="absolute top-[68mm] left-[15mm] w-[80mm] space-y-2 text-[11px] font-black leading-tight">
+                  <p className="text-base">{selectedSale?.customerName}</p>
+                  <p>{selectedSale?.customerFatherName || '-'}</p>
+                  <p className="text-[9px] leading-snug">{selectedSale?.address}, {selectedSale?.city}, {selectedSale?.state} - {selectedSale?.pin}</p>
+                  <p>{selectedSale?.mobile}</p>
+                  <p>{selectedSale?.idNumber}</p>
+                </div>
+
+                {/* Vehicle Details Box */}
+                <div className="absolute top-[68mm] right-[15mm] w-[80mm] grid grid-cols-2 gap-y-3 text-[10px] font-black">
+                  <div className="col-span-2">
+                    <p className="text-sm text-primary">{selectedSale?.model}</p>
+                    <p>{selectedSale?.variant || '-'}</p>
+                  </div>
+                  <p>{selectedSale?.color || '-'}</p>
+                  <p>{selectedSale?.batteryType || '-'}</p>
+                  <p className="col-span-2">{selectedSale?.chassisNumber}</p>
+                  <p className="col-span-2">{selectedSale?.motorNumber || '-'}</p>
+                  <p>{selectedSale?.registrationNumber || 'Applied'}</p>
+                  <p>{selectedSale?.claimedRange || '-'}</p>
+                </div>
+
+                {/* Table Data */}
+                <div className="absolute top-[138mm] left-[10mm] w-[190mm]">
+                  <div className="flex items-center text-[11px] font-black py-4 border-b">
+                    <span className="w-12 text-center">1</span>
+                    <span className="flex-1 px-4">{selectedSale?.model} {selectedSale?.variant}</span>
+                    <span className="w-24 text-center">{selectedSale?.hsn || '871160'}</span>
+                    <span className="w-16 text-center">1</span>
+                    <span className="w-28 text-right">₹ {selectedSale?.price?.toLocaleString()}</span>
+                    <span className="w-32 text-right">₹ {selectedSale?.price?.toLocaleString()}</span>
                   </div>
                 </div>
 
-              </div>
-              
-              {/* Thank you note */}
-              <div className="absolute bottom-[5mm] left-0 w-full text-center">
-                <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.5em]">Thank you for choosing Amresh Automobile</p>
-              </div>
+                {/* Totals & Words */}
+                <div className="absolute bottom-[80mm] left-[15mm] w-[110mm]">
+                  <p className="text-[10px] font-black text-primary uppercase leading-tight">
+                    Rupees {amountToWords(selectedSale?.price || 0)} Only
+                  </p>
+                </div>
 
-            </div>
+                <div className="absolute bottom-[60mm] right-[10mm] w-[60mm] text-right">
+                  <p className="text-3xl font-black text-white p-4 bg-primary rounded-lg text-center">
+                    ₹ {selectedSale?.price?.toLocaleString()}
+                  </p>
+                </div>
+
+                {/* Signatures */}
+                <div className="absolute bottom-[25mm] left-[20mm] text-center">
+                  <p className="text-[9px] font-black uppercase">Customer Signature</p>
+                </div>
+                <div className="absolute bottom-[25mm] right-[20mm] text-center">
+                  <p className="text-[9px] font-black uppercase">Authorised Signatory</p>
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
