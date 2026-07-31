@@ -1,22 +1,30 @@
-
 "use client"
 
-import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Navbar } from '@/components/navbar';
 import { ScooterCard } from '@/components/scooter-card';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useCollection, useDoc, useFirestore } from '@/firebase';
+import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap } from 'lucide-react';
 
 export default function Home() {
   const firestore = useFirestore();
-  const scootersQuery = firestore ? collection(firestore, 'scooters') : null;
+  
+  const scootersQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'scooters');
+  }, [firestore]);
+
+  const showroomRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return doc(firestore, 'settings', 'showroom');
+  }, [firestore]);
+
   const { data: scooters, loading } = useCollection(scootersQuery);
-  const { data: showroom } = useDoc(firestore ? doc(firestore, 'settings', 'showroom') : null);
+  const { data: showroom } = useDoc(showroomRef);
 
   return (
     <main className="min-h-screen pb-20">
@@ -31,15 +39,16 @@ export default function Home() {
             fill
             className="object-cover opacity-40"
             priority
+            data-ai-hint="electric scooter"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-2xl">
-            <Badge variant="outline" className="mb-4 border-primary text-primary px-4 py-1">
+            <div className="inline-flex items-center rounded-full border border-primary text-primary px-4 py-1 text-xs font-semibold mb-4">
               Future of Urban Mobility
-            </Badge>
+            </div>
             <h1 className="font-headline text-5xl md:text-7xl font-bold mb-6 leading-tight">
               Electrify Your <span className="text-primary italic">Daily Journey.</span>
             </h1>
@@ -99,6 +108,7 @@ export default function Home() {
                 alt="Showroom"
                 fill
                 className="object-cover"
+                data-ai-hint="showroom interior"
               />
             </div>
             <div>
@@ -193,14 +203,5 @@ export default function Home() {
         </div>
       </footer>
     </main>
-  );
-}
-
-function Badge({ children, variant = "default", className = "" }: { children: React.ReactNode, variant?: "default" | "outline", className?: string }) {
-  const styles = variant === "outline" ? "border" : "bg-primary text-primary-foreground";
-  return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${styles} ${className}`}>
-      {children}
-    </span>
   );
 }

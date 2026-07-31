@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useFirestore, useDoc } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -24,7 +24,13 @@ const settingsSchema = z.object({
 
 export default function ShowroomSettingsPage() {
   const firestore = useFirestore();
-  const { data: showroom, loading: fetching } = useDoc(firestore ? doc(firestore, 'settings', 'showroom') : null);
+
+  const showroomRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return doc(firestore, 'settings', 'showroom');
+  }, [firestore]);
+
+  const { data: showroom, loading: fetching } = useDoc(showroomRef);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof settingsSchema>>({

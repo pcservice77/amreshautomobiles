@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useFirestore, useCollection, useDoc } from '@/firebase';
+import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -30,8 +30,20 @@ const billSchema = z.object({
 
 export default function BillingPage() {
   const firestore = useFirestore();
-  const { data: scooters } = useCollection(firestore ? collection(firestore, 'scooters') : null);
-  const { data: showroom } = useDoc(firestore ? doc(firestore, 'settings', 'showroom') : null);
+  
+  const scootersQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'scooters');
+  }, [firestore]);
+
+  const showroomRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return doc(firestore, 'settings', 'showroom');
+  }, [firestore]);
+
+  const { data: scooters } = useCollection(scootersQuery);
+  const { data: showroom } = useDoc(showroomRef);
+  
   const { toast } = useToast();
   const router = useRouter();
 

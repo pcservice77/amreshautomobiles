@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -8,12 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 
 export default function SalesHistoryPage() {
   const firestore = useFirestore();
-  const { data: sales, loading } = useCollection(firestore ? collection(firestore, 'sales') : null);
+
+  const salesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'sales');
+  }, [firestore]);
+
+  const { data: sales, loading } = useCollection(salesQuery);
   const [search, setSearch] = useState('');
 
   const filteredSales = sales?.filter(s => 

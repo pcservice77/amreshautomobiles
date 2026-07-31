@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { ScooterForm } from '@/components/admin/scooter-form';
 import { useToast } from '@/hooks/use-toast';
@@ -15,7 +15,12 @@ import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function InventoryPage() {
   const firestore = useFirestore();
-  const scootersQuery = firestore ? collection(firestore, 'scooters') : null;
+  
+  const scootersQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'scooters');
+  }, [firestore]);
+
   const { data: scooters, loading } = useCollection(scootersQuery);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [search, setSearch] = useState('');
