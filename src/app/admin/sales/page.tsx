@@ -231,7 +231,7 @@ export default function SalesHistoryPage() {
               </div>
 
               {/* Customer & Vehicle Info */}
-              <div className="grid grid-cols-2 gap-8 mb-8">
+              <div className="grid grid-cols-2 gap-8 mb-6">
                 <div className="border border-black rounded-2xl p-5 bg-gray-50/20">
                   <h4 className="text-[9px] font-black text-primary uppercase tracking-widest border-b border-primary/20 pb-2 mb-4">Buyer Details</h4>
                   <div className="space-y-2 text-[11px]">
@@ -261,8 +261,8 @@ export default function SalesHistoryPage() {
                 </div>
               </div>
 
-              {/* Table */}
-              <div className="flex-1 min-h-[300px]">
+              {/* Table - Compacted height */}
+              <div className="mb-6">
                 <table className="w-full invoice-table border-collapse border border-black rounded-xl overflow-hidden">
                   <thead>
                     <tr>
@@ -276,22 +276,22 @@ export default function SalesHistoryPage() {
                   </thead>
                   <tbody className="divide-y divide-black">
                     <tr className="align-top">
-                      <td className="text-center font-black pt-4 border border-black">01</td>
+                      <td className="text-center font-black py-4 border border-black">01</td>
                       <td className="p-4 border border-black">
                         <p className="font-black text-sm uppercase text-black">{selectedSale?.model}</p>
                         <p className="text-[9px] font-bold text-gray-500 uppercase mt-1">{selectedSale?.variant || 'High Efficiency Mobility'}</p>
                       </td>
-                      <td className="text-center font-mono font-bold pt-4 border border-black">{selectedSale?.hsn || '871160'}</td>
-                      <td className="text-center font-black pt-4 border border-black">01</td>
-                      <td className="text-right font-mono font-bold pt-4 px-4 border border-black">₹ {selectedSale?.price?.toLocaleString()}.00</td>
-                      <td className="text-right font-mono font-black pt-4 px-4 border border-black">₹ {selectedSale?.price?.toLocaleString()}.00</td>
+                      <td className="text-center font-mono font-bold py-4 border border-black">{selectedSale?.hsn || '871160'}</td>
+                      <td className="text-center font-black py-4 border border-black">01</td>
+                      <td className="text-right font-mono font-bold py-4 px-4 border border-black">₹ {selectedSale?.price?.toLocaleString()}.00</td>
+                      <td className="text-right font-mono font-black py-4 px-4 border border-black">₹ {selectedSale?.price?.toLocaleString()}.00</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              {/* Bottom Info */}
-              <div className="flex justify-between items-start pt-8 border-t border-gray-100 mt-auto">
+              {/* Bottom Info - Moved up closer to table */}
+              <div className="flex justify-between items-start pt-6 border-t border-gray-100">
                 <div className="w-3/5 space-y-6">
                   <div>
                     <p className="text-[9px] font-black text-gray-400 uppercase italic mb-1">Amount in Words</p>
@@ -302,7 +302,7 @@ export default function SalesHistoryPage() {
                   
                   <div className="p-5 bg-gray-50 rounded-2xl border border-gray-200">
                     <h5 className="text-[10px] font-black uppercase text-primary mb-3 flex items-center gap-2">
-                      <Activity className="h-4 w-4" /> Settlement
+                      <Activity className="h-4 w-4" /> Settlement Details
                     </h5>
                     <div className="text-[10px] space-y-2 font-bold uppercase">
                       <div className="flex justify-between border-b border-gray-200 pb-1"><span>Mode</span> <span className="text-black font-black">{selectedSale?.paymentMethod}</span></div>
@@ -335,14 +335,14 @@ export default function SalesHistoryPage() {
                 </div>
               </div>
 
-              {/* Signatures */}
-              <div className="pt-16 flex justify-between items-end">
+              {/* Signatures - Fixed at bottom of page using mt-auto */}
+              <div className="mt-auto pt-12 flex justify-between items-end">
                 <div className="text-center">
                   <div className="w-48 border-t border-gray-300 mb-2"></div>
                   <p className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Buyer Signature</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-[11px] font-black uppercase mb-16 text-primary">For {showroom?.name || 'AMRESH AUTOMOBILE'}</p>
+                  <p className="text-[11px] font-black uppercase mb-12 text-primary">For {showroom?.name || 'AMRESH AUTOMOBILE'}</p>
                   <div className="w-64 border-t-2 border-black mb-2"></div>
                   <p className="text-[10px] font-black uppercase tracking-widest">Authorized Signatory</p>
                 </div>

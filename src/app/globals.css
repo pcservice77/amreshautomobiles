@@ -75,6 +75,9 @@
     flex-direction: column !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    overflow: hidden !important;
   }
 
   .print-hidden, 
@@ -85,7 +88,7 @@
     display: none !important;
   }
 
-  /* Reset Dialog positioning during print */
+  /* Reset Dialog positioning during print to prevent half-page offset */
   [role="dialog"] {
     position: absolute !important;
     top: 0 !important;
