@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUserData().role == 'admin';
+    }
+    
+    function isBranchAdmin(branchId) {
+      return isAuthenticated() && 
+        getUserData().role == 'branch_admin' && 
+        getUserData().assignedBranchId == branchId;
+    }
+
+    // User Profile Rules
+    match /users/{uid} {
+      allow read: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == uid;
+      allow update: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Scooter Inventory Rules
+    match /scooters/{scooterId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Sales Record Rules
+    match /sales/{saleId} {
+      allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow create: if isAdmin() || (isAuthenticated() && getUserData().role == 'branch_admin');
+      allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow delete: if isAdmin();
+    }
+
+    // Branch Rules
+    match /branches/{branchId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Test Ride Booking Rules
+    match /bookings/{bookingId} {
+      allow create: if true;
+      allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow delete: if isAdmin();
+    }
+
+    // Showroom Settings Rules
+    match /settings/showroom {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

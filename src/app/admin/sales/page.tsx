@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -8,22 +7,27 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format } from 'date-fns';
-import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc, deleteDoc } from 'firebase/firestore';
+import { useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
+import { collection, doc, deleteDoc, query, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function SalesHistoryPage() {
   const firestore = useFirestore();
+  const { user } = useUser();
   const [search, setSearch] = useState('');
   const [selectedSale, setSelectedSale] = useState<any>(null);
   const { toast } = useToast();
 
   const salesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'sales');
-  }, [firestore]);
+    if (!firestore || !user) return null;
+    const baseRef = collection(firestore, 'sales');
+    if (user.role === 'branch_admin' && user.assignedBranchId) {
+      return query(baseRef, where('branchId', '==', user.assignedBranchId));
+    }
+    return baseRef;
+  }, [firestore, user]);
 
   const showroomRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -261,7 +265,7 @@ export default function SalesHistoryPage() {
                 </div>
               </div>
 
-              {/* Table - Compacted height */}
+              {/* Table */}
               <div className="mb-6">
                 <table className="w-full invoice-table border-collapse border border-black rounded-xl overflow-hidden">
                   <thead>
@@ -290,7 +294,7 @@ export default function SalesHistoryPage() {
                 </table>
               </div>
 
-              {/* Bottom Info - Moved up closer to table */}
+              {/* Bottom Info */}
               <div className="flex justify-between items-start pt-6 border-t border-gray-100">
                 <div className="w-3/5 space-y-6">
                   <div>
@@ -335,7 +339,7 @@ export default function SalesHistoryPage() {
                 </div>
               </div>
 
-              {/* Signatures - Fixed at bottom of page using mt-auto */}
+              {/* Signatures */}
               <div className="mt-auto pt-12 flex justify-between items-end">
                 <div className="text-center">
                   <div className="w-48 border-t border-gray-300 mb-2"></div>

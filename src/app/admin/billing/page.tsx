@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState } from 'react';
@@ -11,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { collection, addDoc, doc, serverTimestamp, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -54,6 +53,7 @@ const billSchema = z.object({
 
 export default function BillingPage() {
   const firestore = useFirestore();
+  const { user } = useUser();
   const [isSaved, setIsSaved] = useState(false);
   
   const scootersQuery = useMemoFirebase(() => {
@@ -119,7 +119,7 @@ export default function BillingPage() {
   };
 
   const onSubmit = async (data: z.infer<typeof billSchema>) => {
-    if (!firestore) return;
+    if (!firestore || !user) return;
     
     const invNo = await generateInvoiceNo();
     const saleData = {
@@ -128,6 +128,7 @@ export default function BillingPage() {
       gstin: showroom?.gstin || '',
       soldAt: new Date().toISOString(),
       createdAt: serverTimestamp(),
+      branchId: user.assignedBranchId || 'main_showroom',
     };
 
     addDoc(collection(firestore, 'sales'), saleData)
