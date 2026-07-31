@@ -12,9 +12,7 @@ import {
   CalendarDays, 
   ShoppingCart, 
   Activity, 
-  Settings2, 
   Layers, 
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Palette

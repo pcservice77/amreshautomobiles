@@ -78,9 +78,9 @@ export default function InventoryPage() {
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!firestore) return;
+    if (!firestore || !id) return;
     
-    if (confirm('Are you sure you want to remove this model from inventory?')) {
+    if (confirm('Are you sure you want to remove this model from inventory? This cannot be undone.')) {
       const docRef = doc(firestore, 'scooters', id);
       deleteDoc(docRef)
         .then(() => {
@@ -108,7 +108,7 @@ export default function InventoryPage() {
     setIsDialogOpen(true);
   };
 
-  const filteredScooters = scooters?.filter(s => 
+  const filteredScooters = (scooters || []).filter(s => 
     (s.model as string || '').toLowerCase().includes(search.toLowerCase())
   );
 
@@ -171,7 +171,7 @@ export default function InventoryPage() {
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-12 text-foreground">Loading inventory...</TableCell>
               </TableRow>
-            ) : filteredScooters && filteredScooters.length > 0 ? (
+            ) : filteredScooters.length > 0 ? (
               filteredScooters.map((scooter) => (
                 <TableRow key={scooter.id} className="hover:bg-white/5 transition-colors">
                   <TableCell>

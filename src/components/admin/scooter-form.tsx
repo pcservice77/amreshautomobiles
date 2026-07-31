@@ -11,7 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { generateScooterDescription } from '@/ai/flows/generate-scooter-description';
 import { useToast } from '@/hooks/use-toast';
-import { Scooter } from '@/lib/db-mock';
 import Image from 'next/image';
 
 const formSchema = z.object({

@@ -33,11 +33,11 @@ export default function SalesHistoryPage() {
   const { data: sales, loading } = useCollection(salesQuery);
   const { data: showroom } = useDoc(showroomRef);
 
-  const filteredSales = sales?.filter(s => 
+  const filteredSales = (sales || []).filter(s => 
     (s.customerName as string)?.toLowerCase().includes(search.toLowerCase()) ||
     (s.mobile as string)?.includes(search) ||
     (s.model as string)?.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  );
 
   const handleDownloadPDF = () => {
     window.print();
@@ -46,7 +46,8 @@ export default function SalesHistoryPage() {
   const handleDeleteSale = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!firestore) return;
+    if (!firestore || !id) return;
+    
     if (confirm('Are you sure you want to delete this invoice record permanently?')) {
       const docRef = doc(firestore, 'sales', id);
       deleteDoc(docRef)

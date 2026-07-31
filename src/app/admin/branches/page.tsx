@@ -83,7 +83,8 @@ export default function BranchesPage() {
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!firestore) return;
+    if (!firestore || !id) return;
+    
     if (confirm('Are you sure you want to delete this branch showroom location?')) {
       const branchRef = doc(firestore, 'branches', id);
       deleteDoc(branchRef)
@@ -96,7 +97,7 @@ export default function BranchesPage() {
     }
   };
 
-  const filteredBranches = branches?.filter(b => 
+  const filteredBranches = (branches || []).filter(b => 
     b.name.toLowerCase().includes(search.toLowerCase()) || 
     b.city.toLowerCase().includes(search.toLowerCase()) ||
     b.pincode.includes(search)
@@ -170,7 +171,7 @@ export default function BranchesPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           <div className="col-span-full py-20 text-center">Loading network...</div>
-        ) : filteredBranches?.map((branch) => (
+        ) : filteredBranches.map((branch) => (
           <Card key={branch.id} className="overflow-hidden bg-card/40 border-white/5 group">
             <div className="relative h-48">
               <Image src={branch.imageUrl || 'https://picsum.photos/seed/br/600/400'} alt={branch.name} fill className="object-cover" />
