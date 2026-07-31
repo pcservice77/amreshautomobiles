@@ -139,7 +139,7 @@ export default function ShowroomSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
                 <div className="flex flex-col items-center mb-6">
-                  <div className="relative h-24 w-24 bg-secondary rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-white/10 group">
+                  <div className="relative aspect-square w-24 bg-secondary rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-white/10 group">
                     {form.watch('logoUrl') ? (
                       <Image src={form.watch('logoUrl') || ''} alt="Logo" fill className="object-contain p-2" unoptimized />
                     ) : (

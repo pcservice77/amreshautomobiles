@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useRef } from 'react';
@@ -112,6 +113,7 @@ export default function BranchesPage() {
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
     if (!firestore || !id) return;
     
     if (confirm('Permanently remove this showroom location?')) {
@@ -121,7 +123,10 @@ export default function BranchesPage() {
           toast({ title: 'Branch Removed' });
         })
         .catch(err => {
-          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: branchRef.path, operation: 'delete' }));
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+            path: branchRef.path, 
+            operation: 'delete' 
+          }));
         });
     }
   };
@@ -158,7 +163,7 @@ export default function BranchesPage() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
                 <div className="flex flex-col items-center">
-                  <div className="relative h-48 w-full bg-secondary rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-white/10 group">
+                  <div className="relative aspect-square w-64 bg-secondary rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-white/10 group">
                     {form.watch('imageUrl') ? (
                       <>
                         <Image src={form.watch('imageUrl')} alt="Preview" fill className="object-cover" unoptimized />
@@ -227,21 +232,33 @@ export default function BranchesPage() {
         {loading ? (
           <div className="col-span-full py-20 text-center">Locating branches...</div>
         ) : filteredBranches.map((branch) => (
-          <Card key={branch.id} className="overflow-hidden bg-card/40 border-white/5 group">
-            <div className="relative h-48">
+          <Card key={branch.id} className="overflow-hidden bg-card/40 border-white/5 group relative">
+            <div className="relative aspect-square w-full">
               <Image src={branch.imageUrl || 'https://picsum.photos/seed/br/600/400'} alt={branch.name} fill className="object-cover" unoptimized />
             </div>
             <CardHeader>
               <CardTitle className="flex justify-between items-start">
                 <span className="text-xl font-bold">{branch.name}</span>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-primary" onClick={() => {
-                    setEditingBranch(branch);
-                    form.reset(branch);
-                  }}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 hover:text-primary" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setEditingBranch(branch);
+                      form.reset(branch);
+                    }}
+                  >
                     <Edit2 className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={(e) => handleDelete(branch.id, e)}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-destructive hover:bg-destructive/10" 
+                    onClick={(e) => handleDelete(branch.id, e)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

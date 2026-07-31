@@ -42,14 +42,13 @@ export default function Home() {
       <section className="relative h-[85vh] md:h-[95vh] flex items-center pt-16 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src={PlaceHolderImages[0].imageUrl}
+            src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
             alt="Amresh Automobiles Hero"
             fill
-            className="object-cover md:object-fill opacity-70"
+            className="object-fill opacity-70"
             priority
             data-ai-hint="electric scooter"
           />
-          {/* Enhanced blending gradients */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/20" />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent" />
         </div>
@@ -110,8 +109,8 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {branches?.map((branch) => (
-              <Card key={branch.id} className="bg-card/40 border-white/5 group hover:border-primary/50 transition-all">
-                <div className="relative h-40">
+              <Card key={branch.id} className="bg-card/40 border-white/5 group hover:border-primary/50 transition-all overflow-hidden">
+                <div className="relative aspect-square w-full">
                   <Image src={branch.imageUrl || 'https://picsum.photos/seed/br/600/400'} alt={branch.name} fill className="object-cover" />
                 </div>
                 <CardHeader className="p-4">
@@ -139,10 +138,10 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10">
               <Image
-                src={PlaceHolderImages[4].imageUrl}
+                src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
                 alt="Showroom"
                 fill
-                className="object-cover md:object-fill"
+                className="object-fill"
                 data-ai-hint="showroom interior"
               />
             </div>

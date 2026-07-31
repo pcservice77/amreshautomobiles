@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -46,6 +47,7 @@ export default function SalesHistoryPage() {
   const handleDeleteSale = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
     if (!firestore || !id) return;
     
     if (confirm('Are you sure you want to delete this invoice record permanently?')) {
@@ -135,7 +137,7 @@ export default function SalesHistoryPage() {
             {loading ? (
               <TableRow><TableCell colSpan={6} className="text-center py-20">Loading records...</TableCell></TableRow>
             ) : filteredSales.length > 0 ? filteredSales.map((sale) => (
-              <TableRow key={sale.id}>
+              <TableRow key={sale.id} className="hover:bg-white/5 transition-colors">
                 <TableCell className="font-mono text-primary font-bold">{sale.invoiceNo}</TableCell>
                 <TableCell>{sale.soldAt ? format(new Date(sale.soldAt), 'dd/MM/yyyy') : 'N/A'}</TableCell>
                 <TableCell>
@@ -146,8 +148,25 @@ export default function SalesHistoryPage() {
                 <TableCell className="font-bold">₹ {sale.price?.toLocaleString()}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedSale(sale)}><Eye className="h-4 w-4 mr-2" /> View</Button>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={(e) => handleDeleteSale(sale.id, e)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedSale(sale);
+                      }}
+                    >
+                      <Eye className="h-4 w-4 mr-2" /> View
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-destructive hover:bg-destructive/10" 
+                      onClick={(e) => handleDeleteSale(sale.id, e)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>

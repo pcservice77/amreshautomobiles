@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -78,6 +79,7 @@ export default function InventoryPage() {
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
     if (!firestore || !id) return;
     
     if (confirm('Are you sure you want to remove this model from inventory? This cannot be undone.')) {
@@ -103,7 +105,9 @@ export default function InventoryPage() {
     setIsDialogOpen(true);
   };
 
-  const openEditDialog = (scooter: any) => {
+  const openEditDialog = (scooter: any, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setEditingScooter(scooter);
     setIsDialogOpen(true);
   };
@@ -194,7 +198,7 @@ export default function InventoryPage() {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8 hover:text-primary hover:bg-primary/10"
-                        onClick={() => openEditDialog(scooter)}
+                        onClick={(e) => openEditDialog(scooter, e)}
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
