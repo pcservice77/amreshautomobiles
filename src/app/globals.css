@@ -47,9 +47,10 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 0mm !important;
+    margin: 0 !important;
   }
   
+  /* Reset and Hide Everything */
   html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -58,68 +59,68 @@
     background: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    overflow: hidden !important;
   }
 
-  /* Hide everything by default using a more aggressive approach */
-  body > *:not(.print-root) {
+  body * {
+    visibility: hidden !important;
     display: none !important;
   }
 
-  /* Exemption for the specific bill container */
+  /* Show only the specific print container and its contents */
+  .print-container, 
+  .print-container * {
+    visibility: visible !important;
+    display: block !important;
+  }
+
+  /* Force the container to fill the page correctly */
   .print-container {
-    position: absolute !important;
+    visibility: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: fixed !important;
     left: 0 !important;
     top: 0 !important;
     width: 210mm !important;
     height: 297mm !important;
+    background: white !important;
+    z-index: 99999 !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: white !important;
-    visibility: visible !important;
-    display: block !important;
-    z-index: 99999 !important;
-    box-shadow: none !important;
   }
 
-  /* Ensure all children are visible */
-  .print-container * {
-    visibility: visible !important;
+  /* Table Specific Display for Print */
+  .print-container table {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
   }
+  
+  .print-container thead { display: table-header-group !important; }
+  .print-container tbody { display: table-row-group !important; }
+  .print-container tr { display: table-row !important; }
+  .print-container td, .print-container th { display: table-cell !important; }
 
-  /* Fix for Radix Dialogs which often wrap content */
-  [role="dialog"], [data-state="open"] {
+  /* Utility removals */
+  .print-hidden, 
+  button, 
+  nav, 
+  [role="dialog"] > button {
+    display: none !important;
+  }
+  
+  /* Reset Radix Dialog centering for print */
+  div[role="dialog"] {
     position: static !important;
     transform: none !important;
-    width: 210mm !important;
+    width: auto !important;
+    height: auto !important;
     max-width: none !important;
+    max-height: none !important;
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
-    background: transparent !important;
     box-shadow: none !important;
-  }
-
-  .print-hidden,
-  button,
-  nav,
-  .dialog-close-btn {
-    display: none !important;
-  }
-
-  .invoice-watermark {
-    opacity: 0.08 !important;
-  }
-  
-  .bg-primary {
-    background-color: #1E8E3E !important;
-    color: white !important;
-    print-color-adjust: exact;
-  }
-
-  .text-primary {
-    color: #1E8E3E !important;
-    print-color-adjust: exact;
   }
 }
 

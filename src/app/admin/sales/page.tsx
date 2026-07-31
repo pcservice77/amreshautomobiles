@@ -156,10 +156,7 @@ export default function SalesHistoryPage() {
       </div>
 
       <Dialog open={!!selectedSale} onOpenChange={(open) => !open && setSelectedSale(null)}>
-        <DialogContent className={cn(
-          "max-w-[210mm] w-full max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none print:shadow-none print:m-0",
-          "print:max-h-none print:overflow-visible print:absolute print:top-0 print:left-0"
-        )}>
+        <DialogContent className="max-w-[210mm] w-full max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none">
           <DialogHeader className="p-4 border-b print:hidden bg-secondary text-white sticky top-0 z-50">
             <div className="flex justify-between items-center">
               <DialogTitle className="text-lg">Amresh Automobile Invoice</DialogTitle>
@@ -170,18 +167,16 @@ export default function SalesHistoryPage() {
                 <Button variant="outline" size="sm" className="text-white border-white/20 h-9" onClick={handlePrint}>
                   <Download className="h-4 w-4 mr-2" /> Save as PDF
                 </Button>
-                <Button variant="ghost" size="icon" className="text-white h-9 w-9 dialog-close-btn" onClick={() => setSelectedSale(null)}><X className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon" className="text-white h-9 w-9" onClick={() => setSelectedSale(null)}><X className="h-5 w-5" /></Button>
               </div>
             </div>
           </DialogHeader>
           
           <div 
-            className="print-container relative bg-white overflow-hidden mx-auto" 
-            id="printable-invoice"
+            className="print-container relative bg-white overflow-hidden" 
             style={{
               width: '210mm',
               height: '297mm',
-              minHeight: '297mm',
               margin: '0 auto',
             }}
           >
