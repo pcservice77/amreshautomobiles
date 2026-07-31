@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useRef } from 'react';
@@ -5,7 +6,7 @@ import { Plus, Search, MapPin, Phone, Trash2, Edit2, Loader2, Building } from 'l
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -45,7 +46,7 @@ export default function BranchesPage() {
   const [editingBranch, setEditingBranch] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  fileInputRef = useRef<HTMLInputElement>(null);
 
   const branchesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -147,6 +148,9 @@ export default function BranchesPage() {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingBranch ? 'Edit Showroom' : 'New Showroom Registration'}</DialogTitle>
+              <DialogDescription>
+                Provide the showroom details and upload a photo for branding.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-6 pt-4">
               <div className="flex flex-col items-center">

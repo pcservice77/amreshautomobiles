@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -5,7 +6,7 @@ import { Search, Eye, Trash2, Zap, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -166,6 +167,12 @@ export default function SalesHistoryPage() {
 
       <Dialog open={!!selectedSale} onOpenChange={(open) => !open && setSelectedSale(null)}>
         <DialogContent className="max-w-[210mm] w-full max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Invoice Details</DialogTitle>
+            <DialogDescription>
+              Detailed GST invoice view for {selectedSale?.customerName} - Invoice No: {selectedSale?.invoiceNo}.
+            </DialogDescription>
+          </DialogHeader>
           <div className="print-container relative bg-white p-[12mm] text-black">
             <div className="flex justify-between items-start border-b-4 border-primary pb-6 mb-8">
               <div className="flex gap-4">

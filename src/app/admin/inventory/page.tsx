@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -5,7 +6,7 @@ import { Plus, Search, Edit2, Trash2, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -138,6 +139,9 @@ export default function InventoryPage() {
               <DialogTitle>
                 {editingScooter ? `Edit ${editingScooter.model}` : 'New Scooter Model'}
               </DialogTitle>
+              <DialogDescription>
+                Fill out the technical specifications and upload photos for the scooter model.
+              </DialogDescription>
             </DialogHeader>
             <ScooterForm 
               initialData={editingScooter} 
