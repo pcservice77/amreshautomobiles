@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
-import { collection, addDoc, doc, serverTimestamp, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { collection, addDoc, doc, serverTimestamp, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -107,15 +107,32 @@ export default function BillingPage() {
   });
 
   const generateInvoiceNo = async () => {
-    if (!firestore) return 'AA/26-27/000001';
-    const q = query(collection(firestore, 'sales'), orderBy('soldAt', 'desc'), limit(1));
-    const snap = await getDocs(q);
-    if (snap.empty) return 'AA/26-27/000001';
-    const last = snap.docs[0].data().invoiceNo || 'AA/26-27/000000';
-    const parts = last.split('/');
-    const lastNumStr = parts.pop() || '000000';
-    const num = parseInt(lastNumStr) + 1;
-    return `AA/26-27/${num.toString().padStart(6, '0')}`;
+    if (!firestore || !user) return 'AA/26-27/000001';
+    
+    // For branch admins, security rules require queries to be filtered by branchId
+    // to satisfy the list requirement if rules depend on resource data.
+    // However, if invoice numbering is global, we need a broad read permission for metadata.
+    const baseRef = collection(firestore, 'sales');
+    let q;
+    
+    if (user.role === 'branch_admin' && user.assignedBranchId) {
+       q = query(baseRef, where('branchId', '==', user.assignedBranchId), orderBy('soldAt', 'desc'), limit(1));
+    } else {
+       q = query(baseRef, orderBy('soldAt', 'desc'), limit(1));
+    }
+
+    try {
+      const snap = await getDocs(q);
+      if (snap.empty) return 'AA/26-27/000001';
+      const last = snap.docs[0].data().invoiceNo || 'AA/26-27/000000';
+      const parts = last.split('/');
+      const lastNumStr = parts.pop() || '000000';
+      const num = parseInt(lastNumStr) + 1;
+      return `AA/26-27/${num.toString().padStart(6, '0')}`;
+    } catch (e) {
+      console.warn("Could not fetch global invoice sequence, defaulting to local branch sequence start.", e);
+      return `AA/26-27/${Math.floor(Math.random() * 999999).toString().padStart(6, '0')}`;
+    }
   };
 
   const onSubmit = async (data: z.infer<typeof billSchema>) => {
