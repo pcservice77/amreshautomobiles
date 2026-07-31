@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useRef, useState } from 'react';
@@ -151,31 +150,31 @@ export default function ShowroomSettingsPage() {
                       </Button>
                     </div>
                   </div>
-                  <FormLabel className="mt-2">Official Logo (Square)</FormLabel>
+                  <FormLabel className="mt-2 text-foreground">Official Logo (Square)</FormLabel>
                   <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'logoUrl')} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
                   )} />
                   <FormField control={form.control} name="tagline" render={({ field }) => (
-                    <FormItem><FormLabel>Tagline / Motto</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Tagline / Motto</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
                   )} />
                 </div>
                 
                 <FormField control={form.control} name="gstin" render={({ field }) => (
-                  <FormItem><FormLabel>GSTIN</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                  <FormItem><FormLabel>GSTIN</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
                 )} />
                 <FormField control={form.control} name="address" render={({ field }) => (
-                  <FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                  <FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
                 )} />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="contact" render={({ field }) => (
-                    <FormItem><FormLabel>Contact</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Contact</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
                   )} />
                   <FormField control={form.control} name="email" render={({ field }) => (
-                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl></FormItem>
                   )} />
                 </div>
               </CardContent>
@@ -194,13 +193,13 @@ export default function ShowroomSettingsPage() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Enable Background Image</FormLabel>
+                      <FormLabel className="text-base text-foreground">Enable Background Image</FormLabel>
                       <FormDescription>
                         Use a full-page A4 image as background (e.g., white page with scooter watermark).
                       </FormDescription>
                     </div>
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Switch checked={!!field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
