@@ -42,18 +42,21 @@ export default function ScooterDetailsPage() {
   if (!scooter) return <div className="min-h-screen flex items-center justify-center">Scooter not found.</div>;
 
   const nextImage = () => {
-    if (scooter.images) {
+    if (scooter.images && scooter.images.length > 0) {
       setActiveImageIdx((prev) => (prev + 1) % scooter.images.length);
     }
   };
 
   const prevImage = () => {
-    if (scooter.images) {
+    if (scooter.images && scooter.images.length > 0) {
       setActiveImageIdx((prev) => (prev - 1 + scooter.images.length) % scooter.images.length);
     }
   };
 
-  const colors = scooter.availableColors ? scooter.availableColors.split(',').map((c: string) => c.trim()) : [];
+  // Safe color processing
+  const colors = typeof scooter.availableColors === 'string' 
+    ? scooter.availableColors.split(',').map((c: string) => c.trim()).filter(Boolean) 
+    : [];
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-20">
@@ -71,7 +74,7 @@ export default function ScooterDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
           {/* Visuals Section */}
           <div className="space-y-6">
-            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden group shadow-2xl border border-white/5">
+            <div className="relative aspect-square rounded-3xl overflow-hidden group shadow-2xl border border-white/5 bg-card">
               {scooter.images && scooter.images.length > 0 ? (
                 <>
                   <Image 
@@ -83,11 +86,11 @@ export default function ScooterDetailsPage() {
                   />
                   {scooter.images.length > 1 && (
                     <>
-                      <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ChevronLeft className="h-6 w-6" />
+                      <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <ChevronLeft className="h-6 w-6 text-white" />
                       </button>
-                      <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ChevronRight className="h-6 w-6" />
+                      <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <ChevronRight className="h-6 w-6 text-white" />
                       </button>
                     </>
                   )}
@@ -95,7 +98,7 @@ export default function ScooterDetailsPage() {
               ) : (
                 <div className="w-full h-full bg-secondary flex items-center justify-center">No Image Available</div>
               )}
-              <div className="absolute top-6 left-6 flex flex-col gap-2">
+              <div className="absolute top-6 left-6 flex flex-col gap-2 z-10">
                 <Badge className="bg-primary/90 backdrop-blur-md text-[10px] font-black uppercase tracking-widest px-3 py-1">New Edition</Badge>
                 <Badge className="bg-accent/90 backdrop-blur-md text-[10px] font-black uppercase tracking-widest px-3 py-1">Eco Smart</Badge>
               </div>
@@ -138,11 +141,13 @@ export default function ScooterDetailsPage() {
           {/* Info Section */}
           <div className="flex flex-col">
             <div className="mb-8">
-              <div className="flex justify-between items-start">
-                 <h1 className="text-5xl md:text-6xl font-headline font-bold mb-2 tracking-tight">{scooter.model}</h1>
-                 <p className="text-3xl font-black text-primary">{scooter.price}</p>
+              <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                 <div>
+                   <h1 className="text-5xl md:text-6xl font-headline font-bold mb-2 tracking-tight">{scooter.model}</h1>
+                   <p className="text-primary font-headline text-xl font-medium tracking-wide">{scooter.tagline || 'Drive the Future'}</p>
+                 </div>
+                 <p className="text-4xl font-black text-primary">{scooter.price}</p>
               </div>
-              <p className="text-primary font-headline text-xl font-medium tracking-wide">{scooter.tagline || 'Reliable Energy'}</p>
             </div>
 
             <p className="text-muted-foreground text-lg leading-relaxed mb-10 max-w-xl">
@@ -176,35 +181,16 @@ export default function ScooterDetailsPage() {
             <div className="space-y-6 pt-10 border-t border-white/5">
               <div className="flex items-center justify-between">
                 <h3 className="text-2xl font-headline font-bold">Technical Specifications</h3>
-                <span className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Engineered for Efficiency</span>
+                <span className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Premium Mobility</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                <SpecItem 
-                  icon={Battery} 
-                  label="Battery Type" 
-                  value={scooter.batteryType || 'N/A'} 
-                />
-                <SpecItem 
-                  icon={Gauge} 
-                  label="Top Speed" 
-                  value={scooter.topSpeed || 'N/A'} 
-                />
-                <SpecItem 
-                  icon={Zap} 
-                  label="Voltage" 
-                  value={scooter.voltage || 'N/A'} 
-                />
-                <SpecItem 
-                  icon={Activity} 
-                  label="Category" 
-                  value={scooter.category || 'N/A'} 
-                />
-                <SpecItem 
-                  icon={Layers} 
-                  label="Battery System" 
-                  value={scooter.batterySystem || 'N/A'} 
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SpecItem icon={Battery} label="Range" value={scooter.range || 'N/A'} />
+                <SpecItem icon={Gauge} label="Top Speed" value={scooter.topSpeed || 'N/A'} />
+                <SpecItem icon={Zap} label="Voltage" value={scooter.voltage || 'N/A'} />
+                <SpecItem icon={Activity} label="Category" value={scooter.category || 'N/A'} />
+                <SpecItem icon={Layers} label="Battery System" value={scooter.batterySystem || 'N/A'} />
+                <SpecItem icon={Battery} label="Battery Type" value={scooter.batteryType || 'N/A'} />
               </div>
             </div>
           </div>

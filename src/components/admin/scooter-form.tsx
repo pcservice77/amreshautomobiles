@@ -69,23 +69,17 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
 
     const currentImages = form.getValues('images') || [];
     if (currentImages.length + files.length > 5) {
-      toast({
-        variant: 'destructive',
-        title: 'Limit Exceeded',
-        description: 'Maximum 5 images allowed per scooter.',
-      });
+      toast({ variant: 'destructive', title: 'Limit Exceeded', description: 'Max 5 images allowed.' });
       return;
     }
 
     setIsUploading(true);
-
     const promises = Array.from(files).map((file) => {
       return new Promise<string>((resolve, reject) => {
         if (file.size > 5 * 1024 * 1024) {
-          reject(new Error(`File ${file.name} exceeds 5MB limit.`));
+          reject(new Error(`${file.name} is too large (Max 5MB)`));
           return;
         }
-
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
         reader.onerror = reject;
@@ -94,58 +88,38 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
     });
 
     Promise.all(promises)
-      .then((newBase64Images) => {
-        form.setValue('images', [...currentImages, ...newBase64Images]);
-        toast({ title: 'Images Uploaded', description: `${newBase64Images.length} images added.` });
+      .then((newImages) => {
+        form.setValue('images', [...currentImages, ...newImages]);
+        toast({ title: 'Success', description: 'Images uploaded.' });
       })
-      .catch((err) => {
-        toast({
-          variant: 'destructive',
-          title: 'Upload Error',
-          description: err.message,
-        });
-      })
+      .catch((err) => toast({ variant: 'destructive', title: 'Upload Error', description: err.message }))
       .finally(() => setIsUploading(false));
   };
 
-  const removeImage = (index: number) => {
-    const currentImages = form.getValues('images');
-    form.setValue('images', currentImages.filter((_, i) => i !== index));
+  const removeImage = (idx: number) => {
+    const imgs = form.getValues('images');
+    form.setValue('images', imgs.filter((_, i) => i !== idx));
   };
 
   const handleGenerateDescription = async () => {
-    const values = form.getValues();
-    if (!values.model || !values.range || !values.price) {
-      toast({
-        variant: 'destructive',
-        title: 'Missing Specs',
-        description: 'Please fill in model, range, and price to generate a description.',
-      });
+    const v = form.getValues();
+    if (!v.model || !v.range || !v.price) {
+      toast({ variant: 'destructive', title: 'Missing Specs', description: 'Fill model, range, and price first.' });
       return;
     }
-
     setIsGenerating(true);
     try {
       const result = await generateScooterDescription({
-        model: values.model,
-        range: values.range,
-        price: values.price,
-        topSpeed: values.topSpeed,
-        batteryCapacity: values.batteryCapacity,
-        chargingTime: values.chargingTime,
-        features: ['LED Lighting', 'Fast Charging', 'Smart Lock'],
+        model: v.model,
+        range: v.range,
+        price: v.price,
+        topSpeed: v.topSpeed,
+        batteryCapacity: v.batteryCapacity,
+        chargingTime: v.chargingTime,
       });
       form.setValue('description', result.description);
-      toast({
-        title: 'Description Generated',
-        description: 'AI has drafted a professional description for you.',
-      });
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Generation Failed',
-        description: 'Failed to generate description. Please try again.',
-      });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Generation Failed' });
     } finally {
       setIsGenerating(false);
     }
@@ -155,188 +129,77 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">
-          <FormLabel>Scooter Images (Max 5, 5MB each)</FormLabel>
+          <FormLabel>Scooter Photos (Max 5, 5MB each)</FormLabel>
           <div className="grid grid-cols-5 gap-4">
             {form.watch('images')?.map((img, idx) => (
               <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 group">
-                <Image src={img} alt={`Scooter ${idx}`} fill className="object-cover" unoptimized />
-                <button
-                  type="button"
-                  onClick={() => removeImage(idx)}
-                  className="absolute top-1 right-1 bg-destructive text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X className="h-3 w-3" />
+                <Image src={img} alt="Scooter" fill className="object-cover" unoptimized />
+                <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-destructive p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                  <X className="h-3 w-3 text-white" />
                 </button>
               </div>
             ))}
             {(form.watch('images')?.length || 0) < 5 && (
-              <button
-                type="button"
-                disabled={isUploading}
-                onClick={() => fileInputRef.current?.click()}
-                className="aspect-square rounded-lg border-2 border-dashed border-white/10 flex flex-col items-center justify-center hover:bg-white/5 transition-colors"
-              >
-                {isUploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Plus className="h-6 w-6" />}
+              <button type="button" onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-lg border-2 border-dashed border-white/10 flex flex-col items-center justify-center hover:bg-white/5 disabled:opacity-50" disabled={isUploading}>
+                {isUploading ? <Loader2 className="animate-spin" /> : <Plus className="h-6 w-6" />}
                 <span className="text-[10px] mt-1">Add Image</span>
               </button>
             )}
           </div>
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            multiple
-            onChange={handleImageUpload}
-          />
+          <input type="file" ref={fileInputRef} className="hidden" accept="image/*" multiple onChange={handleImageUpload} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="model"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Model Name</FormLabel>
-                <FormControl><Input placeholder="e.g. Volt Z1" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="tagline"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tagline (e.g. Reliable Energy)</FormLabel>
-                <FormControl><Input placeholder="Catchy phrase..." {...field} /></FormControl>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Price</FormLabel>
-                <FormControl><Input placeholder="₹ 1,20,000" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="range"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Range</FormLabel>
-                <FormControl><Input placeholder="120 km" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField control={form.control} name="model" render={({ field }) => (
+            <FormItem><FormLabel>Model Name</FormLabel><FormControl><Input placeholder="Volt X" {...field} /></FormControl><FormMessage /></FormItem>
+          )} />
+          <FormField control={form.control} name="tagline" render={({ field }) => (
+            <FormItem><FormLabel>Tagline</FormLabel><FormControl><Input placeholder="Drive Future" {...field} /></FormControl></FormItem>
+          )} />
+          <FormField control={form.control} name="price" render={({ field }) => (
+            <FormItem><FormLabel>Price</FormLabel><FormControl><Input placeholder="₹ 1,20,000" {...field} /></FormControl></FormItem>
+          )} />
+          <FormField control={form.control} name="range" render={({ field }) => (
+            <FormItem><FormLabel>Range</FormLabel><FormControl><Input placeholder="120 km" {...field} /></FormControl></FormItem>
+          )} />
+          <FormField control={form.control} name="availableColors" render={({ field }) => (
+            <FormItem><FormLabel>Colors</FormLabel><FormControl><Input placeholder="Red, Black, Blue" {...field} /></FormControl></FormItem>
+          )} />
+          <FormField control={form.control} name="brochureUrl" render={({ field }) => (
+            <FormItem><FormLabel>Brochure Link</FormLabel><FormControl><Input placeholder="Google Drive Link" {...field} /></FormControl></FormItem>
+          )} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <FormField
-            control={form.control}
-            name="topSpeed"
-            render={({ field }) => (
-              <FormItem><FormLabel>Top Speed</FormLabel><FormControl><Input placeholder="85 km/h" {...field} /></FormControl></FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="batteryType"
-            render={({ field }) => (
-              <FormItem><FormLabel>Battery Type</FormLabel><FormControl><Input placeholder="Lithium-ion" {...field} /></FormControl></FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="voltage"
-            render={({ field }) => (
-              <FormItem><FormLabel>Voltage</FormLabel><FormControl><Input placeholder="60-72V" {...field} /></FormControl></FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem><FormLabel>Category</FormLabel><FormControl><Input placeholder="High Speed" {...field} /></FormControl></FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="batterySystem"
-            render={({ field }) => (
-              <FormItem><FormLabel>Battery System</FormLabel><FormControl><Input placeholder="Swappable" {...field} /></FormControl></FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="chargingTime"
-            render={({ field }) => (
-              <FormItem><FormLabel>Charging Time</FormLabel><FormControl><Input placeholder="4 hours" {...field} /></FormControl></FormItem>
-            )}
-          />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <FormField control={form.control} name="topSpeed" render={({ field }) => (
+            <FormItem><FormLabel>Speed</FormLabel><FormControl><Input placeholder="80 km/h" {...field} /></FormControl></FormItem>
+          )} />
+          <FormField control={form.control} name="batteryType" render={({ field }) => (
+            <FormItem><FormLabel>Battery</FormLabel><FormControl><Input placeholder="LFP" {...field} /></FormControl></FormItem>
+          )} />
+          <FormField control={form.control} name="voltage" render={({ field }) => (
+            <FormItem><FormLabel>Voltage</FormLabel><FormControl><Input placeholder="60V" {...field} /></FormControl></FormItem>
+          )} />
+          <FormField control={form.control} name="chargingTime" render={({ field }) => (
+            <FormItem><FormLabel>Charge Time</FormLabel><FormControl><Input placeholder="4h" {...field} /></FormControl></FormItem>
+          )} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="availableColors"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Available Colors</FormLabel>
-                <FormControl><Input placeholder="Red, Black, Silver..." {...field} /></FormControl>
-                <FormDescription>Comma separated list of colors.</FormDescription>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="brochureUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Brochure Drive Link</FormLabel>
-                <FormControl><Input placeholder="https://drive.google.com/..." {...field} /></FormControl>
-                <FormDescription>Link to PDF specifications brochure.</FormDescription>
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField control={form.control} name="description" render={({ field }) => (
+          <FormItem>
+            <div className="flex justify-between items-center">
+              <FormLabel>Description</FormLabel>
+              <Button type="button" variant="outline" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
+                {isGenerating ? <Loader2 className="animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />} AI Draft
+              </Button>
+            </div>
+            <FormControl><Textarea rows={4} {...field} /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex justify-between items-center mb-2">
-                <FormLabel>Product Description</FormLabel>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 border-primary/30 text-primary hover:bg-primary/10"
-                  onClick={handleGenerateDescription}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                  Generate with AI
-                </Button>
-              </div>
-              <FormControl>
-                <Textarea rows={6} placeholder="Describe the scooter features and benefits..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
-          <Save className="h-4 w-4" />
-          {initialData ? 'Update Scooter' : 'Add Scooter to Inventory'}
+        <Button type="submit" className="w-full gap-2" disabled={isUploading}>
+          <Save className="h-4 w-4" /> {initialData ? 'Update Model' : 'Save to Inventory'}
         </Button>
       </form>
     </Form>
