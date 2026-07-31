@@ -1,11 +1,11 @@
 
 "use client"
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Save, Building, Landmark, ToggleLeft, Image as ImageIcon } from 'lucide-react';
+import { Save, Building, Landmark, ToggleLeft, Image as ImageIcon, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -16,6 +16,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import Image from 'next/image';
 
 const settingsSchema = z.object({
   name: z.string().min(2, 'Required'),
@@ -35,6 +36,8 @@ const settingsSchema = z.object({
 
 export default function ShowroomSettingsPage() {
   const firestore = useFirestore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const showroomRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -83,6 +86,42 @@ export default function ShowroomSettingsPage() {
     }
   }, [showroom, form]);
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate size (Firestore doc limit is 1MB, let's target ~800KB to be safe)
+    if (file.size > 800 * 1024) {
+      toast({
+        variant: 'destructive',
+        title: 'File too large',
+        description: 'Please upload an image smaller than 800KB to ensure system stability.',
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      form.setValue('letterheadUrl', base64String);
+      setIsUploading(false);
+      toast({
+        title: 'Template Uploaded',
+        description: 'Image processed successfully. Don\'t forget to save changes.',
+      });
+    };
+    reader.onerror = () => {
+      setIsUploading(false);
+      toast({
+        variant: 'destructive',
+        title: 'Upload Failed',
+        description: 'Could not read the image file.',
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const onSubmit = (data: z.infer<typeof settingsSchema>) => {
     if (!firestore) return;
     const docRef = doc(firestore, 'settings', 'showroom');
@@ -105,7 +144,7 @@ export default function ShowroomSettingsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-headline font-bold text-foreground">Business Configuration</h1>
-          <p className="text-muted-foreground">Manage your showroom identity, bank details, and printing preferences.</p>
+          <p className="text-muted-foreground">Manage showroom identity, bank details, and invoice template.</p>
         </div>
       </div>
 
@@ -122,7 +161,7 @@ export default function ShowroomSettingsPage() {
                   <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                 )} />
                 <FormField control={form.control} name="tagline" render={({ field }) => (
-                  <FormItem><FormLabel>Tagline / Moto</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                  <FormItem><FormLabel>Tagline / Motto</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                 )} />
                 <FormField control={form.control} name="gstin" render={({ field }) => (
                   <FormItem><FormLabel>GSTIN</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
@@ -171,7 +210,7 @@ export default function ShowroomSettingsPage() {
           <Card className="border-white/5 bg-card text-foreground">
             <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20 rounded-t-lg">
               <ToggleLeft className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg text-primary font-bold">Print Preferences</CardTitle>
+              <CardTitle className="text-lg text-primary font-bold">Invoice Template & Printing</CardTitle>
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
               <FormField
@@ -182,7 +221,7 @@ export default function ShowroomSettingsPage() {
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">Use Background Template Image</FormLabel>
                       <FormDescription>
-                        Enable this to print billing details on top of your custom invoice image.
+                        Enable this to overlay invoice data onto your pre-printed format image.
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -196,26 +235,59 @@ export default function ShowroomSettingsPage() {
               />
 
               {form.watch('useLetterhead') && (
-                <FormField control={form.control} name="letterheadUrl" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <ImageIcon className="h-4 w-4" /> Template Image URL
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter URL of your invoice background image..." {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Upload your invoice template to a hosting service and paste the direct link here.
-                    </FormDescription>
-                  </FormItem>
-                )} />
+                <div className="space-y-4">
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-lg p-6 hover:bg-white/5 transition-colors group relative">
+                    {form.watch('letterheadUrl') ? (
+                      <div className="relative w-full max-w-[200px] aspect-[1/1.4] rounded-md overflow-hidden border">
+                        <Image 
+                          src={form.watch('letterheadUrl') || ''} 
+                          alt="Template Preview" 
+                          fill 
+                          className="object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => form.setValue('letterheadUrl', '')}
+                          className="absolute top-1 right-1 bg-destructive p-1 rounded-full text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">Select JPG/PNG template (max 800KB)</p>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ImageIcon className="h-4 w-4 mr-2" />}
+                      {form.watch('letterheadUrl') ? 'Replace Image' : 'Select Template Image'}
+                    </Button>
+                  </div>
+                  <FormDescription className="text-center italic">
+                    Note: Your image is stored as a Base64 string for instant offline billing.
+                  </FormDescription>
+                </div>
               )}
             </CardContent>
           </Card>
 
           <Button type="submit" size="lg" className="w-full h-14 bg-primary text-primary-foreground font-bold text-lg">
             <Save className="mr-2 h-6 w-6" />
-            Save Configuration
+            Save Showroom Configuration
           </Button>
         </form>
       </Form>
