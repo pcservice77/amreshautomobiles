@@ -1,22 +1,23 @@
-
 "use client"
 
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Printer, Save, User, CreditCard, Bike } from 'lucide-react';
+import { Printer, Save, User, CreditCard, Bike, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { format } from 'date-fns';
 
 const billSchema = z.object({
   customerName: z.string().min(3, 'Customer name is required'),
@@ -92,11 +93,10 @@ export default function BillingPage() {
 
   useEffect(() => {
     if (isSaved) {
-      window.print();
-      // After printing (or cancelling), we can redirect
       setTimeout(() => {
+        window.print();
         router.push('/admin/sales');
-      }, 1000);
+      }, 500);
     }
   }, [isSaved, router]);
 
@@ -110,9 +110,11 @@ export default function BillingPage() {
     }
   }, [watchModel, scooters, form]);
 
-  const handlePrint = () => {
+  const handleManualPrint = () => {
     window.print();
   };
+
+  const currentValues = form.getValues();
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -121,36 +123,87 @@ export default function BillingPage() {
         <p className="text-muted-foreground">Generate official sales invoices for customers.</p>
       </div>
 
-      <div className="hidden print:block text-center border-b pb-8 mb-8">
-        <h1 className="text-4xl font-bold uppercase">{showroom?.name || 'AMRESH AUTOMOBILES'}</h1>
-        <p>{showroom?.address}</p>
-        <p>Contact: {showroom?.contact} | Email: {showroom?.email}</p>
-        {showroom?.gstin && <p className="font-bold">GSTIN: {showroom.gstin}</p>}
-        <div className="mt-4 text-xl font-bold border-t pt-4">TAX INVOICE / SALE BILL</div>
-      </div>
+      {/* Professional Printable Invoice Area */}
+      <div id="printable-invoice" className="hidden print:block bg-white text-black p-8">
+        <div className="text-center border-b-2 border-black pb-6 mb-6">
+          <div className="flex justify-center mb-4">
+             <Zap className="h-10 w-10 text-black fill-current" />
+          </div>
+          <h1 className="text-4xl font-bold uppercase tracking-tighter">{showroom?.name || 'AMRESH AUTOMOBILES'}</h1>
+          <p className="text-sm font-medium">{showroom?.address || 'Showroom Address'}</p>
+          <p className="text-sm">Contact: {showroom?.contact} | Email: {showroom?.email}</p>
+          {showroom?.gstin && <p className="font-bold mt-1">GSTIN: {showroom.gstin}</p>}
+          <div className="mt-4 text-2xl font-black border-y-2 border-black py-2 tracking-widest">TAX INVOICE / SALE BILL</div>
+        </div>
 
-      <div className="hidden print:block mb-8">
-        <div className="grid grid-cols-2 gap-8 text-sm">
+        <div className="grid grid-cols-2 gap-12 mb-10">
           <div className="space-y-1">
-            <h4 className="font-bold border-b pb-1 mb-2">BILL TO</h4>
-            <p><span className="font-semibold">Customer:</span> {form.getValues('customerName')}</p>
-            <p><span className="font-semibold">Mobile:</span> {form.getValues('mobile')}</p>
-            <p><span className="font-semibold">Address:</span> {form.getValues('address')}</p>
-            <p><span className="font-semibold">{form.getValues('idType')}:</span> {form.getValues('idNumber')}</p>
+            <h4 className="font-bold border-b border-black pb-1 mb-2 text-xs uppercase">BILL TO:</h4>
+            <p className="text-lg font-bold">{currentValues.customerName || '____________________'}</p>
+            <p><span className="font-semibold">Mobile:</span> {currentValues.mobile || '__________'}</p>
+            <p><span className="font-semibold">Address:</span> {currentValues.address || '____________________'}</p>
+            <p><span className="font-semibold">{currentValues.idType}:</span> {currentValues.idNumber || '__________'}</p>
           </div>
-          <div className="space-y-1">
-            <h4 className="font-bold border-b pb-1 mb-2">VEHICLE DETAILS</h4>
-            <p><span className="font-semibold">Model:</span> {form.getValues('model')}</p>
-            <p><span className="font-semibold">Chassis No:</span> {form.getValues('chassisNumber')}</p>
-            <p><span className="font-semibold">Date:</span> {new Date().toLocaleDateString()}</p>
-            <p className="text-lg font-bold mt-2">TOTAL AMOUNT: {form.getValues('price')}</p>
+          <div className="space-y-1 text-right">
+            <h4 className="font-bold border-b border-black pb-1 mb-2 text-xs uppercase text-right">INVOICE DETAILS:</h4>
+            <p><span className="font-semibold">Date:</span> {format(new Date(), 'dd MMMM yyyy')}</p>
+            <p><span className="font-semibold">Time:</span> {format(new Date(), 'hh:mm a')}</p>
+            <p><span className="font-semibold">Place of Supply:</span> {showroom?.address?.split(',').pop()?.trim() || 'Showroom City'}</p>
           </div>
+        </div>
+
+        <div className="border-2 border-black rounded-sm overflow-hidden mb-8">
+          <Table className="border-collapse">
+            <TableHeader className="bg-gray-100">
+              <TableRow className="border-b border-black">
+                <TableHead className="text-black font-bold uppercase py-3 border-r border-black">Item Description</TableHead>
+                <TableHead className="text-black font-bold uppercase py-3 border-r border-black">Chassis Number</TableHead>
+                <TableHead className="text-black font-bold uppercase py-3 text-right">Amount</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow className="border-b border-black min-h-[100px]">
+                <TableCell className="py-6 border-r border-black">
+                  <p className="font-bold text-lg">{currentValues.model || 'Scooter Model'}</p>
+                  <p className="text-xs text-gray-600">High Performance Electric Vehicle</p>
+                </TableCell>
+                <TableCell className="font-mono border-r border-black">{currentValues.chassisNumber || '__________'}</TableCell>
+                <TableCell className="text-right font-bold text-lg">{currentValues.price || '₹ 0.00'}</TableCell>
+              </TableRow>
+              <TableRow className="bg-gray-50">
+                <TableCell colSpan={2} className="text-right font-black text-xl py-4 border-r border-black">GRAND TOTAL</TableCell>
+                <TableCell className="text-right font-black text-2xl py-4">{currentValues.price || '₹ 0.00'}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+
+        <div className="grid grid-cols-2 gap-8 mt-12">
+          <div className="text-[10px] space-y-2">
+            <h5 className="font-bold border-b border-black pb-0.5 mb-1">TERMS & CONDITIONS:</h5>
+            <ol className="list-decimal pl-4 space-y-0.5">
+              <li>Goods once sold will not be taken back or exchanged.</li>
+              <li>Warranty as per manufacturer policies.</li>
+              <li>Delivery subject to verification of documents.</li>
+              <li>Subject to local jurisdiction.</li>
+            </ol>
+          </div>
+          <div className="flex flex-col items-center justify-end">
+            <div className="w-56 border-t border-black text-center pt-2">
+              <p className="font-bold text-sm">Authorised Signatory</p>
+              <p className="text-[10px] text-gray-500 mt-0.5">For {showroom?.name || 'Amresh Automobiles'}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-16 text-center text-[10px] text-gray-400 pt-4 border-t border-gray-100 italic">
+          <p>This is a computer generated invoice. Go Green. Ride Electric.</p>
         </div>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Card className="bg-card/40 border-white/5 print:hidden">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 print:hidden">
+          <Card className="bg-card/40 border-white/5">
             <CardHeader className="flex flex-row items-center gap-2">
               <User className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">Customer Information</CardTitle>
@@ -200,7 +253,7 @@ export default function BillingPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/40 border-white/5 print:hidden">
+          <Card className="bg-card/40 border-white/5">
             <CardHeader className="flex flex-row items-center gap-2">
               <CreditCard className="h-5 w-5 text-accent" />
               <CardTitle className="text-lg">Identification Details</CardTitle>
@@ -245,7 +298,7 @@ export default function BillingPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/40 border-white/5 print:hidden">
+          <Card className="bg-card/40 border-white/5">
             <CardHeader className="flex flex-row items-center gap-2">
               <Bike className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">Vehicle Assignment</CardTitle>
@@ -302,20 +355,15 @@ export default function BillingPage() {
             </CardContent>
           </Card>
 
-          <div className="flex gap-4 pt-4 print:hidden">
+          <div className="flex gap-4 pt-4">
             <Button type="submit" size="lg" className="flex-1 gap-2 bg-primary text-primary-foreground">
               <Save className="h-5 w-5" />
               Finalize Sale & Save
             </Button>
-            <Button type="button" variant="outline" size="lg" className="gap-2 border-white/10" onClick={handlePrint}>
+            <Button type="button" variant="outline" size="lg" className="gap-2 border-white/10" onClick={handleManualPrint}>
               <Printer className="h-5 w-5" />
-              Print Invoice
+              Print Preview
             </Button>
-          </div>
-          
-          <div className="hidden print:block mt-12 text-sm text-center text-muted-foreground border-t pt-8">
-            <p>Thank you for choosing Amresh Automobiles for your electric mobility needs.</p>
-            <p>This is a computer generated invoice.</p>
           </div>
         </form>
       </Form>

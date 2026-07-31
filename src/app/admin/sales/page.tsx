@@ -1,8 +1,7 @@
-
 "use client"
 
 import { useState } from 'react';
-import { Search, Download, Eye, Calendar, UserCheck, FileText, Printer, X } from 'lucide-react';
+import { Search, Download, Eye, Calendar, UserCheck, FileText, Printer, X, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -136,97 +135,101 @@ export default function SalesHistoryPage() {
 
       {/* Bill Viewer Dialog */}
       <Dialog open={!!selectedSale} onOpenChange={(open) => !open && setSelectedSale(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white text-black p-0 border-none">
-          <DialogHeader className="p-6 border-b print:hidden bg-secondary text-white">
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none print:shadow-none print:border-none print:p-0">
+          <DialogHeader className="p-4 border-b print:hidden bg-secondary text-white">
             <div className="flex justify-between items-center">
-              <DialogTitle className="text-xl flex items-center gap-2">
+              <DialogTitle className="text-lg flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 Invoice Viewer
               </DialogTitle>
               <div className="flex gap-2">
-                <Button variant="outline" className="text-white border-white/20 hover:bg-white/10" onClick={handlePrintBill}>
+                <Button variant="outline" className="text-white border-white/20 hover:bg-white/10 h-8" onClick={handlePrintBill}>
                   <Printer className="h-4 w-4 mr-2" />
                   Print
                 </Button>
-                <Button variant="ghost" className="text-white hover:bg-white/10" onClick={() => setSelectedSale(null)}>
+                <Button variant="ghost" className="text-white hover:bg-white/10 h-8" onClick={() => setSelectedSale(null)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </DialogHeader>
           
-          <div className="p-12" id="printable-bill">
-            <div className="text-center border-b-2 border-black pb-8 mb-8">
-              <h1 className="text-4xl font-bold uppercase tracking-tight">{showroom?.name || 'AMRESH AUTOMOBILES'}</h1>
-              <p className="text-sm mt-1">{showroom?.address}</p>
-              <p className="text-sm">Contact: {showroom?.contact} | Email: {showroom?.email}</p>
-              {showroom?.gstin && <p className="font-bold mt-2">GSTIN: {showroom.gstin}</p>}
-              <div className="mt-6 text-2xl font-black border-t-2 border-black pt-4">TAX INVOICE / SALE BILL</div>
+          <div className="p-10" id="printable-invoice">
+            <div className="text-center border-b-2 border-black pb-6 mb-8">
+              <div className="flex justify-center mb-3">
+                 <Zap className="h-12 w-12 text-black fill-current" />
+              </div>
+              <h1 className="text-4xl font-bold uppercase tracking-tighter">{showroom?.name || 'AMRESH AUTOMOBILES'}</h1>
+              <p className="text-sm font-medium mt-1">{showroom?.address}</p>
+              <p className="text-xs">Contact: {showroom?.contact} | Email: {showroom?.email}</p>
+              {showroom?.gstin && <p className="font-bold mt-1 text-sm">GSTIN: {showroom.gstin}</p>}
+              <div className="mt-6 text-2xl font-black border-y-2 border-black py-2 tracking-[0.2em] uppercase">Tax Invoice / Sale Bill</div>
             </div>
 
-            <div className="grid grid-cols-2 gap-12 mb-12">
-              <div className="space-y-2">
-                <h4 className="font-bold border-b border-black pb-1 mb-3 text-sm uppercase tracking-wider">Bill To</h4>
-                <p className="text-lg font-bold">{selectedSale?.customerName}</p>
-                <p><span className="font-semibold">Mobile:</span> {selectedSale?.mobile}</p>
-                <p><span className="font-semibold">Address:</span> {selectedSale?.address}</p>
-                <p><span className="font-semibold">{selectedSale?.idType}:</span> {selectedSale?.idNumber}</p>
+            <div className="grid grid-cols-2 gap-12 mb-10">
+              <div className="space-y-1">
+                <h4 className="font-bold border-b border-black pb-0.5 mb-2 text-xs uppercase tracking-widest text-gray-500">Bill To:</h4>
+                <p className="text-xl font-bold">{selectedSale?.customerName}</p>
+                <p className="text-sm"><span className="font-semibold">Mobile:</span> {selectedSale?.mobile}</p>
+                <p className="text-sm"><span className="font-semibold">Address:</span> {selectedSale?.address}</p>
+                <p className="text-sm"><span className="font-semibold">{selectedSale?.idType}:</span> {selectedSale?.idNumber}</p>
               </div>
-              <div className="space-y-2">
-                <h4 className="font-bold border-b border-black pb-1 mb-3 text-sm uppercase tracking-wider">Invoice Details</h4>
-                <p><span className="font-semibold">Invoice No:</span> {selectedSale?.id}</p>
-                <p><span className="font-semibold">Date:</span> {selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'dd MMMM yyyy') : 'N/A'}</p>
-                <p><span className="font-semibold">Time:</span> {selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'hh:mm a') : 'N/A'}</p>
-                {selectedSale?.gstin && <p><span className="font-semibold">GSTIN (Store):</span> {selectedSale.gstin}</p>}
+              <div className="space-y-1 text-right">
+                <h4 className="font-bold border-b border-black pb-0.5 mb-2 text-xs uppercase tracking-widest text-gray-500 text-right">Invoice Info:</h4>
+                <p className="text-sm"><span className="font-semibold">Invoice No:</span> {selectedSale?.id}</p>
+                <p className="text-sm"><span className="font-semibold">Date:</span> {selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'dd MMMM yyyy') : 'N/A'}</p>
+                <p className="text-sm"><span className="font-semibold">Time:</span> {selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'hh:mm a') : 'N/A'}</p>
+                {selectedSale?.gstin && <p className="text-sm"><span className="font-semibold">Store GSTIN:</span> {selectedSale.gstin}</p>}
               </div>
             </div>
 
-            <div className="border-2 border-black rounded-lg overflow-hidden mb-8">
+            <div className="border-2 border-black rounded-sm overflow-hidden mb-8">
               <Table className="border-collapse">
                 <TableHeader className="bg-gray-100">
-                  <TableRow className="border-b border-black">
-                    <TableHead className="text-black font-bold uppercase py-4">Item Description</TableHead>
-                    <TableHead className="text-black font-bold uppercase py-4">Chassis Number</TableHead>
-                    <TableHead className="text-black font-bold uppercase py-4 text-right">Amount</TableHead>
+                  <TableRow className="border-b-2 border-black">
+                    <TableHead className="text-black font-extrabold uppercase py-4 border-r-2 border-black h-12">Item Description</TableHead>
+                    <TableHead className="text-black font-extrabold uppercase py-4 border-r-2 border-black h-12">Chassis Number</TableHead>
+                    <TableHead className="text-black font-extrabold uppercase py-4 text-right h-12">Amount</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow className="border-b border-black">
-                    <TableCell className="py-6">
-                      <p className="font-bold text-lg">{selectedSale?.model}</p>
-                      <p className="text-sm text-gray-600">High Performance Electric Scooter</p>
+                  <TableRow className="border-b-2 border-black h-32 align-top">
+                    <TableCell className="py-6 border-r-2 border-black">
+                      <p className="font-black text-xl">{selectedSale?.model}</p>
+                      <p className="text-xs text-gray-600 mt-1 uppercase">High Performance Electric Scooter</p>
                     </TableCell>
-                    <TableCell className="font-mono">{selectedSale?.chassisNumber}</TableCell>
-                    <TableCell className="text-right font-bold text-lg">{selectedSale?.price}</TableCell>
+                    <TableCell className="font-mono font-bold text-center border-r-2 border-black py-6">{selectedSale?.chassisNumber}</TableCell>
+                    <TableCell className="text-right font-black text-xl py-6">{selectedSale?.price}</TableCell>
                   </TableRow>
                   <TableRow className="bg-gray-50">
-                    <TableCell colSpan={2} className="text-right font-black text-xl py-6">GRAND TOTAL</TableCell>
-                    <TableCell className="text-right font-black text-2xl py-6">{selectedSale?.price}</TableCell>
+                    <TableCell colSpan={2} className="text-right font-black text-2xl py-6 border-r-2 border-black">GRAND TOTAL</TableCell>
+                    <TableCell className="text-right font-black text-3xl py-6">{selectedSale?.price}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
             </div>
 
-            <div className="grid grid-cols-2 gap-8 mt-16">
-              <div className="text-sm space-y-4">
-                <h5 className="font-bold border-b border-black pb-1">Terms & Conditions:</h5>
-                <ul className="list-disc pl-4 space-y-1 text-xs">
+            <div className="grid grid-cols-2 gap-12 mt-12">
+              <div className="text-[10px] space-y-3">
+                <h5 className="font-bold border-b border-black pb-0.5 uppercase tracking-wider">Terms & Conditions:</h5>
+                <ul className="list-disc pl-4 space-y-0.5">
                   <li>Goods once sold will not be taken back or exchanged.</li>
                   <li>Manufacturer warranty applies as per standard policies.</li>
-                  <li>Subject to local jurisdiction.</li>
+                  <li>Insurance and registration details provided separately.</li>
+                  <li>All disputes subject to local jurisdiction.</li>
                 </ul>
               </div>
               <div className="flex flex-col items-center justify-end">
-                <div className="w-48 border-t border-black text-center pt-2">
-                  <p className="font-bold text-sm">Authorised Signatory</p>
-                  <p className="text-xs text-gray-500 mt-1">For Amresh Automobiles</p>
+                <div className="w-56 border-t-2 border-black text-center pt-2">
+                  <p className="font-black text-sm uppercase">Authorised Signatory</p>
+                  <p className="text-[10px] text-gray-400 mt-1">For Amresh Automobiles Showroom</p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-20 text-center text-xs text-gray-500 pt-8 border-t border-gray-200">
+            <div className="mt-20 text-center text-[10px] text-gray-300 pt-6 border-t border-gray-100 italic">
               <p>This is a computer generated invoice and does not require a physical signature.</p>
-              <p className="mt-1 font-bold text-black italic">Go Green. Ride Electric.</p>
+              <p className="mt-1 font-bold text-black opacity-30 tracking-[0.3em] uppercase">Go Green. Ride Electric.</p>
             </div>
           </div>
         </DialogContent>
