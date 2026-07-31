@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Save, Building, Landmark, ToggleLeft, Image as ImageIcon, Upload, X, Loader2 } from 'lucide-react';
+import { Save, Building, Landmark, ToggleLeft, Image as ImageIcon, Upload, X, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -32,12 +32,15 @@ const settingsSchema = z.object({
   branch: z.string().optional(),
   useLetterhead: z.boolean().default(false),
   letterheadUrl: z.string().optional(),
+  logoUrl: z.string().optional(),
 });
 
 export default function ShowroomSettingsPage() {
   const firestore = useFirestore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   const showroomRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -63,6 +66,7 @@ export default function ShowroomSettingsPage() {
       branch: '',
       useLetterhead: false,
       letterheadUrl: '',
+      logoUrl: '',
     },
   });
 
@@ -70,7 +74,7 @@ export default function ShowroomSettingsPage() {
     if (showroom) {
       form.reset({
         name: showroom.name || 'AMRESH AUTOMOBILE',
-        tagline: showroom.tagline || '',
+        tagline: showroom.tagline || 'Drive Electric • Live Smart',
         contact: showroom.contact || '',
         email: showroom.email || '',
         address: showroom.address || '',
@@ -82,42 +86,34 @@ export default function ShowroomSettingsPage() {
         branch: showroom.branch || '',
         useLetterhead: !!showroom.useLetterhead,
         letterheadUrl: showroom.letterheadUrl || '',
+        logoUrl: showroom.logoUrl || '',
       });
     }
   }, [showroom, form]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, fieldName: 'letterheadUrl' | 'logoUrl') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate size (Firestore doc limit is 1MB, let's target ~800KB to be safe)
     if (file.size > 800 * 1024) {
       toast({
         variant: 'destructive',
         title: 'File too large',
-        description: 'Please upload an image smaller than 800KB to ensure system stability.',
+        description: 'Please upload an image smaller than 800KB.',
       });
       return;
     }
 
-    setIsUploading(true);
+    if (fieldName === 'letterheadUrl') setIsUploading(true);
+    else setIsUploadingLogo(true);
+
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result as string;
-      form.setValue('letterheadUrl', base64String);
-      setIsUploading(false);
-      toast({
-        title: 'Template Uploaded',
-        description: 'Image processed successfully. Don\'t forget to save changes.',
-      });
-    };
-    reader.onerror = () => {
-      setIsUploading(false);
-      toast({
-        variant: 'destructive',
-        title: 'Upload Failed',
-        description: 'Could not read the image file.',
-      });
+      form.setValue(fieldName, base64String);
+      if (fieldName === 'letterheadUrl') setIsUploading(false);
+      else setIsUploadingLogo(false);
+      toast({ title: 'Success', description: 'Image processed successfully.' });
     };
     reader.readAsDataURL(file);
   };
@@ -144,7 +140,7 @@ export default function ShowroomSettingsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-headline font-bold text-foreground">Business Configuration</h1>
-          <p className="text-muted-foreground">Manage showroom identity, bank details, and invoice template.</p>
+          <p className="text-muted-foreground">Manage showroom identity, logos, and invoice templates.</p>
         </div>
       </div>
 
@@ -157,6 +153,23 @@ export default function ShowroomSettingsPage() {
                 <CardTitle className="text-lg text-primary font-bold">Showroom Identity</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
+                <div className="flex flex-col items-center mb-6">
+                  <div className="relative h-24 w-24 bg-secondary rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-white/10 group">
+                    {form.watch('logoUrl') ? (
+                      <Image src={form.watch('logoUrl') || ''} alt="Logo" fill className="object-contain p-2" />
+                    ) : (
+                      <Zap className="h-10 w-10 text-muted-foreground" />
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <Button type="button" size="sm" variant="ghost" className="text-white" onClick={() => logoInputRef.current?.click()}>
+                        {isUploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  <FormLabel className="mt-2">Official Logo (Square)</FormLabel>
+                  <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'logoUrl')} />
+                </div>
+
                 <FormField control={form.control} name="name" render={({ field }) => (
                   <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                 )} />
@@ -210,7 +223,7 @@ export default function ShowroomSettingsPage() {
           <Card className="border-white/5 bg-card text-foreground">
             <CardHeader className="flex flex-row items-center gap-3 bg-secondary/20 rounded-t-lg">
               <ToggleLeft className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg text-primary font-bold">Invoice Template & Printing</CardTitle>
+              <CardTitle className="text-lg text-primary font-bold">Background Template (Optional)</CardTitle>
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
               <FormField
@@ -219,16 +232,13 @@ export default function ShowroomSettingsPage() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Use Background Template Image</FormLabel>
+                      <FormLabel className="text-base">Enable Background Image</FormLabel>
                       <FormDescription>
-                        Enable this to overlay invoice data onto your pre-printed format image.
+                        Use a full-page A4 image as background (e.g., white page with scooter watermark).
                       </FormDescription>
                     </div>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -239,17 +249,8 @@ export default function ShowroomSettingsPage() {
                   <div className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-lg p-6 hover:bg-white/5 transition-colors group relative">
                     {form.watch('letterheadUrl') ? (
                       <div className="relative w-full max-w-[200px] aspect-[1/1.4] rounded-md overflow-hidden border">
-                        <Image 
-                          src={form.watch('letterheadUrl') || ''} 
-                          alt="Template Preview" 
-                          fill 
-                          className="object-contain"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => form.setValue('letterheadUrl', '')}
-                          className="absolute top-1 right-1 bg-destructive p-1 rounded-full text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
+                        <Image src={form.watch('letterheadUrl') || ''} alt="Template Preview" fill className="object-contain" />
+                        <button type="button" onClick={() => form.setValue('letterheadUrl', '')} className="absolute top-1 right-1 bg-destructive p-1 rounded-full text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                           <X className="h-4 w-4" />
                         </button>
                       </div>
@@ -259,27 +260,12 @@ export default function ShowroomSettingsPage() {
                         <p className="text-sm text-muted-foreground">Select JPG/PNG template (max 800KB)</p>
                       </div>
                     )}
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-4"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
-                    >
+                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'letterheadUrl')} />
+                    <Button type="button" variant="outline" className="mt-4" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                       {isUploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ImageIcon className="h-4 w-4 mr-2" />}
                       {form.watch('letterheadUrl') ? 'Replace Image' : 'Select Template Image'}
                     </Button>
                   </div>
-                  <FormDescription className="text-center italic">
-                    Note: Your image is stored as a Base64 string for instant offline billing.
-                  </FormDescription>
                 </div>
               )}
             </CardContent>

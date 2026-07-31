@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 export default function SalesHistoryPage() {
   const firestore = useFirestore();
@@ -134,11 +135,11 @@ export default function SalesHistoryPage() {
       <Dialog open={!!selectedSale} onOpenChange={(open) => !open && setSelectedSale(null)}>
         <DialogContent className={cn(
           "max-w-[210mm] max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none print:shadow-none print:m-0",
-          isTemplateMode && "print:max-h-none print:overflow-visible"
+          "print:max-h-none print:overflow-visible"
         )}>
           <DialogHeader className="p-4 border-b print:hidden bg-secondary text-white">
             <div className="flex justify-between items-center">
-              <DialogTitle className="text-lg">Amresh Automobile Official Invoice</DialogTitle>
+              <DialogTitle className="text-lg">Official Showroom Invoice</DialogTitle>
               <div className="flex gap-2">
                 <Button variant="outline" className="text-white border-white/20 h-8" onClick={handlePrintBill}><Printer className="h-4 w-4 mr-2" /> Print</Button>
                 <Button variant="ghost" className="text-white h-8" onClick={() => setSelectedSale(null)}><X className="h-4 w-4" /></Button>
@@ -164,222 +165,178 @@ export default function SalesHistoryPage() {
               />
             )}
             
-            {/* Standard Branding (Hidden if using template) */}
-            {!isTemplateMode && (
-              <div className="relative z-10 w-full h-full p-[12mm] flex flex-col">
-                {/* Watermark */}
-                <div className="invoice-watermark">
-                  <Zap className="h-[200px] w-[200px] text-primary/5" />
-                </div>
-
-                <div className="flex justify-between items-start border-b-2 border-primary pb-6 mb-8">
-                  <div className="flex gap-4">
-                    <div className="bg-primary p-2 rounded-xl">
-                      <Zap className="h-12 w-12 text-white fill-current" />
-                    </div>
-                    <div>
-                      <h1 className="text-4xl font-black text-primary tracking-tighter uppercase leading-none">{showroom?.name || 'AMRESH AUTOMOBILE'}</h1>
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] mt-1">{showroom?.tagline || 'Drive Electric • Live Smart'}</p>
-                      <div className="mt-4 text-[10px] leading-tight text-gray-600 font-medium">
-                        <p>{showroom?.address || 'Village Padampur, PO- Lodhma, Khunti'}</p>
-                        <p>Mobile: {showroom?.contact || '9798910854'}</p>
-                        <p>Email: {showroom?.email || 'amreshautomobile@gmail.com'}</p>
-                        {showroom?.gstin && <p className="font-bold text-black mt-1">GSTIN: {showroom.gstin}</p>}
+            <div className="relative z-10 w-full h-full p-[12mm] flex flex-col">
+              {/* Logo & Showroom Header (Standard Mode) */}
+              <div className="flex justify-between items-start border-b-2 border-primary pb-6 mb-8">
+                <div className="flex gap-5">
+                  <div className="relative h-20 w-20">
+                    {showroom?.logoUrl ? (
+                      <img src={showroom.logoUrl} alt="Logo" className="object-contain h-full w-full" />
+                    ) : (
+                      <div className="bg-primary p-3 rounded-2xl h-full w-full flex items-center justify-center">
+                        <Zap className="h-10 w-10 text-white fill-current" />
                       </div>
-                    </div>
+                    )}
                   </div>
-                  
-                  <div className="text-right">
-                    <h2 className="text-5xl font-black text-gray-100 uppercase tracking-tighter">INVOICE</h2>
-                    <div className="mt-4 space-y-1">
-                      <p className="text-sm font-bold"><span className="text-gray-400">Invoice No:</span> <span className="text-primary">{selectedSale?.invoiceNo}</span></p>
-                      <p className="text-sm font-bold"><span className="text-gray-400">Date:</span> {selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'dd/MM/yyyy') : 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-8 mb-8">
-                  <div className="border border-gray-200 rounded-xl p-5 bg-gray-50/50">
-                    <h4 className="text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/20 pb-2 mb-3">Customer Information</h4>
-                    <div className="space-y-1.5 text-[11px]">
-                      <p className="text-lg font-black uppercase text-black">{selectedSale?.customerName}</p>
-                      <p className="text-gray-600 font-bold">{selectedSale?.customerFatherName ? `S/O, W/O: ${selectedSale.customerFatherName}` : '-'}</p>
-                      <p className="leading-snug text-gray-700">{selectedSale?.address}, {selectedSale?.city}, {selectedSale?.state} - {selectedSale?.pin}</p>
-                      <p><span className="text-gray-400 uppercase text-[9px]">Mobile:</span> <span className="font-bold">{selectedSale?.mobile}</span></p>
-                      <p><span className="text-gray-400 uppercase text-[9px]">{selectedSale?.idType || 'ID'}:</span> {selectedSale?.idNumber}</p>
-                    </div>
-                  </div>
-
-                  <div className="border border-gray-200 rounded-xl p-5 bg-gray-50/50">
-                    <h4 className="text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/20 pb-2 mb-3">Vehicle Specifications</h4>
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px]">
-                      <div className="col-span-2">
-                        <p className="text-lg font-black text-primary uppercase">{selectedSale?.model}</p>
-                        <p className="text-xs font-bold text-gray-500">{selectedSale?.variant || 'Standard Edition'}</p>
-                      </div>
-                      <p><span className="text-gray-400">Color:</span> {selectedSale?.color || '-'}</p>
-                      <p><span className="text-gray-400">Battery:</span> {selectedSale?.batteryType || '-'}</p>
-                      <p className="col-span-2"><span className="text-gray-400">Chassis:</span> <span className="font-mono font-bold text-black">{selectedSale?.chassisNumber}</span></p>
-                      <p className="col-span-2"><span className="text-gray-400">Motor No:</span> {selectedSale?.motorNumber || '-'}</p>
-                      <p><span className="text-gray-400">Reg No:</span> {selectedSale?.registrationNumber || 'Applied'}</p>
-                      <p><span className="text-gray-400">Range:</span> {selectedSale?.claimedRange || '-'}</p>
+                  <div>
+                    <h1 className="text-4xl font-black text-primary tracking-tighter uppercase leading-none">{showroom?.name || 'AMRESH AUTOMOBILE'}</h1>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] mt-1">{showroom?.tagline || 'Drive Electric • Live Smart'}</p>
+                    <div className="mt-4 text-[10px] leading-tight text-gray-600 font-medium">
+                      <p>{showroom?.address || 'Village Padampur, PO- Lodhma, Khunti'}</p>
+                      <p>Mobile: {showroom?.contact || '9798910854'}</p>
+                      <p>Email: {showroom?.email || 'amreshautomobile@gmail.com'}</p>
+                      {showroom?.gstin && <p className="font-bold text-black mt-1 uppercase">GSTIN: {showroom.gstin}</p>}
                     </div>
                   </div>
                 </div>
-
-                <div className="flex-1">
-                  <table className="w-full invoice-table border-collapse rounded-lg overflow-hidden border-2 border-black">
-                    <thead>
-                      <tr>
-                        <th className="w-12 text-center">Sr.</th>
-                        <th className="text-left">Item Description</th>
-                        <th className="w-24 text-center">HSN</th>
-                        <th className="w-16 text-center">Qty</th>
-                        <th className="w-28 text-right">Rate</th>
-                        <th className="w-32 text-right">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="min-h-[120px] align-top">
-                        <td className="text-center font-bold">1</td>
-                        <td className="p-4">
-                          <p className="font-black text-sm uppercase">{selectedSale?.model} {selectedSale?.variant}</p>
-                          <p className="text-[10px] text-gray-400 mt-1 italic">High-Speed Eco-Friendly Electric Mobility Vehicle</p>
-                        </td>
-                        <td className="text-center">{selectedSale?.hsn || '871160'}</td>
-                        <td className="text-center">1</td>
-                        <td className="text-right font-mono">₹ {selectedSale?.price?.toLocaleString()}.00</td>
-                        <td className="text-right font-mono font-bold text-black">₹ {selectedSale?.price?.toLocaleString()}.00</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="flex justify-between items-start pt-8">
-                  <div className="w-2/3 space-y-4">
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase italic">Amount in Words:</p>
-                      <p className="text-sm font-black text-primary uppercase leading-tight">Rupees {amountToWords(selectedSale?.price || 0)} Only</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <h5 className="text-[9px] font-black uppercase text-primary mb-2">Payment Details</h5>
-                        <div className="text-[9px] space-y-1 font-bold">
-                          <p>Method: <span className="text-black">{selectedSale?.paymentMethod}</span></p>
-                          {selectedSale?.paymentMethod === 'Finance' && (
-                            <>
-                              <p>Financier: {selectedSale?.financeCompany}</p>
-                              <p>Loan Amount: ₹ {selectedSale?.loanAmount?.toLocaleString()}</p>
-                            </>
-                          )}
-                          {selectedSale?.utrNumber && <p>TXN/UTR: {selectedSale.utrNumber}</p>}
-                        </div>
-                      </div>
-                      
-                      <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <h5 className="text-[9px] font-black uppercase text-primary mb-2">Bank Details</h5>
-                        <div className="text-[9px] space-y-0.5 text-gray-600 font-medium">
-                          <p className="text-black font-bold">{showroom?.bankName || '-'}</p>
-                          <p>A/c: {showroom?.accountNumber || '-'}</p>
-                          <p>IFSC: {showroom?.ifsc || '-'}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="w-1/3 bg-gray-50 rounded-xl overflow-hidden border-2 border-gray-100">
-                    <div className="p-4 space-y-3 text-[11px] font-bold">
-                      <div className="flex justify-between"><span className="text-gray-400">Subtotal:</span> <span>₹ {selectedSale?.price?.toLocaleString()}.00</span></div>
-                      <div className="flex justify-between"><span className="text-gray-400">Tax/GST:</span> <span>₹ 0.00</span></div>
-                    </div>
-                    <div className="bg-primary p-4 text-white text-center">
-                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1">Grand Total</p>
-                      <p className="text-3xl font-black">₹ {selectedSale?.price?.toLocaleString()}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-auto pt-10 flex justify-between items-end">
-                  <div className="text-center">
-                    <div className="w-48 border-t border-black mb-1"></div>
-                    <p className="text-[10px] font-black uppercase">Customer Signature</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] font-black uppercase mb-12 text-primary">For {showroom?.name || 'AMRESH AUTOMOBILE'}</p>
-                    <div className="w-56 border-t-2 border-black mb-1"></div>
-                    <p className="text-[9px] font-black uppercase">Authorised Signatory</p>
+                
+                <div className="text-right">
+                  <h2 className="text-5xl font-black text-gray-100 uppercase tracking-tighter">INVOICE</h2>
+                  <div className="mt-4 space-y-1">
+                    <p className="text-sm font-bold"><span className="text-gray-400">Invoice No:</span> <span className="text-primary">{selectedSale?.invoiceNo}</span></p>
+                    <p className="text-sm font-bold"><span className="text-gray-400">Date:</span> {selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'dd/MM/yyyy') : 'N/A'}</p>
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Template precision overlay mode */}
-            {isTemplateMode && (
-              <div className="absolute inset-0 z-10 p-[10mm]">
-                {/* Invoice No & Date */}
-                <div className="absolute top-[34mm] right-[10mm] text-right text-xs font-black">
-                  <p className="mb-2 text-primary">{selectedSale?.invoiceNo}</p>
-                  <p>{selectedSale?.soldAt ? format(new Date(selectedSale.soldAt), 'dd/MM/yyyy') : '-'}</p>
-                </div>
+              {/* Watermark (Optional Branding) */}
+              <div className="invoice-watermark">
+                <Zap className="h-[250px] w-[250px] text-primary/5" />
+              </div>
 
-                {/* Customer Details Box */}
-                <div className="absolute top-[68mm] left-[15mm] w-[80mm] space-y-2 text-[11px] font-black leading-tight">
-                  <p className="text-base">{selectedSale?.customerName}</p>
-                  <p>{selectedSale?.customerFatherName || '-'}</p>
-                  <p className="text-[9px] leading-snug">{selectedSale?.address}, {selectedSale?.city}, {selectedSale?.state} - {selectedSale?.pin}</p>
-                  <p>{selectedSale?.mobile}</p>
-                  <p>{selectedSale?.idNumber}</p>
-                </div>
-
-                {/* Vehicle Details Box */}
-                <div className="absolute top-[68mm] right-[15mm] w-[80mm] grid grid-cols-2 gap-y-3 text-[10px] font-black">
-                  <div className="col-span-2">
-                    <p className="text-sm text-primary">{selectedSale?.model}</p>
-                    <p>{selectedSale?.variant || '-'}</p>
-                  </div>
-                  <p>{selectedSale?.color || '-'}</p>
-                  <p>{selectedSale?.batteryType || '-'}</p>
-                  <p className="col-span-2">{selectedSale?.chassisNumber}</p>
-                  <p className="col-span-2">{selectedSale?.motorNumber || '-'}</p>
-                  <p>{selectedSale?.registrationNumber || 'Applied'}</p>
-                  <p>{selectedSale?.claimedRange || '-'}</p>
-                </div>
-
-                {/* Table Data */}
-                <div className="absolute top-[138mm] left-[10mm] w-[190mm]">
-                  <div className="flex items-center text-[11px] font-black py-4 border-b">
-                    <span className="w-12 text-center">1</span>
-                    <span className="flex-1 px-4">{selectedSale?.model} {selectedSale?.variant}</span>
-                    <span className="w-24 text-center">{selectedSale?.hsn || '871160'}</span>
-                    <span className="w-16 text-center">1</span>
-                    <span className="w-28 text-right">₹ {selectedSale?.price?.toLocaleString()}</span>
-                    <span className="w-32 text-right">₹ {selectedSale?.price?.toLocaleString()}</span>
+              {/* Detail Blocks */}
+              <div className="grid grid-cols-2 gap-8 mb-8">
+                <div className="border border-gray-200 rounded-xl p-5 bg-gray-50/50">
+                  <h4 className="text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/20 pb-2 mb-3">Customer Information</h4>
+                  <div className="space-y-1.5 text-[11px]">
+                    <p className="text-lg font-black uppercase text-black leading-none">{selectedSale?.customerName}</p>
+                    <p className="text-gray-600 font-bold">{selectedSale?.customerFatherName ? `S/O, W/O: ${selectedSale.customerFatherName}` : '-'}</p>
+                    <p className="leading-snug text-gray-700">{selectedSale?.address}, {selectedSale?.city}, {selectedSale?.state} - {selectedSale?.pin}</p>
+                    <p><span className="text-gray-400 uppercase text-[9px]">Mobile:</span> <span className="font-bold">{selectedSale?.mobile}</span></p>
+                    <p><span className="text-gray-400 uppercase text-[9px]">{selectedSale?.idType || 'ID'}:</span> <span className="font-bold">{selectedSale?.idNumber}</span></p>
                   </div>
                 </div>
 
-                {/* Totals & Words */}
-                <div className="absolute bottom-[80mm] left-[15mm] w-[110mm]">
-                  <p className="text-[10px] font-black text-primary uppercase leading-tight">
-                    Rupees {amountToWords(selectedSale?.price || 0)} Only
-                  </p>
+                <div className="border border-gray-200 rounded-xl p-5 bg-gray-50/50">
+                  <h4 className="text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/20 pb-2 mb-3">Vehicle Specifications</h4>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px]">
+                    <div className="col-span-2 mb-1">
+                      <p className="text-lg font-black text-primary uppercase leading-none">{selectedSale?.model}</p>
+                      <p className="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">{selectedSale?.variant || 'Standard Edition'}</p>
+                    </div>
+                    <p><span className="text-gray-400 uppercase text-[9px]">Color:</span> <span className="font-bold">{selectedSale?.color || '-'}</span></p>
+                    <p><span className="text-gray-400 uppercase text-[9px]">Battery:</span> <span className="font-bold">{selectedSale?.batteryType || '-'}</span></p>
+                    <p className="col-span-2"><span className="text-gray-400 uppercase text-[9px]">Chassis:</span> <span className="font-mono font-bold text-black border-b border-gray-300">{selectedSale?.chassisNumber}</span></p>
+                    <p className="col-span-2"><span className="text-gray-400 uppercase text-[9px]">Motor No:</span> <span className="font-bold">{selectedSale?.motorNumber || '-'}</span></p>
+                    <p><span className="text-gray-400 uppercase text-[9px]">Reg No:</span> <span className="font-bold">{selectedSale?.registrationNumber || 'Applied'}</span></p>
+                    <p><span className="text-gray-400 uppercase text-[9px]">Range:</span> <span className="font-bold">{selectedSale?.claimedRange || '-'}</span></p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <div className="flex-1">
+                <table className="w-full invoice-table border-collapse rounded-lg overflow-hidden border-2 border-black">
+                  <thead>
+                    <tr>
+                      <th className="w-12 text-center">Sr.</th>
+                      <th className="text-left">Item Description</th>
+                      <th className="w-24 text-center">HSN</th>
+                      <th className="w-16 text-center">Qty</th>
+                      <th className="w-28 text-right">Rate</th>
+                      <th className="w-32 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="min-h-[140px] align-top">
+                      <td className="text-center font-bold">1</td>
+                      <td className="p-4">
+                        <p className="font-black text-sm uppercase leading-none">{selectedSale?.model} {selectedSale?.variant}</p>
+                        <p className="text-[9px] text-gray-500 mt-1 uppercase tracking-tighter">High-Speed Eco-Friendly Electric Mobility Vehicle</p>
+                        <ul className="mt-3 space-y-1 text-[8px] text-gray-400 font-bold uppercase italic">
+                          <li>- Zero Emissions technology</li>
+                          <li>- Smart Dashboard connectivity</li>
+                          <li>- High Performance Battery Unit</li>
+                        </ul>
+                      </td>
+                      <td className="text-center font-mono">{selectedSale?.hsn || '871160'}</td>
+                      <td className="text-center font-bold">1</td>
+                      <td className="text-right font-mono">₹ {selectedSale?.price?.toLocaleString()}.00</td>
+                      <td className="text-right font-mono font-bold text-black">₹ {selectedSale?.price?.toLocaleString()}.00</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Summary Footer */}
+              <div className="flex justify-between items-start pt-8">
+                <div className="w-2/3 space-y-5">
+                  <div>
+                    <p className="text-[9px] font-black text-gray-400 uppercase italic mb-1">Amount in Words:</p>
+                    <p className="text-sm font-black text-primary uppercase leading-tight border-b-2 border-primary/10 pb-2">Rupees {amountToWords(selectedSale?.price || 0)} Only</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                      <h5 className="text-[10px] font-black uppercase text-primary mb-3 flex items-center gap-2">
+                        <Activity className="h-3 w-3" /> Payment Status
+                      </h5>
+                      <div className="text-[10px] space-y-1.5 font-bold">
+                        <p className="flex justify-between"><span>Method:</span> <span className="text-black uppercase">{selectedSale?.paymentMethod}</span></p>
+                        {selectedSale?.paymentMethod === 'Finance' && (
+                          <>
+                            <p className="flex justify-between"><span>Financier:</span> <span className="text-black uppercase">{selectedSale?.financeCompany}</span></p>
+                            <p className="flex justify-between"><span>Loan:</span> <span className="text-black">₹ {selectedSale?.loanAmount?.toLocaleString()}</span></p>
+                          </>
+                        )}
+                        {selectedSale?.utrNumber && <p className="flex justify-between"><span>TXN/UTR:</span> <span className="text-black font-mono">{selectedSale.utrNumber}</span></p>}
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                      <h5 className="text-[10px] font-black uppercase text-primary mb-3 flex items-center gap-2">
+                        <Landmark className="h-3 w-3" /> Settlement Details
+                      </h5>
+                      <div className="text-[9px] space-y-1 text-gray-600 font-medium">
+                        <p className="text-black font-black uppercase">{showroom?.bankName || '-'}</p>
+                        <p><span className="text-gray-400">A/c:</span> <span className="font-bold">{showroom?.accountNumber || '-'}</span></p>
+                        <p><span className="text-gray-400">IFSC:</span> <span className="font-bold">{showroom?.ifsc || '-'}</span></p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-[8px] text-gray-400 font-bold space-y-0.5 uppercase">
+                    <p>* Goods once sold will not be taken back.</p>
+                    <p>* Warranty as per company policy. Khunti Jurisdiction only.</p>
+                  </div>
                 </div>
 
-                <div className="absolute bottom-[60mm] right-[10mm] w-[60mm] text-right">
-                  <p className="text-3xl font-black text-white p-4 bg-primary rounded-lg text-center">
-                    ₹ {selectedSale?.price?.toLocaleString()}
-                  </p>
+                <div className="w-1/3 bg-gray-50 rounded-xl overflow-hidden border-2 border-black">
+                  <div className="p-5 space-y-4 text-[11px] font-bold">
+                    <div className="flex justify-between"><span className="text-gray-500 uppercase text-[9px]">Subtotal</span> <span>₹ {selectedSale?.price?.toLocaleString()}.00</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500 uppercase text-[9px]">GST (0%)</span> <span>₹ 0.00</span></div>
+                    <div className="flex justify-between border-t border-gray-200 pt-2"><span className="text-gray-500 uppercase text-[9px]">Net Payable</span> <span>₹ {selectedSale?.price?.toLocaleString()}.00</span></div>
+                  </div>
+                  <div className="bg-primary p-5 text-white text-center">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-1 opacity-80">Grand Total</p>
+                    <p className="text-4xl font-black">₹ {selectedSale?.price?.toLocaleString()}</p>
+                  </div>
                 </div>
+              </div>
 
-                {/* Signatures */}
-                <div className="absolute bottom-[25mm] left-[20mm] text-center">
-                  <p className="text-[9px] font-black uppercase">Customer Signature</p>
+              {/* Signatures */}
+              <div className="mt-auto pt-14 flex justify-between items-end pb-4">
+                <div className="text-center">
+                  <div className="w-48 border-t border-gray-300 mb-2"></div>
+                  <p className="text-[9px] font-black uppercase text-gray-400">Customer Signature</p>
                 </div>
-                <div className="absolute bottom-[25mm] right-[20mm] text-center">
+                <div className="text-center">
+                  <p className="text-[10px] font-black uppercase mb-14 text-primary">For {showroom?.name || 'AMRESH AUTOMOBILE'}</p>
+                  <div className="w-56 border-t-2 border-black mb-2"></div>
                   <p className="text-[9px] font-black uppercase">Authorised Signatory</p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
