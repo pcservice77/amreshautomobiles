@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Save, Building, Landmark, ToggleLeft } from 'lucide-react';
+import { Save, Building, Landmark, ToggleLeft, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -30,6 +30,7 @@ const settingsSchema = z.object({
   ifsc: z.string().optional(),
   branch: z.string().optional(),
   useLetterhead: z.boolean().default(false),
+  letterheadUrl: z.string().optional(),
 });
 
 export default function ShowroomSettingsPage() {
@@ -58,6 +59,7 @@ export default function ShowroomSettingsPage() {
       ifsc: '',
       branch: '',
       useLetterhead: false,
+      letterheadUrl: '',
     },
   });
 
@@ -76,6 +78,7 @@ export default function ShowroomSettingsPage() {
         ifsc: showroom.ifsc || '',
         branch: showroom.branch || '',
         useLetterhead: !!showroom.useLetterhead,
+        letterheadUrl: showroom.letterheadUrl || '',
       });
     }
   }, [showroom, form]);
@@ -102,7 +105,7 @@ export default function ShowroomSettingsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-headline font-bold text-foreground">Business Configuration</h1>
-          <p className="text-muted-foreground text-foreground">Manage your showroom identity, bank details, and printing preferences.</p>
+          <p className="text-muted-foreground">Manage your showroom identity, bank details, and printing preferences.</p>
         </div>
       </div>
 
@@ -170,16 +173,16 @@ export default function ShowroomSettingsPage() {
               <ToggleLeft className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg text-primary font-bold">Print Preferences</CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 space-y-6">
               <FormField
                 control={form.control}
                 name="useLetterhead"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Use Pre-printed Letterhead</FormLabel>
+                      <FormLabel className="text-base">Use Background Template Image</FormLabel>
                       <FormDescription>
-                        Enable this if you print on paper that already has your logo and address.
+                        Enable this to print billing details on top of your custom invoice image.
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -191,6 +194,22 @@ export default function ShowroomSettingsPage() {
                   </FormItem>
                 )}
               />
+
+              {form.watch('useLetterhead') && (
+                <FormField control={form.control} name="letterheadUrl" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <ImageIcon className="h-4 w-4" /> Template Image URL
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter URL of your invoice background image..." {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Upload your invoice template to a hosting service and paste the direct link here.
+                    </FormDescription>
+                  </FormItem>
+                )} />
+              )}
             </CardContent>
           </Card>
 
