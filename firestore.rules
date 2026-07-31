@@ -7,13 +7,9 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Get user data once per request
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
-
+    // Safer role check that avoids potential circular recursion in rules
     function hasRole(role) {
-      return isAuthenticated() && getUserData().role == role;
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
     }
 
     function isAdmin() {
@@ -21,7 +17,7 @@ service cloud.firestore {
     }
     
     function isBranchAdmin(branchId) {
-      let userData = getUserData();
+      let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
       return isAuthenticated() && 
         userData.role == 'branch_admin' && 
         userData.assignedBranchId == branchId;
@@ -29,6 +25,7 @@ service cloud.firestore {
 
     // User Profile Rules
     match /users/{uid} {
+      // Users can read their own record, or an admin can read any record.
       allow read: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
       allow create: if isAuthenticated() && request.auth.uid == uid;
       allow update: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
@@ -43,20 +40,17 @@ service cloud.firestore {
 
     // Sales Record Rules
     match /sales/{saleId} {
-      // Allow branch admins to list sales if they filter by their own branchId
-      // Or allow admins to read everything
-      allow read: if isAdmin() || (isAuthenticated() && (
-        (resource == null || resource.data.branchId == getUserData().assignedBranchId) ||
-        hasRole('branch_admin')
-      ));
-      allow create: if isAdmin() || hasRole('branch_admin');
+      allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow create: if isAdmin() || (isAuthenticated() && hasRole('branch_admin'));
       allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
-      allow delete: if isAdmin();
+      // Allow Main Admin to delete any sale, and Branch Admins to delete sales from their branch
+      allow delete: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
     }
 
     // Branch Rules
     match /branches/{branchId} {
       allow read: if true;
+      // Allow Branch Admins to update their own showroom details
       allow update: if isAdmin() || isBranchAdmin(branchId);
       allow create, delete: if isAdmin();
     }
@@ -64,11 +58,10 @@ service cloud.firestore {
     // Test Ride Booking Rules
     match /bookings/{bookingId} {
       allow create: if true;
-      allow read: if isAdmin() || (isAuthenticated() && (
-        hasRole('branch_admin') // Allow branch admins to see bookings to filter them
-      ));
+      allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
       allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
-      allow delete: if isAdmin();
+      // Allow Branch Admins to manage/delete bookings for their branch
+      allow delete: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
     }
 
     // Showroom Settings Rules

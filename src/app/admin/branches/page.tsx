@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef } from 'react';
@@ -46,7 +45,7 @@ export default function BranchesPage() {
   const [editingBranch, setEditingBranch] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const branchesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
