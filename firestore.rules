@@ -1,9 +1,68 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Unrestricted access for all core showroom operations
-    match /{document=**} {
-      allow read, write: if true;
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Safer role check that avoids potential circular recursion in rules
+    function hasRole(role) {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    function isBranchAdmin(branchId) {
+      let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return isAuthenticated() && 
+        userData.role == 'branch_admin' && 
+        userData.assignedBranchId == branchId;
+    }
+
+    // User Profile Rules
+    match /users/{uid} {
+      allow read: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == uid;
+      allow update: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Scooter Inventory Rules
+    match /scooters/{scooterId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Sales Record Rules
+    match /sales/{saleId} {
+      allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow create: if isAdmin() || (isAuthenticated() && hasRole('branch_admin'));
+      allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow delete: if isAdmin();
+    }
+
+    // Branch Rules
+    match /branches/{branchId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Test Ride Booking Rules
+    match /bookings/{bookingId} {
+      allow create: if true;
+      allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow delete: if isAdmin();
+    }
+
+    // Showroom Settings Rules
+    match /settings/showroom {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }
