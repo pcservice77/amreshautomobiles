@@ -63,11 +63,12 @@ export default function InventoryPage() {
           });
         })
         .catch(async (err) => {
-          errorEmitter.emit('permission-error', new FirestorePermissionError({
+          const permissionError = new FirestorePermissionError({
             path: scooterRef.path,
             operation: 'update',
             requestResourceData: scooterData,
-          }));
+          });
+          errorEmitter.emit('permission-error', permissionError);
         });
     } else {
       addDoc(collection(firestore, 'scooters'), scooterData)
@@ -78,11 +79,12 @@ export default function InventoryPage() {
           });
         })
         .catch(async (err) => {
-          errorEmitter.emit('permission-error', new FirestorePermissionError({
+          const permissionError = new FirestorePermissionError({
             path: 'scooters',
             operation: 'create',
             requestResourceData: scooterData,
-          }));
+          });
+          errorEmitter.emit('permission-error', permissionError);
         });
     }
     
@@ -101,10 +103,11 @@ export default function InventoryPage() {
         });
       })
       .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
+        const permissionError = new FirestorePermissionError({
           path: docRef.path,
           operation: 'delete',
-        }));
+        });
+        errorEmitter.emit('permission-error', permissionError);
       });
     
     setDeleteId(null);
