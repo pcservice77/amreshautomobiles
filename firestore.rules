@@ -35,7 +35,8 @@ service cloud.firestore {
     // Scooter Inventory Rules
     match /scooters/{scooterId} {
       allow read: if true;
-      allow write: if isAdmin();
+      // Allow both Main Admins and Branch Admins to manage the fleet
+      allow write: if isAdmin() || hasRole('branch_admin');
     }
 
     // Sales Record Rules
