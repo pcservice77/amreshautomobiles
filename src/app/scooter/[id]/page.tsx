@@ -74,14 +74,14 @@ export default function ScooterDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
           {/* Visuals Section */}
           <div className="space-y-6">
-            <div className="relative aspect-square rounded-3xl overflow-hidden group shadow-2xl border border-white/5 bg-card">
+            <div className="relative w-full h-[300px] md:h-[500px] rounded-3xl overflow-hidden group shadow-2xl border border-white/5 bg-zinc-900/30">
               {scooter.images && scooter.images.length > 0 ? (
                 <>
                   <Image 
                     src={scooter.images[activeImageIdx]} 
                     alt={scooter.model} 
                     fill 
-                    className="object-fill transition-transform duration-700 group-hover:scale-105"
+                    className="object-contain transition-transform duration-700 group-hover:scale-105"
                     unoptimized
                   />
                   {scooter.images.length > 1 && (
@@ -111,11 +111,11 @@ export default function ScooterDetailsPage() {
                   key={idx}
                   onClick={() => setActiveImageIdx(idx)}
                   className={cn(
-                    "relative w-24 aspect-square rounded-xl overflow-hidden border-2 transition-all flex-shrink-0",
+                    "relative w-24 aspect-square rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 bg-zinc-900",
                     activeImageIdx === idx ? "border-primary scale-105 shadow-lg shadow-primary/20" : "border-transparent opacity-60 hover:opacity-100"
                   )}
                 >
-                  <Image src={img} alt={`${scooter.model} ${idx}`} fill className="object-fill" unoptimized />
+                  <Image src={img} alt={`${scooter.model} ${idx}`} fill className="object-contain" unoptimized />
                 </button>
               ))}
             </div>

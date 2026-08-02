@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Battery, Gauge, Zap } from 'lucide-react';
+import { Battery, Gauge } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
 import { Scooter } from '@/lib/db-mock';
 
 interface ScooterCardProps {
@@ -28,19 +29,26 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
   return (
     <Card className="group overflow-hidden border-white/5 bg-card/40 transition-all hover:bg-card/60 hover:border-primary/30">
       <CardHeader className="p-0">
-        <Carousel className="w-full">
+        <Carousel 
+          className="w-full"
+          plugins={[
+            Autoplay({
+              delay: 3000,
+            }),
+          ]}
+        >
           <CarouselContent>
             {images.map((image, index) => (
               <CarouselItem key={index}>
-                <div className="relative aspect-[4/3] overflow-hidden bg-zinc-900">
+                <div className="relative w-full h-64 overflow-hidden bg-zinc-900/50">
                   <Image
                     src={image}
                     alt={`${scooter.model} - Image ${index + 1}`}
                     fill
-                    className="object-fill transition-transform duration-500 group-hover:scale-105"
+                    className="object-contain transition-transform duration-500 group-hover:scale-105"
                     unoptimized
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent pointer-events-none" />
                 </div>
               </CarouselItem>
             ))}
