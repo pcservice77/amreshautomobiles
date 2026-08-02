@@ -7,6 +7,13 @@ import { Battery, Gauge, Zap } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 import { Scooter } from '@/lib/db-mock';
 
 interface ScooterCardProps {
@@ -14,26 +21,40 @@ interface ScooterCardProps {
 }
 
 export function ScooterCard({ scooter }: ScooterCardProps) {
-  const displayImage = scooter.images && scooter.images.length > 0 
-    ? scooter.images[0] 
-    : 'https://picsum.photos/seed/scoot/600/400';
+  const images = scooter.images && scooter.images.length > 0 
+    ? scooter.images 
+    : ['https://picsum.photos/seed/scoot/600/400'];
 
   return (
     <Card className="group overflow-hidden border-white/5 bg-card/40 transition-all hover:bg-card/60 hover:border-primary/30">
       <CardHeader className="p-0">
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <Image
-            src={displayImage}
-            alt={scooter.model}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-          <Badge className="absolute top-4 right-4 bg-accent text-accent-foreground font-bold">
+        <Carousel className="w-full">
+          <CarouselContent>
+            {images.map((image, index) => (
+              <CarouselItem key={index}>
+                <div className="relative aspect-[4/3] overflow-hidden bg-zinc-900">
+                  <Image
+                    src={image}
+                    alt={`${scooter.model} - Image ${index + 1}`}
+                    fill
+                    className="object-fill transition-transform duration-500 group-hover:scale-105"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {images.length > 1 && (
+            <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
+              <CarouselPrevious className="relative left-0 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CarouselNext className="relative right-0 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          )}
+          <Badge className="absolute top-4 right-4 bg-accent text-accent-foreground font-bold z-10">
             NEW
           </Badge>
-        </div>
+        </Carousel>
       </CardHeader>
       <CardContent className="p-6">
         <h3 className="font-headline text-2xl font-bold mb-2">{scooter.model}</h3>

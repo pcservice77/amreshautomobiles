@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useRef } from 'react';
@@ -132,8 +133,8 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
           <FormLabel>Scooter Photos (Max 5, 5MB each)</FormLabel>
           <div className="grid grid-cols-5 gap-4">
             {form.watch('images')?.map((img, idx) => (
-              <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 group">
-                <Image src={img} alt="Scooter" fill className="object-cover" unoptimized />
+              <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 group bg-zinc-900">
+                <Image src={img} alt="Scooter Preview" fill className="object-fill" unoptimized />
                 <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-destructive p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                   <X className="h-3 w-3 text-white" />
                 </button>

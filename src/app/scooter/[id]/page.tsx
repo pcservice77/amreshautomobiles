@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useParams, useRouter } from 'next/navigation';
@@ -53,7 +54,6 @@ export default function ScooterDetailsPage() {
     }
   };
 
-  // Safe color processing to prevent .split() crash
   const colors = typeof scooter.availableColors === 'string' 
     ? scooter.availableColors.split(',').map((c: string) => c.trim()).filter(Boolean) 
     : [];
@@ -81,7 +81,7 @@ export default function ScooterDetailsPage() {
                     src={scooter.images[activeImageIdx]} 
                     alt={scooter.model} 
                     fill 
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="object-fill transition-transform duration-700 group-hover:scale-105"
                     unoptimized
                   />
                   {scooter.images.length > 1 && (
@@ -115,7 +115,7 @@ export default function ScooterDetailsPage() {
                     activeImageIdx === idx ? "border-primary scale-105 shadow-lg shadow-primary/20" : "border-transparent opacity-60 hover:opacity-100"
                   )}
                 >
-                  <Image src={img} alt={`${scooter.model} ${idx}`} fill className="object-cover" unoptimized />
+                  <Image src={img} alt={`${scooter.model} ${idx}`} fill className="object-fill" unoptimized />
                 </button>
               ))}
             </div>
