@@ -103,7 +103,7 @@ export default function Home() {
       <section className="py-24 bg-card/10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="font-headline text-4xl font-bold mb-4">Our <span className="text-primary">Showroom Network in Ranchi & Khunti</span></h2>
+            <h2 className="font-headline text-4xl font-bold mb-4">Our <span className="text-primary">Showroom Network</span></h2>
             <p className="text-muted-foreground">Visit Amresh Automobiles at any of our branches for a personalized EV experience.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
