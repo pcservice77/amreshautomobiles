@@ -64,7 +64,52 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
     },
   });
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Could not get canvas context'));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Compress to JPEG at 80% quality
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          resolve(dataUrl);
+        };
+        img.onerror = reject;
+      };
+      reader.onerror = reject;
+    });
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
@@ -76,26 +121,26 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
 
     setIsUploading(true);
     const promises = Array.from(files).map((file) => {
-      return new Promise<string>((resolve, reject) => {
-        // Reduced limit to 500KB to ensure document fits in Firestore 1MB limit
-        if (file.size > 500 * 1024) {
-          reject(new Error(`${file.name} is too large. Max 500KB per image allowed.`));
-          return;
-        }
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      // Support files up to 10MB as we will compress them
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ variant: 'destructive', title: 'File too large', description: `${file.name} exceeds 10MB.` });
+        return Promise.reject(new Error('File too large'));
+      }
+      return compressImage(file);
     });
 
-    Promise.all(promises)
-      .then((newImages) => {
-        form.setValue('images', [...currentImages, ...newImages]);
-        toast({ title: 'Success', description: 'Images processed.' });
-      })
-      .catch((err) => toast({ variant: 'destructive', title: 'Upload Error', description: err.message }))
-      .finally(() => setIsUploading(false));
+    try {
+      const newImages = await Promise.all(promises);
+      form.setValue('images', [...currentImages, ...newImages]);
+      toast({ title: 'Success', description: 'Images compressed and uploaded successfully.' });
+    } catch (err: any) {
+      if (err.message !== 'File too large') {
+        toast({ variant: 'destructive', title: 'Upload Error', description: 'Failed to process images.' });
+      }
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const removeImage = (idx: number) => {
@@ -132,9 +177,9 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Alert variant="secondary" className="bg-primary/5 border-primary/20">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Image Guidelines</AlertTitle>
+          <AlertTitle>Smart Image Engine Active</AlertTitle>
           <AlertDescription>
-            Upload clear photos of the scooter. Maximum 5 images. Each image must be under 500KB to ensure persistence.
+            You can upload high-quality photos up to 10MB. Our system will automatically compress and resize them to ensure perfect site performance.
           </AlertDescription>
         </Alert>
 
