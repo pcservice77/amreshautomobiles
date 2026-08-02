@@ -1,17 +1,17 @@
-
 "use client"
 
 import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Sparkles, Loader2, Save, Upload, X, Plus } from 'lucide-react';
+import { Sparkles, Loader2, Save, Upload, X, Plus, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { generateScooterDescription } from '@/ai/flows/generate-scooter-description';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Image from 'next/image';
 
 const formSchema = z.object({
@@ -77,8 +77,9 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
     setIsUploading(true);
     const promises = Array.from(files).map((file) => {
       return new Promise<string>((resolve, reject) => {
-        if (file.size > 5 * 1024 * 1024) {
-          reject(new Error(`${file.name} is too large (Max 5MB)`));
+        // Reduced limit to 500KB to ensure document fits in Firestore 1MB limit
+        if (file.size > 500 * 1024) {
+          reject(new Error(`${file.name} is too large. Max 500KB per image allowed.`));
           return;
         }
         const reader = new FileReader();
@@ -91,7 +92,7 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
     Promise.all(promises)
       .then((newImages) => {
         form.setValue('images', [...currentImages, ...newImages]);
-        toast({ title: 'Success', description: 'Images uploaded.' });
+        toast({ title: 'Success', description: 'Images processed.' });
       })
       .catch((err) => toast({ variant: 'destructive', title: 'Upload Error', description: err.message }))
       .finally(() => setIsUploading(false));
@@ -129,12 +130,20 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Alert variant="secondary" className="bg-primary/5 border-primary/20">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Image Guidelines</AlertTitle>
+          <AlertDescription>
+            Upload clear photos of the scooter. Maximum 5 images. Each image must be under 500KB to ensure persistence.
+          </AlertDescription>
+        </Alert>
+
         <div className="space-y-4">
-          <FormLabel>Scooter Photos (Max 5, 5MB each)</FormLabel>
+          <FormLabel>Scooter Photos</FormLabel>
           <div className="grid grid-cols-5 gap-4">
             {form.watch('images')?.map((img, idx) => (
               <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 group bg-zinc-900">
-                <Image src={img} alt="Scooter Preview" fill className="object-fill" unoptimized />
+                <Image src={img} alt="Scooter Preview" fill className="object-contain" unoptimized />
                 <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-destructive p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                   <X className="h-3 w-3 text-white" />
                 </button>
@@ -199,7 +208,7 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
           </FormItem>
         )} />
 
-        <Button type="submit" className="w-full gap-2" disabled={isUploading}>
+        <Button type="submit" className="w-full gap-2 h-12" disabled={isUploading}>
           <Save className="h-4 w-4" /> {initialData ? 'Update Model' : 'Save to Inventory'}
         </Button>
       </form>

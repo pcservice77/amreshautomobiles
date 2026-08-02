@@ -71,8 +71,9 @@ export default function BranchesPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ variant: 'destructive', title: 'File too large', description: 'Maximum 5MB allowed.' });
+    // Limit to 500KB for branch photos
+    if (file.size > 500 * 1024) {
+      toast({ variant: 'destructive', title: 'File too large', description: 'Max 500KB allowed per image.' });
       return;
     }
 
@@ -130,7 +131,7 @@ export default function BranchesPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-headline font-bold">Showroom Locations</h1>
-          <p className="text-muted-foreground">Manage branch offices with professional square logos.</p>
+          <p className="text-muted-foreground">Manage branch offices. Keep images small (under 500KB).</p>
         </div>
         <Dialog open={isAddOpen || !!editingBranch} onOpenChange={(open) => {
           if (!open) {
@@ -148,14 +149,14 @@ export default function BranchesPage() {
             <DialogHeader>
               <DialogTitle>{editingBranch ? 'Edit Showroom' : 'New Showroom Registration'}</DialogTitle>
               <DialogDescription>
-                Provide the showroom details and upload a photo for branding.
+                Provide details and upload a photo. Max size 500KB.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6 pt-4">
               <div className="flex flex-col items-center">
                 <div className="relative aspect-square w-64 bg-secondary rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-white/10 group">
                   {form.watch('imageUrl') ? (
-                    <Image src={form.watch('imageUrl')} alt="Preview" fill className="object-cover" unoptimized />
+                    <Image src={form.watch('imageUrl')} alt="Preview" fill className="object-contain" unoptimized />
                   ) : (
                     <Building className="h-10 w-10 text-muted-foreground" />
                   )}
@@ -166,7 +167,7 @@ export default function BranchesPage() {
                   </div>
                 </div>
                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-                <p className="text-xs text-muted-foreground mt-2">Square format required (Max 5MB)</p>
+                <p className="text-xs text-muted-foreground mt-2">Maximum 500KB for Firestore stability</p>
               </div>
 
               <Form {...form}>
@@ -213,7 +214,7 @@ export default function BranchesPage() {
         {filteredBranches.map((branch) => (
           <Card key={branch.id} className="overflow-hidden bg-card/40 border-white/5 relative group">
             <div className="relative aspect-square w-full">
-              <Image src={branch.imageUrl || 'https://picsum.photos/seed/br/600/400'} alt={branch.name} fill className="object-cover" unoptimized />
+              <Image src={branch.imageUrl || 'https://picsum.photos/seed/br/600/400'} alt={branch.name} fill className="object-contain" unoptimized />
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() => {
                   setEditingBranch(branch);
@@ -237,7 +238,6 @@ export default function BranchesPage() {
         ))}
       </div>
 
-      {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -32,8 +31,6 @@ export default function InventoryPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingScooter, setEditingScooter] = useState<any>(null);
   const [search, setSearch] = useState('');
-  
-  // AlertDialog state
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const scootersQuery = useMemoFirebase(() => {
@@ -59,7 +56,7 @@ export default function InventoryPage() {
         .then(() => {
           toast({
             title: 'Model Updated',
-            description: `${data.model} has been updated successfully.`,
+            description: `${data.model} has been saved successfully.`,
           });
         })
         .catch(async (err) => {
@@ -69,6 +66,7 @@ export default function InventoryPage() {
             requestResourceData: scooterData,
           });
           errorEmitter.emit('permission-error', permissionError);
+          toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not update record. Check image sizes.' });
         });
     } else {
       addDoc(collection(firestore, 'scooters'), scooterData)
@@ -85,6 +83,7 @@ export default function InventoryPage() {
             requestResourceData: scooterData,
           });
           errorEmitter.emit('permission-error', permissionError);
+          toast({ variant: 'destructive', title: 'Upload Failed', description: 'Could not add model. Doc might be too large.' });
         });
     }
     
@@ -143,7 +142,7 @@ export default function InventoryPage() {
                 {editingScooter ? `Edit ${editingScooter.model}` : 'New Scooter Model'}
               </DialogTitle>
               <DialogDescription>
-                Fill out the technical specifications and upload photos for the scooter model.
+                Fill out the technical specifications and upload photos. Keep images under 500KB.
               </DialogDescription>
             </DialogHeader>
             <ScooterForm 
@@ -183,7 +182,7 @@ export default function InventoryPage() {
                 <TableCell>
                   <div className="relative h-12 w-12 rounded-lg overflow-hidden border border-white/10">
                     {scooter.images?.[0] ? (
-                      <Image src={scooter.images[0]} alt={scooter.model} fill className="object-cover" unoptimized />
+                      <Image src={scooter.images[0]} alt={scooter.model} fill className="object-contain" unoptimized />
                     ) : (
                       <Package className="h-full w-full p-2 text-muted-foreground" />
                     )}
@@ -218,7 +217,6 @@ export default function InventoryPage() {
         </Table>
       </div>
 
-      {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
