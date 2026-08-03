@@ -6,24 +6,27 @@ import { FirebaseClientProvider } from '@/firebase';
 export const metadata: Metadata = {
   metadataBase: new URL('https://amreshautomobiles.in'),
   title: {
-    default: 'Amresh Automobiles | Best Electric Scooter Showroom in Jharkhand',
+    default: 'Amresh Automobiles | Best Electric Scooter Showroom in India',
     template: '%s | Amresh Automobiles'
   },
-  description: 'Discover the future of mobility at Amresh Automobiles. The leading EV scooty showroom in Ranchi, Khunti, and Jharkhand. Explore high-performance electric scooters, book test rides, and get easy EMI options.',
+  description: 'Discover the future of mobility at Amresh Automobiles. The leading EV scooty showroom in Jharkhand and across India. Explore high-performance electric scooters, book test rides, and get easy EMI options on top EV models.',
   keywords: [
     'amresh automobiles', 
     'automobiles', 
-    'ev scooty in jharkhand', 
+    'ev scooty in india', 
+    'best electric scooter jharkhand', 
     'ev scooty in ranchi', 
-    'new ev scooty', 
+    'new ev scooty 2025', 
     'ev scooty around me', 
     'electric scooter showroom khunti', 
-    'best ev scooty 2025', 
+    'best ev scooty in india', 
     'electric bike ranchi', 
     'amresh automobiles padampur',
     'electric vehicle showroom jharkhand',
     'buy electric scooter online india',
-    'eco-friendly scooty jharkhand'
+    'eco-friendly scooty india',
+    'high speed electric scooter india',
+    'low price ev scooty'
   ],
   alternates: {
     canonical: 'https://amreshautomobiles.in',
@@ -37,8 +40,8 @@ export const metadata: Metadata = {
     telephone: true,
   },
   openGraph: {
-    title: 'Amresh Automobiles | Electric Mobility Showroom',
-    description: 'Electrify your daily journey with the best EV scooters in Jharkhand. Visit Amresh Automobiles today!',
+    title: 'Amresh Automobiles | Leading Electric Mobility Showroom India',
+    description: 'Electrify your daily journey with the best EV scooters. Visit Amresh Automobiles today for the latest in electric vehicle technology.',
     url: 'https://amreshautomobiles.in',
     siteName: 'Amresh Automobiles',
     images: [
@@ -54,8 +57,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Amresh Automobiles | EV Scooty Jharkhand',
-    description: 'The future of transport is here. Explore our range of electric scooters in Ranchi and Khunti.',
+    title: 'Amresh Automobiles | EV Scooty India',
+    description: 'The future of transport is here. Explore our premium range of electric scooters in Jharkhand and across India.',
     images: ['https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png'],
   },
   robots: {
@@ -75,10 +78,12 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'AutomotiveBusiness',
   'name': 'Amresh Automobiles',
+  'description': 'Leading electric scooter showroom providing high-performance EV mobility solutions in Jharkhand and India.',
   'image': 'https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png',
   '@id': 'https://amreshautomobiles.in',
   'url': 'https://amreshautomobiles.in',
   'telephone': '+91 97989 10854',
+  'priceRange': '₹50000 - ₹200000',
   'address': {
     '@type': 'PostalAddress',
     'streetAddress': 'Main Showroom, Padampur',
@@ -104,7 +109,11 @@ const jsonLd = {
     ],
     'opens': '09:00',
     'closes': '19:00'
-  }
+  },
+  'sameAs': [
+    'https://www.facebook.com/amreshautomobiles',
+    'https://www.instagram.com/amreshautomobiles'
+  ]
 };
 
 export default function RootLayout({

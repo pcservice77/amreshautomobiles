@@ -42,7 +42,7 @@ export default function Home() {
         <div className="absolute inset-0 z-0">
           <Image
             src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
-            alt="Amresh Automobiles - Best EV Scooty in Jharkhand"
+            alt="Amresh Automobiles - Best EV Scooty in Jharkhand and India"
             fill
             className="object-cover opacity-70"
             priority
@@ -55,13 +55,13 @@ export default function Home() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-2xl">
             <div className="inline-flex items-center rounded-full border border-primary text-primary px-4 py-1 text-xs font-semibold mb-4 bg-primary/10 backdrop-blur-sm">
-              Future of Urban Mobility in Jharkhand
+              Future of Urban Mobility in Jharkhand & India
             </div>
             <h1 className="font-headline text-5xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-2xl">
               Electrify Your <span className="text-primary italic">Daily Journey.</span>
             </h1>
             <p className="text-lg text-foreground/90 mb-8 max-w-lg leading-relaxed font-medium drop-shadow-md">
-              Experience the power of sustainable engineering at <strong>Amresh Automobiles</strong>. We are the top-rated <strong>electric scooter showroom in Jharkhand</strong>, offering the latest EV technology.
+              Experience the power of sustainable engineering at <strong>Amresh Automobiles</strong>. We are the top-rated <strong>electric scooter showroom in Jharkhand</strong>, providing premium EV technology to all of India.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/#showroom">
@@ -83,8 +83,8 @@ export default function Home() {
       <section id="showroom" className="py-24 container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <h2 className="font-headline text-4xl font-bold mb-4">Latest <span className="text-primary">Electric Scooters</span></h2>
-            <p className="text-muted-foreground">Find the perfect EV scooty around you in Jharkhand.</p>
+            <h2 className="font-headline text-4xl font-bold mb-4">Latest <span className="text-primary">Electric Scooters in India</span></h2>
+            <p className="text-muted-foreground">Find the perfect EV scooty at Amresh Automobiles, Jharkhand's leading showroom.</p>
           </div>
         </div>
 
@@ -104,7 +104,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="font-headline text-4xl font-bold mb-4">Our <span className="text-primary">Showroom Network</span></h2>
-            <p className="text-muted-foreground">Visit Amresh Automobiles at any of our branches for a personalized EV experience.</p>
+            <p className="text-muted-foreground">Visit Amresh Automobiles for a personalized EV experience at the best price in India.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {branches?.map((branch) => (
@@ -143,19 +143,19 @@ export default function Home() {
             <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10">
               <Image
                 src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
-                alt="Amresh Automobiles Showroom Interior"
+                alt="Amresh Automobiles Showroom Interior - Best EV Scooty in India"
                 fill
                 className="object-cover"
                 data-ai-hint="showroom interior"
               />
             </div>
             <div>
-              <h2 className="font-headline text-4xl font-bold mb-6">Why Choose <span className="text-primary">Amresh Automobiles Jharkhand?</span></h2>
+              <h2 className="font-headline text-4xl font-bold mb-6">Why Choose <span className="text-primary">Amresh Automobiles?</span></h2>
               <div className="space-y-6">
                 {[
                   { title: "Smart Connectivity", desc: "Integrated app with GPS tracking, remote diagnostics, and OTA updates for all our electric scooters." },
-                  { title: "Rapid Charging", desc: "Get from 0 to 80% in less than 2 hours with our specialized charging points across Jharkhand." },
-                  { title: "Premium Service", desc: "Lifetime battery warranty and 24/7 roadside assistance for our EV customers." }
+                  { title: "Rapid Charging", desc: "Get from 0 to 80% in less than 2 hours with our specialized charging points." },
+                  { title: "Premium Service", desc: "Lifetime battery warranty and 24/7 roadside assistance for our EV customers across Jharkhand." }
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4">
                     <div className="bg-primary/20 p-2 rounded-lg h-fit">
@@ -168,11 +168,13 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <Link href="/test-ride" className="inline-block mt-8">
-                <Button className="gap-2 bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-                  <Calendar className="h-4 w-4" /> Book a Test Ride
-                </Button>
-              </Link>
+              <div className="inline-block mt-8">
+                <Link href="/test-ride">
+                  <Button className="gap-2 bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+                    <Calendar className="h-4 w-4" /> Book a Test Ride
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -188,7 +190,7 @@ export default function Home() {
                 <span className="font-headline text-2xl font-bold tracking-tight uppercase">AMRESH AUTOMOBILES</span>
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Leading the charge towards a greener future in Jharkhand. Visit our showroom to test ride the best electric scooters.
+                Leading the charge towards a greener future in India. Visit our showroom to test ride the best electric scooters at Amresh Automobiles.
               </p>
               <div className="flex gap-4">
                 <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary hover:text-primary-foreground" aria-label="Facebook">
@@ -233,7 +235,7 @@ export default function Home() {
 
             <div>
               <h2 className="font-bold mb-6 text-lg">EV News & Offers</h2>
-              <p className="text-muted-foreground text-sm mb-4">Subscribe for the latest EV scooty offers.</p>
+              <p className="text-muted-foreground text-sm mb-4">Subscribe for the latest EV scooty offers from Amresh Automobiles.</p>
               <div className="flex gap-2">
                 <input type="email" placeholder="Your Email" className="bg-secondary border-none rounded-md px-4 py-2 text-sm w-full focus:ring-1 focus:ring-primary outline-none" />
                 <Button className="bg-primary text-primary-foreground">Join</Button>
@@ -241,7 +243,7 @@ export default function Home() {
             </div>
           </div>
           <div className="py-8 border-t border-white/5 text-center text-muted-foreground text-sm">
-            © 2025 {showroom?.name || 'Amresh Automobiles'}. All rights reserved. | Best Electric Scooters in Jharkhand.
+            © 2025 {showroom?.name || 'Amresh Automobiles'}. All rights reserved. | Best Electric Scooters in Jharkhand & India.
           </div>
         </div>
       </footer>
