@@ -181,27 +181,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Maps Section */}
-      <section className="w-full h-[450px] relative border-t border-white/5 overflow-hidden">
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-10 bg-background/80 backdrop-blur-md px-6 py-3 rounded-full border border-primary/20 shadow-2xl">
-          <h3 className="text-sm font-bold flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary" />
-            Find Us: Padampur, Khunti, Jharkhand
-          </h3>
-        </div>
-        <iframe
-          src="https://maps.google.com/maps?q=Amresh%20Automobiles%20Padampur%20Khunti%20Jharkhand&t=&z=15&ie=UTF8&iwloc=&output=embed"
-          width="100%"
-          height="100%"
-          style={{ border: 0 }}
-          allowFullScreen
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          title="Amresh Automobiles Google Maps Location"
-          className="grayscale invert opacity-70 hover:grayscale-0 hover:invert-0 hover:opacity-100 transition-all duration-700"
-        ></iframe>
-      </section>
-
       {/* Compare Floating Bar */}
       <CompareBar />
 
