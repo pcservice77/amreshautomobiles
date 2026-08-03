@@ -1,4 +1,3 @@
-
 "use client"
 
 import Image from 'next/image';
@@ -71,7 +70,7 @@ export default function Home() {
               </Link>
               <Link href="/test-ride">
                 <Button size="lg" variant="outline" className="border-white/20 text-lg bg-background/20 backdrop-blur-md hover:bg-white/10 w-full">
-                  Book Test Ride in Ranchi
+                  Book Test Ride
                 </Button>
               </Link>
             </div>
