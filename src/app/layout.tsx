@@ -14,14 +14,20 @@ export const metadata: Metadata = {
   description: 'Discover the future of mobility at Amresh Automobiles. The leading EV scooty showroom in Jharkhand and across India. Explore high-performance electric scooters, book test rides, and get easy EMI options on top EV models.',
   keywords: [
     'amresh automobiles', 
-    'automobiles', 
+    'amresh automobile', 
+    'amreshautomobiles', 
+    'amresh autommobiles',
     'ev scooty in india', 
+    'ev scooty in khunti',
     'best electric scooter jharkhand', 
     'ev scooty in ranchi', 
     'new ev scooty 2025', 
     'ev scooty around me', 
     'electric scooter showroom khunti', 
-    'best ev scooty in india', 
+    'showroom near ranchi',
+    'showroom near khunti',
+    'showroom in jharkhand',
+    'showrrom in jharkhand',
     'electric bike ranchi', 
     'amresh automobiles padampur',
     'electric vehicle showroom jharkhand',
@@ -80,6 +86,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'AutomotiveBusiness',
   'name': 'Amresh Automobiles',
+  'alternateName': ['Amresh Automobile', 'Amreshautomobiles', 'Amresh Autommobiles'],
   'description': 'Leading electric scooter showroom providing high-performance EV mobility solutions in Jharkhand and India.',
   'image': 'https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png',
   '@id': 'https://amreshautomobiles.in',
@@ -114,7 +121,8 @@ const jsonLd = {
   },
   'sameAs': [
     'https://www.facebook.com/amreshautomobiles',
-    'https://www.instagram.com/amreshautomobiles'
+    'https://www.instagram.com/amreshautomobiles',
+    'https://share.google/JcFA422z1FlNnhkjT'
   ]
 };
 
