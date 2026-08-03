@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Battery, Gauge } from 'lucide-react';
+import { Battery, Gauge, GitCompare, Check } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,19 +15,26 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import Autoplay from "embla-carousel-autoplay"
-import { Scooter } from '@/lib/db-mock';
+import { useCompare } from '@/hooks/use-compare';
+import { cn } from '@/lib/utils';
 
 interface ScooterCardProps {
-  scooter: Scooter;
+  scooter: any;
 }
 
 export function ScooterCard({ scooter }: ScooterCardProps) {
+  const { selectedIds, toggleCompare, isMaxSelected } = useCompare();
+  const isSelected = selectedIds.includes(scooter.id);
+
   const images = scooter.images && scooter.images.length > 0 
     ? scooter.images 
     : ['https://picsum.photos/seed/scoot/600/400'];
 
   return (
-    <Card className="group overflow-hidden border-white/5 bg-card/40 transition-all hover:bg-card/60 hover:border-primary/30">
+    <Card className={cn(
+      "group overflow-hidden border-white/5 bg-card/40 transition-all hover:bg-card/60 hover:border-primary/30 relative",
+      isSelected && "ring-2 ring-primary border-primary/50"
+    )}>
       <CardHeader className="p-0">
         <Carousel 
           className="w-full"
@@ -38,7 +45,7 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
           ]}
         >
           <CarouselContent>
-            {images.map((image, index) => (
+            {images.map((image: string, index: number) => (
               <CarouselItem key={index}>
                 <div className="relative w-full h-64 overflow-hidden bg-zinc-900/50">
                   <Image
@@ -59,6 +66,27 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
               <CarouselNext className="relative right-0 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
+          
+          <div className="absolute top-4 left-4 z-20">
+            <Button
+              size="sm"
+              variant={isSelected ? "default" : "secondary"}
+              className={cn(
+                "h-8 gap-2 backdrop-blur-md transition-all shadow-xl",
+                !isSelected && "bg-black/50 text-white hover:bg-black/70",
+                isSelected && "bg-primary text-primary-foreground"
+              )}
+              onClick={(e) => {
+                e.preventDefault();
+                toggleCompare(scooter.id);
+              }}
+              disabled={!isSelected && isMaxSelected}
+            >
+              {isSelected ? <Check className="h-3 w-3" /> : <GitCompare className="h-3 w-3" />}
+              {isSelected ? 'Selected' : 'Compare'}
+            </Button>
+          </div>
+
           <Badge className="absolute top-4 right-4 bg-accent text-accent-foreground font-bold z-10">
             NEW
           </Badge>

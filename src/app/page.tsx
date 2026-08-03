@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Navbar } from '@/components/navbar';
 import { ScooterCard } from '@/components/scooter-card';
+import { CompareBar } from '@/components/compare-bar';
 import { Button } from '@/components/ui/button';
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
@@ -179,6 +180,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Compare Floating Bar */}
+      <CompareBar />
 
       {/* Footer / Contact */}
       <footer id="contact" className="pt-24 border-t border-white/5">
