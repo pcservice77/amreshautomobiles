@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from 'react';
-import { Plus, Search, MapPin, Phone, Trash2, Edit2, Loader2, Building } from 'lucide-react';
+import { Plus, Search, MapPin, Phone, Trash2, Edit2, Loader2, Building, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -16,7 +16,7 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -35,6 +35,7 @@ const branchSchema = z.object({
   contact: z.string().min(10, 'Required'),
   email: z.string().email('Invalid email'),
   imageUrl: z.string().min(1, 'Showroom photo is required'),
+  googleMapUrl: z.string().optional(),
 });
 
 export default function BranchesPage() {
@@ -64,6 +65,7 @@ export default function BranchesPage() {
       contact: '',
       email: '',
       imageUrl: '',
+      googleMapUrl: '',
     },
   });
 
@@ -71,7 +73,6 @@ export default function BranchesPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Limit to 500KB for branch photos
     if (file.size > 500 * 1024) {
       toast({ variant: 'destructive', title: 'File too large', description: 'Max 500KB allowed per image.' });
       return;
@@ -131,7 +132,7 @@ export default function BranchesPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-headline font-bold">Showroom Locations</h1>
-          <p className="text-muted-foreground">Manage branch offices. Keep images small (under 500KB).</p>
+          <p className="text-muted-foreground">Manage branch offices and their Google Map locations.</p>
         </div>
         <Dialog open={isAddOpen || !!editingBranch} onOpenChange={(open) => {
           if (!open) {
@@ -149,7 +150,7 @@ export default function BranchesPage() {
             <DialogHeader>
               <DialogTitle>{editingBranch ? 'Edit Showroom' : 'New Showroom Registration'}</DialogTitle>
               <DialogDescription>
-                Provide details and upload a photo. Max size 500KB.
+                Provide details, upload a photo, and add a Google Maps link.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6 pt-4">
@@ -167,7 +168,6 @@ export default function BranchesPage() {
                   </div>
                 </div>
                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-                <p className="text-xs text-muted-foreground mt-2">Maximum 500KB for Firestore stability</p>
               </div>
 
               <Form {...form}>
@@ -186,6 +186,13 @@ export default function BranchesPage() {
                   )} />
                   <FormField control={form.control} name="pincode" render={({ field }) => (
                     <FormItem><FormLabel>Pincode</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="googleMapUrl" render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Google Maps Link</FormLabel>
+                      <FormControl><Input placeholder="https://maps.google.com/..." {...field} /></FormControl>
+                      <FormDescription>Link for customers to navigate to this showroom.</FormDescription>
+                    </FormItem>
                   )} />
                   <FormField control={form.control} name="address" render={({ field }) => (
                     <FormItem className="col-span-2"><FormLabel>Full Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
@@ -227,7 +234,14 @@ export default function BranchesPage() {
               </div>
             </div>
             <CardHeader>
-              <CardTitle className="text-lg font-bold">{branch.name}</CardTitle>
+              <CardTitle className="text-lg font-bold flex items-center justify-between">
+                {branch.name}
+                {branch.googleMapUrl && (
+                  <a href={branch.googleMapUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                )}
+              </CardTitle>
               <CardDescription className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {branch.city}, {branch.pincode}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">

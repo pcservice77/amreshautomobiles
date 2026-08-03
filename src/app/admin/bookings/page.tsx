@@ -1,8 +1,7 @@
-
 "use client"
 
 import { useState } from 'react';
-import { Search, Calendar, Phone, Mail, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { Search, Calendar, Phone, Mail, CheckCircle2, Clock, XCircle, MapPin, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -56,6 +55,7 @@ export default function BookingsPage() {
             time: booking.preferredTime,
             status: status,
             branchName: branch?.name || 'Amresh Automobiles',
+            googleMapUrl: branch?.googleMapUrl,
           });
         }
       })
@@ -68,7 +68,7 @@ export default function BookingsPage() {
     b.scooterModel.toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => new Date(b.preferredDate).getTime() - new Date(a.preferredDate).getTime());
 
-  const getBranchName = (id: string) => branches?.find(b => b.id === id)?.name || 'Unknown Branch';
+  const getBranch = (id: string) => branches?.find(b => b.id === id);
 
   const statusStyles: Record<string, string> = {
     pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
@@ -81,7 +81,7 @@ export default function BookingsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-headline font-bold">Test Ride Appointments</h1>
-        <p className="text-muted-foreground">Manage customer test ride requests for your showroom.</p>
+        <p className="text-muted-foreground">Manage customer test ride requests and branch location guidance.</p>
       </div>
 
       <div className="relative">
@@ -100,7 +100,7 @@ export default function BookingsPage() {
             <TableRow>
               <TableHead>Customer</TableHead>
               <TableHead>Scooter</TableHead>
-              <TableHead>Showroom</TableHead>
+              <TableHead>Showroom & Location</TableHead>
               <TableHead>Preferred Time</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -111,54 +111,67 @@ export default function BookingsPage() {
               <TableRow><TableCell colSpan={6} className="py-20 text-center">Loading appointments...</TableCell></TableRow>
             ) : filteredBookings?.length === 0 ? (
               <TableRow><TableCell colSpan={6} className="py-20 text-center text-muted-foreground">No bookings found.</TableCell></TableRow>
-            ) : filteredBookings?.map((booking) => (
-              <TableRow key={booking.id}>
-                <TableCell>
-                  <div className="font-medium">{booking.customerName}</div>
-                  <div className="text-xs text-muted-foreground flex flex-col gap-1 mt-1">
-                    <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {booking.mobile}</span>
-                    <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {booking.email}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="font-bold">{booking.scooterModel}</TableCell>
-                <TableCell>
-                  <div className="text-sm">{getBranchName(booking.branchId)}</div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm flex items-center gap-1 font-medium">
-                    <Calendar className="h-3 w-3 text-primary" /> 
-                    {format(new Date(booking.preferredDate), 'dd MMM yyyy')}
-                  </div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" /> {booking.preferredTime}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={statusStyles[booking.status] || ''}>
-                    {booking.status.toUpperCase()}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    {booking.status === 'pending' && (
-                      <Button variant="outline" size="sm" className="h-8 text-xs border-blue-500/20 text-blue-500 hover:bg-blue-500/10" onClick={() => handleUpdateStatus(booking, 'confirmed')}>
-                        Confirm
-                      </Button>
+            ) : filteredBookings?.map((booking) => {
+              const branch = getBranch(booking.branchId);
+              return (
+                <TableRow key={booking.id}>
+                  <TableCell>
+                    <div className="font-medium">{booking.customerName}</div>
+                    <div className="text-xs text-muted-foreground flex flex-col gap-1 mt-1">
+                      <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {booking.mobile}</span>
+                      <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {booking.email}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-bold">{booking.scooterModel}</TableCell>
+                  <TableCell>
+                    <div className="text-sm font-medium">{branch?.name || 'Unknown'}</div>
+                    {branch?.googleMapUrl && (
+                      <a 
+                        href={branch.googleMapUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-[10px] text-primary flex items-center gap-1 mt-1 hover:underline"
+                      >
+                        <MapPin className="h-2 w-2" /> Google Maps <ExternalLink className="h-2 w-2" />
+                      </a>
                     )}
-                    {booking.status === 'confirmed' && (
-                      <Button variant="outline" size="sm" className="h-8 text-xs border-green-500/20 text-green-500 hover:bg-green-500/10" onClick={() => handleUpdateStatus(booking, 'completed')}>
-                        Complete
-                      </Button>
-                    )}
-                    {['pending', 'confirmed'].includes(booking.status) && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleUpdateStatus(booking, 'cancelled')}>
-                        <XCircle className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm flex items-center gap-1 font-medium">
+                      <Calendar className="h-3 w-3 text-primary" /> 
+                      {format(new Date(booking.preferredDate), 'dd MMM yyyy')}
+                    </div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> {booking.preferredTime}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={statusStyles[booking.status] || ''}>
+                      {booking.status.toUpperCase()}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      {booking.status === 'pending' && (
+                        <Button variant="outline" size="sm" className="h-8 text-xs border-blue-500/20 text-blue-500 hover:bg-blue-500/10" onClick={() => handleUpdateStatus(booking, 'confirmed')}>
+                          Confirm
+                        </Button>
+                      )}
+                      {booking.status === 'confirmed' && (
+                        <Button variant="outline" size="sm" className="h-8 text-xs border-green-500/20 text-green-500 hover:bg-green-500/10" onClick={() => handleUpdateStatus(booking, 'completed')}>
+                          Complete
+                        </Button>
+                      )}
+                      {['pending', 'confirmed'].includes(booking.status) && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleUpdateStatus(booking, 'cancelled')}>
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

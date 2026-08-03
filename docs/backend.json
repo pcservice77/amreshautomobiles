@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -65,7 +64,8 @@
         "email": { "type": "string" },
         "imageUrl": { "type": "string" },
         "gstin": { "type": "string" },
-        "tagline": { "type": "string" }
+        "tagline": { "type": "string" },
+        "googleMapUrl": { "type": "string", "description": "Link to the Google Maps location for this branch." }
       },
       "required": ["name", "city", "pincode"]
     },

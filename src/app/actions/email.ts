@@ -1,4 +1,3 @@
-
 'use server';
 
 import { Resend } from 'resend';
@@ -19,6 +18,7 @@ export async function sendBookingConfirmationEmail(email: string, details: {
   date: string;
   time: string;
   branchName: string;
+  googleMapUrl?: string;
 }) {
   const resend = getResend();
   if (!resend) return { success: false, error: 'API Key missing' };
@@ -38,6 +38,7 @@ export async function sendBookingConfirmationEmail(email: string, details: {
             <p style="margin: 5px 0;"><strong>Showroom:</strong> ${details.branchName}</p>
             <p style="margin: 5px 0;"><strong>Preferred Date:</strong> ${details.date}</p>
             <p style="margin: 5px 0;"><strong>Preferred Slot:</strong> ${details.time}</p>
+            ${details.googleMapUrl ? `<p style="margin: 15px 0;"><a href="${details.googleMapUrl}" style="background-color: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">View Showroom Location</a></p>` : ''}
           </div>
           
           <p>Our team will contact you shortly to confirm the appointment and provide the exact location details.</p>
@@ -67,6 +68,7 @@ export async function sendStatusUpdateEmail(email: string, details: {
   time: string;
   status: string;
   branchName: string;
+  googleMapUrl?: string;
 }) {
   const resend = getResend();
   if (!resend) return { success: false, error: 'API Key missing' };
@@ -90,6 +92,7 @@ export async function sendStatusUpdateEmail(email: string, details: {
           <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${isConfirmed ? '#10b981' : '#f59e0b'};">
             <p style="margin: 5px 0;"><strong>Confirmed Date:</strong> ${details.date}</p>
             <p style="margin: 5px 0;"><strong>Confirmed Time:</strong> ${details.time}</p>
+            ${isConfirmed && details.googleMapUrl ? `<p style="margin: 15px 0;"><a href="${details.googleMapUrl}" style="background-color: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Navigate to Showroom</a></p>` : ''}
           </div>
           
           ${isConfirmed ? '<p style="color: #10b981; font-weight: bold;">Please bring a valid driving license for the test ride. See you at the showroom!</p>' : ''}

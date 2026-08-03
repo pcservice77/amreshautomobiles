@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -84,6 +83,7 @@ export default function TestRideBookingPage() {
         date: data.preferredDate,
         time: data.preferredTime,
         branchName: branch?.name || 'Amresh Automobiles',
+        googleMapUrl: branch?.googleMapUrl,
       });
 
       if (!emailResult.success) {
