@@ -1,24 +1,26 @@
 
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Zap, Calendar, MapPin, CheckCircle } from 'lucide-react';
+import { Zap, Calendar, MapPin, CheckCircle, Mail } from 'lucide-react';
 import { format } from 'date-fns';
+import { sendBookingConfirmationEmail } from '@/app/actions/email';
 
 const bookingSchema = z.object({
   customerName: z.string().min(3, 'Required'),
+  email: z.string().email('Invalid email'),
   mobile: z.string().length(10, '10-digits required'),
   address: z.string().min(5, 'Required'),
   scooterModel: z.string().min(1, 'Select a model'),
@@ -49,6 +51,7 @@ export default function TestRideBookingPage() {
     resolver: zodResolver(bookingSchema),
     defaultValues: {
       customerName: '',
+      email: '',
       mobile: '',
       address: '',
       scooterModel: '',
@@ -68,9 +71,19 @@ export default function TestRideBookingPage() {
     };
 
     addDoc(collection(firestore, 'bookings'), bookingData)
-      .then(() => {
+      .then(async () => {
         setIsSuccess(true);
         toast({ title: 'Success', description: 'Your test ride booking request has been sent!' });
+        
+        // Trigger Email
+        const branch = branches?.find(b => b.id === data.branchId);
+        await sendBookingConfirmationEmail(data.email, {
+          customerName: data.customerName,
+          scooterModel: data.scooterModel,
+          date: data.preferredDate,
+          time: data.preferredTime,
+          branchName: branch?.name || 'Amresh Automobiles',
+        });
       })
       .catch(() => {
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to book. Please try again.' });
@@ -90,7 +103,7 @@ export default function TestRideBookingPage() {
             </div>
             <h1 className="text-3xl font-headline font-bold mb-4">Ride Confirmed!</h1>
             <p className="text-muted-foreground mb-8">
-              Thank you for choosing Amresh Automobiles. Our executive will call you shortly to confirm your appointment at the selected showroom.
+              Thank you for choosing Amresh Automobiles. We've sent a confirmation email to your inbox. Our executive will call you shortly.
             </p>
             <Button className="w-full" onClick={() => setIsSuccess(false)}>Book Another Ride</Button>
           </Card>
@@ -130,16 +143,16 @@ export default function TestRideBookingPage() {
                 </div>
                 <div>
                   <h4 className="font-bold text-lg">Wide Network</h4>
-                  <p className="text-muted-foreground text-sm">Multiple locations across the city for your convenience.</p>
+                  <p className="text-muted-foreground text-sm">Multiple locations across Jharkhand for your convenience.</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="bg-primary/10 p-3 rounded-xl h-fit">
-                  <Calendar className="h-6 w-6 text-primary" />
+                  <Mail className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-lg">Instant Appointment</h4>
-                  <p className="text-muted-foreground text-sm">Book and get a confirmation call within minutes.</p>
+                  <h4 className="font-bold text-lg">Instant Notification</h4>
+                  <p className="text-muted-foreground text-sm">Get real-time booking updates via email.</p>
                 </div>
               </div>
             </div>
@@ -157,11 +170,14 @@ export default function TestRideBookingPage() {
                     <FormField control={form.control} name="customerName" render={({ field }) => (
                       <FormItem className="col-span-2"><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
+                    <FormField control={form.control} name="email" render={({ field }) => (
+                      <FormItem className="col-span-2 md:col-span-1"><FormLabel>Email Address</FormLabel><FormControl><Input placeholder="john@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
                     <FormField control={form.control} name="mobile" render={({ field }) => (
-                      <FormItem><FormLabel>Mobile Number</FormLabel><FormControl><Input placeholder="9876543210" {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem className="col-span-2 md:col-span-1"><FormLabel>Mobile Number</FormLabel><FormControl><Input placeholder="9876543210" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="address" render={({ field }) => (
-                      <FormItem><FormLabel>Address/City</FormLabel><FormControl><Input placeholder="Your area" {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem className="col-span-2"><FormLabel>Address/City</FormLabel><FormControl><Input placeholder="Your area" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                   </div>
 

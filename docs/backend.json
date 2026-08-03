@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -74,6 +75,7 @@
       "type": "object",
       "properties": {
         "customerName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
         "mobile": { "type": "string" },
         "address": { "type": "string" },
         "scooterModel": { "type": "string" },
@@ -83,7 +85,7 @@
         "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled"] },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["customerName", "mobile", "scooterModel", "branchId", "preferredDate"]
+      "required": ["customerName", "email", "mobile", "scooterModel", "branchId", "preferredDate"]
     },
     "ShowroomSettings": {
       "title": "Showroom Settings",

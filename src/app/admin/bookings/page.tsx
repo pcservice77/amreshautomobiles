@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from 'react';
-import { Search, Calendar, User, Phone, MapPin, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { Search, Calendar, Phone, Mail, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { sendStatusUpdateEmail } from '@/app/actions/email';
 
 export default function BookingsPage() {
   const firestore = useFirestore();
@@ -37,11 +38,27 @@ export default function BookingsPage() {
   const { data: bookings, loading } = useCollection(bookingsQuery);
   const { data: branches } = useCollection(branchesQuery);
 
-  const handleUpdateStatus = (bookingId: string, status: string) => {
+  const handleUpdateStatus = async (booking: any, status: string) => {
     if (!firestore) return;
-    const bookingRef = doc(firestore, 'bookings', bookingId);
+    const bookingRef = doc(firestore, 'bookings', booking.id);
+    
     updateDoc(bookingRef, { status })
-      .then(() => toast({ title: 'Booking Updated', description: `Status changed to ${status}.` }))
+      .then(async () => {
+        toast({ title: 'Booking Updated', description: `Status changed to ${status}.` });
+        
+        // Trigger Email Notification
+        if (booking.email) {
+          const branch = branches?.find(b => b.id === booking.branchId);
+          await sendStatusUpdateEmail(booking.email, {
+            customerName: booking.customerName,
+            scooterModel: booking.scooterModel,
+            date: booking.preferredDate,
+            time: booking.preferredTime,
+            status: status,
+            branchName: branch?.name || 'Amresh Automobiles',
+          });
+        }
+      })
       .catch(() => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: bookingRef.path, operation: 'update' })));
   };
 
@@ -98,8 +115,9 @@ export default function BookingsPage() {
               <TableRow key={booking.id}>
                 <TableCell>
                   <div className="font-medium">{booking.customerName}</div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Phone className="h-3 w-3" /> {booking.mobile}
+                  <div className="text-xs text-muted-foreground flex flex-col gap-1 mt-1">
+                    <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {booking.mobile}</span>
+                    <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {booking.email}</span>
                   </div>
                 </TableCell>
                 <TableCell className="font-bold">{booking.scooterModel}</TableCell>
@@ -123,17 +141,17 @@ export default function BookingsPage() {
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     {booking.status === 'pending' && (
-                      <Button variant="outline" size="sm" className="h-8 text-xs border-blue-500/20 text-blue-500 hover:bg-blue-500/10" onClick={() => handleUpdateStatus(booking.id, 'confirmed')}>
+                      <Button variant="outline" size="sm" className="h-8 text-xs border-blue-500/20 text-blue-500 hover:bg-blue-500/10" onClick={() => handleUpdateStatus(booking, 'confirmed')}>
                         Confirm
                       </Button>
                     )}
                     {booking.status === 'confirmed' && (
-                      <Button variant="outline" size="sm" className="h-8 text-xs border-green-500/20 text-green-500 hover:bg-green-500/10" onClick={() => handleUpdateStatus(booking.id, 'completed')}>
+                      <Button variant="outline" size="sm" className="h-8 text-xs border-green-500/20 text-green-500 hover:bg-green-500/10" onClick={() => handleUpdateStatus(booking, 'completed')}>
                         Complete
                       </Button>
                     )}
                     {['pending', 'confirmed'].includes(booking.status) && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleUpdateStatus(booking.id, 'cancelled')}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleUpdateStatus(booking, 'cancelled')}>
                         <XCircle className="h-4 w-4" />
                       </Button>
                     )}
