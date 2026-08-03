@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -63,6 +63,28 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
       brochureUrl: initialData?.brochureUrl || '',
     },
   });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        model: initialData.model || '',
+        tagline: initialData.tagline || '',
+        range: initialData.range || '',
+        price: initialData.price || '',
+        topSpeed: initialData.topSpeed || '',
+        batteryType: initialData.batteryType || '',
+        batteryCapacity: initialData.batteryCapacity || '',
+        voltage: initialData.voltage || '',
+        category: initialData.category || '',
+        batterySystem: initialData.batterySystem || '',
+        chargingTime: initialData.chargingTime || '',
+        description: initialData.description || '',
+        images: initialData.images || [],
+        availableColors: initialData.availableColors || '',
+        brochureUrl: initialData.brochureUrl || '',
+      });
+    }
+  }, [initialData, form]);
 
   const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {

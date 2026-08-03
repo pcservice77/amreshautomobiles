@@ -138,7 +138,16 @@ export default function BranchesPage() {
           if (!open) {
             setIsAddOpen(false);
             setEditingBranch(null);
-            form.reset();
+            form.reset({
+              name: '',
+              address: '',
+              city: '',
+              pincode: '',
+              contact: '',
+              email: '',
+              imageUrl: '',
+              googleMapUrl: '',
+            });
           }
         }}>
           <DialogTrigger asChild>
@@ -225,7 +234,16 @@ export default function BranchesPage() {
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() => {
                   setEditingBranch(branch);
-                  form.reset(branch);
+                  form.reset({
+                    name: branch.name || '',
+                    address: branch.address || '',
+                    city: branch.city || '',
+                    pincode: branch.pincode || '',
+                    contact: branch.contact || '',
+                    email: branch.email || '',
+                    imageUrl: branch.imageUrl || '',
+                    googleMapUrl: branch.googleMapUrl || '',
+                  });
                 }}><Edit2 className="h-4 w-4" /></Button>
                 <Button variant="destructive" size="icon" className="h-8 w-8" onClick={(e) => {
                   e.stopPropagation();
