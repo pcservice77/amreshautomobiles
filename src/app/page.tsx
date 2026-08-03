@@ -259,11 +259,19 @@ export default function Home() {
             </div>
 
             <div>
-              <h2 className="font-bold mb-6 text-lg">EV News & Offers</h2>
-              <p className="text-muted-foreground text-sm mb-4">Subscribe for the latest EV scooty offers from Amresh Automobiles.</p>
-              <div className="flex gap-2">
-                <input type="email" placeholder="Your Email" className="bg-secondary border-none rounded-md px-4 py-2 text-sm w-full focus:ring-1 focus:ring-primary outline-none" />
-                <Button className="bg-primary text-primary-foreground">Join</Button>
+              <h2 className="font-bold mb-6 text-lg">Locate Showroom</h2>
+              <div className="w-full aspect-square rounded-xl overflow-hidden border border-white/10 bg-zinc-900">
+                <iframe
+                  src="https://maps.google.com/maps?q=Amresh%20Automobiles%20Padampur%20Khunti%20Jharkhand&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Amresh Automobiles Mini Map"
+                  className="grayscale invert opacity-80 hover:grayscale-0 hover:invert-0 hover:opacity-100 transition-all duration-500"
+                ></iframe>
               </div>
             </div>
           </div>
