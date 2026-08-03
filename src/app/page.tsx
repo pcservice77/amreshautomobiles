@@ -143,7 +143,7 @@ export default function Home() {
             <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10">
               <Image
                 src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
-                alt="Amresh Automobiles Showroom Interior Ranchi"
+                alt="Amresh Automobiles Showroom Interior"
                 fill
                 className="object-cover"
                 data-ai-hint="showroom interior"
@@ -154,7 +154,7 @@ export default function Home() {
               <div className="space-y-6">
                 {[
                   { title: "Smart Connectivity", desc: "Integrated app with GPS tracking, remote diagnostics, and OTA updates for all our electric scooters." },
-                  { title: "Rapid Charging in Ranchi", desc: "Get from 0 to 80% in less than 2 hours with our specialized charging points across Jharkhand." },
+                  { title: "Rapid Charging", desc: "Get from 0 to 80% in less than 2 hours with our specialized charging points across Jharkhand." },
                   { title: "Premium Service", desc: "Lifetime battery warranty and 24/7 roadside assistance for our EV customers." }
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4">
@@ -170,7 +170,7 @@ export default function Home() {
               </div>
               <Link href="/test-ride" className="inline-block mt-8">
                 <Button className="gap-2 bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-                  <Calendar className="h-4 w-4" /> Book a Test Ride in Khunti
+                  <Calendar className="h-4 w-4" /> Book a Test Ride
                 </Button>
               </Link>
             </div>
@@ -188,7 +188,7 @@ export default function Home() {
                 <span className="font-headline text-2xl font-bold tracking-tight uppercase">AMRESH AUTOMOBILES</span>
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Leading the charge towards a greener future in Jharkhand. Visit our showroom to test ride the best electric scooters in Ranchi.
+                Leading the charge towards a greener future in Jharkhand. Visit our showroom to test ride the best electric scooters.
               </p>
               <div className="flex gap-4">
                 <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary hover:text-primary-foreground" aria-label="Facebook">
@@ -233,7 +233,7 @@ export default function Home() {
 
             <div>
               <h2 className="font-bold mb-6 text-lg">EV News & Offers</h2>
-              <p className="text-muted-foreground text-sm mb-4">Subscribe for the latest EV scooty offers in Ranchi.</p>
+              <p className="text-muted-foreground text-sm mb-4">Subscribe for the latest EV scooty offers.</p>
               <div className="flex gap-2">
                 <input type="email" placeholder="Your Email" className="bg-secondary border-none rounded-md px-4 py-2 text-sm w-full focus:ring-1 focus:ring-primary outline-none" />
                 <Button className="bg-primary text-primary-foreground">Join</Button>
