@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Zap, Calendar, MapPin, CheckCircle, Mail } from 'lucide-react';
+import { Zap, Calendar, MapPin, CheckCircle, Mail, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { sendBookingConfirmationEmail } from '@/app/actions/email';
 
@@ -33,6 +33,7 @@ export default function TestRideBookingPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const branchesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -63,6 +64,7 @@ export default function TestRideBookingPage() {
 
   const onSubmit = async (data: z.infer<typeof bookingSchema>) => {
     if (!firestore) return;
+    setIsSubmitting(true);
 
     const bookingData = {
       ...data,
@@ -70,24 +72,37 @@ export default function TestRideBookingPage() {
       createdAt: new Date().toISOString(),
     };
 
-    addDoc(collection(firestore, 'bookings'), bookingData)
-      .then(async () => {
-        setIsSuccess(true);
-        toast({ title: 'Success', description: 'Your test ride booking request has been sent!' });
-        
-        // Trigger Email
-        const branch = branches?.find(b => b.id === data.branchId);
-        await sendBookingConfirmationEmail(data.email, {
-          customerName: data.customerName,
-          scooterModel: data.scooterModel,
-          date: data.preferredDate,
-          time: data.preferredTime,
-          branchName: branch?.name || 'Amresh Automobiles',
-        });
-      })
-      .catch(() => {
-        toast({ variant: 'destructive', title: 'Error', description: 'Failed to book. Please try again.' });
+    try {
+      // 1. Save to Firestore
+      await addDoc(collection(firestore, 'bookings'), bookingData);
+      
+      // 2. Trigger Email Notification (Server Action)
+      const branch = branches?.find(b => b.id === data.branchId);
+      const emailResult = await sendBookingConfirmationEmail(data.email, {
+        customerName: data.customerName,
+        scooterModel: data.scooterModel,
+        date: data.preferredDate,
+        time: data.preferredTime,
+        branchName: branch?.name || 'Amresh Automobiles',
       });
+
+      if (!emailResult.success) {
+        console.warn('Email notification failed to send, but booking was saved:', emailResult.error);
+        toast({ 
+          title: 'Booking Saved', 
+          description: 'Your ride is booked, but we had trouble sending the confirmation email. Our team will call you.' 
+        });
+      } else {
+        toast({ title: 'Success', description: 'Test ride booked! Check your email for confirmation.' });
+      }
+
+      setIsSuccess(true);
+    } catch (error) {
+      console.error('Booking Error:', error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to process your booking. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSuccess) {
@@ -103,7 +118,7 @@ export default function TestRideBookingPage() {
             </div>
             <h1 className="text-3xl font-headline font-bold mb-4">Ride Confirmed!</h1>
             <p className="text-muted-foreground mb-8">
-              Thank you for choosing Amresh Automobiles. We've sent a confirmation email to your inbox. Our executive will call you shortly.
+              Thank you for choosing Amresh Automobiles. We've sent a confirmation email to <strong>{form.getValues('email')}</strong>. Our executive will call you shortly.
             </p>
             <Button className="w-full" onClick={() => setIsSuccess(false)}>Book Another Ride</Button>
           </Card>
@@ -219,8 +234,13 @@ export default function TestRideBookingPage() {
                     )} />
                   </div>
 
-                  <Button type="submit" className="w-full h-14 text-lg font-bold">
-                    Schedule Test Ride Now
+                  <Button type="submit" className="w-full h-14 text-lg font-bold" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : 'Schedule Test Ride Now'}
                   </Button>
                 </form>
               </Form>
