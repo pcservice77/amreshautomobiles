@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Save, User, Bike, Receipt, Landmark } from 'lucide-react';
+import { Save, User, Bike, Receipt, Landmark, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { sendInvoiceEmail } from '@/app/actions/email';
 
 const billSchema = z.object({
   customerName: z.string().min(3, 'Required'),
@@ -55,6 +56,7 @@ export default function BillingPage() {
   const firestore = useFirestore();
   const { user } = useUser();
   const [isSaved, setIsSaved] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const scootersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -109,9 +111,6 @@ export default function BillingPage() {
   const generateInvoiceNo = async () => {
     if (!firestore || !user) return 'AA/26-27/000001';
     
-    // For branch admins, security rules require queries to be filtered by branchId
-    // to satisfy the list requirement if rules depend on resource data.
-    // However, if invoice numbering is global, we need a broad read permission for metadata.
     const baseRef = collection(firestore, 'sales');
     let q;
     
@@ -130,13 +129,13 @@ export default function BillingPage() {
       const num = parseInt(lastNumStr) + 1;
       return `AA/26-27/${num.toString().padStart(6, '0')}`;
     } catch (e) {
-      console.warn("Could not fetch global invoice sequence, defaulting to local branch sequence start.", e);
       return `AA/26-27/${Math.floor(Math.random() * 999999).toString().padStart(6, '0')}`;
     }
   };
 
   const onSubmit = async (data: z.infer<typeof billSchema>) => {
     if (!firestore || !user) return;
+    setIsSubmitting(true);
     
     const invNo = await generateInvoiceNo();
     const saleData = {
@@ -148,19 +147,30 @@ export default function BillingPage() {
       branchId: user.assignedBranchId || 'main_showroom',
     };
 
-    addDoc(collection(firestore, 'sales'), saleData)
-      .then(() => {
-        setIsSaved(true);
-        toast({ title: 'Invoice Saved', description: `Invoice ${invNo} generated.` });
-      })
-      .catch(async (err) => {
-        const permissionError = new FirestorePermissionError({
-          path: 'sales',
-          operation: 'create',
-          requestResourceData: saleData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
+    try {
+      await addDoc(collection(firestore, 'sales'), saleData);
+      setIsSaved(true);
+      toast({ title: 'Invoice Saved', description: `Invoice ${invNo} generated.` });
+
+      // Auto-Email Invoice to Customer
+      if (data.email) {
+        const emailResult = await sendInvoiceEmail(data.email, saleData, showroom || {});
+        if (emailResult.success) {
+          toast({ title: 'Email Sent', description: `Copy sent to ${data.email}` });
+        } else {
+          console.warn('Email failed to send:', emailResult.error);
+        }
+      }
+    } catch (err: any) {
+      const permissionError = new FirestorePermissionError({
+        path: 'sales',
+        operation: 'create',
+        requestResourceData: saleData,
       });
+      errorEmitter.emit('permission-error', permissionError);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   useEffect(() => {
@@ -220,7 +230,11 @@ export default function BillingPage() {
                 <FormItem><FormLabel>Mobile</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel>Email (Opt)</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                <FormItem>
+                  <FormLabel>Email (For Auto-Billing)</FormLabel>
+                  <FormControl><Input placeholder="customer@example.com" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
               <FormField control={form.control} name="address" render={({ field }) => (
                 <FormItem className="col-span-2"><FormLabel>Address</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
@@ -326,9 +340,17 @@ export default function BillingPage() {
           </Card>
 
           <div className="lg:col-span-2 flex justify-end pt-4">
-            <Button type="submit" size="lg" className="w-full md:w-auto px-12 bg-primary text-primary-foreground text-lg h-14">
-              <Save className="mr-2 h-6 w-6" />
-              Finalize Sale & Save Invoice
+            <Button 
+              type="submit" 
+              size="lg" 
+              className="w-full md:w-auto px-12 bg-primary text-primary-foreground text-lg h-14"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <><Loader2 className="mr-2 h-6 w-6 animate-spin" /> Finalizing...</>
+              ) : (
+                <><Save className="mr-2 h-6 w-6" /> Finalize Sale & Save Invoice</>
+              )}
             </Button>
           </div>
         </form>

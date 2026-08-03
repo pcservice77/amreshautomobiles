@@ -43,20 +43,13 @@ export async function sendBookingConfirmationEmail(email: string, details: {
           
           <p>Our team will contact you shortly to confirm the appointment and provide the exact location details.</p>
           <p>Best Regards,<br/><strong>Team Amresh Automobiles</strong></p>
-          <hr style="border: 0; border-top: 1px solid #eee; margin-top: 20px;" />
-          <p style="font-size: 12px; color: #999;">This is an automated confirmation of your request.</p>
         </div>
       `,
     });
 
-    if (error) {
-      console.error('Resend Error:', error);
-      return { success: false, error };
-    }
-
+    if (error) return { success: false, error };
     return { success: true, data };
   } catch (error) {
-    console.error('Failed to send booking confirmation email:', error);
     return { success: false, error };
   }
 }
@@ -95,21 +88,99 @@ export async function sendStatusUpdateEmail(email: string, details: {
             ${isConfirmed && details.googleMapUrl ? `<p style="margin: 15px 0;"><a href="${details.googleMapUrl}" style="background-color: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Navigate to Showroom</a></p>` : ''}
           </div>
           
-          ${isConfirmed ? '<p style="color: #10b981; font-weight: bold;">Please bring a valid driving license for the test ride. See you at the showroom!</p>' : ''}
-          
           <p>Best Regards,<br/><strong>Team Amresh Automobiles</strong></p>
         </div>
       `,
     });
 
-    if (error) {
-      console.error('Resend Error:', error);
-      return { success: false, error };
-    }
-
+    if (error) return { success: false, error };
     return { success: true, data };
   } catch (error) {
-    console.error('Failed to send status update email:', error);
+    return { success: false, error };
+  }
+}
+
+export async function sendInvoiceEmail(email: string, sale: any, showroom: any) {
+  const resend = getResend();
+  if (!resend) return { success: false, error: 'API Key missing' };
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'Amresh Automobiles Billing <billing@contact.amreshautomobiles.in>',
+      to: email,
+      subject: `Invoice ${sale.invoiceNo} - Amresh Automobiles`,
+      html: `
+        <div style="font-family: sans-serif; padding: 40px; color: #333; max-width: 700px; margin: auto; border: 1px solid #eee; border-radius: 15px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #10b981; padding-bottom: 20px;">
+            <div>
+              <h1 style="margin: 0; color: #10b981; text-transform: uppercase; font-size: 24px;">Amresh Automobiles</h1>
+              <p style="margin: 5px 0; font-size: 12px; color: #666;">${showroom.address || 'Showroom location'}</p>
+              <p style="margin: 5px 0; font-size: 12px; font-weight: bold;">GSTIN: ${sale.gstin || showroom.gstin || 'N/A'}</p>
+            </div>
+            <div style="text-align: right;">
+              <h2 style="margin: 0; font-size: 32px; color: #000;">INVOICE</h2>
+              <p style="margin: 5px 0; color: #10b981; font-weight: bold;"># ${sale.invoiceNo}</p>
+            </div>
+          </div>
+
+          <div style="margin: 30px 0; display: grid; grid-template-cols: 1fr 1fr; gap: 20px;">
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+              <p style="margin: 0 0 5px 0; font-size: 10px; color: #999; text-transform: uppercase; font-weight: bold;">Billed To</p>
+              <p style="margin: 0; font-weight: bold; font-size: 16px;">${sale.customerName}</p>
+              <p style="margin: 5px 0; font-size: 13px; color: #666;">${sale.address}, ${sale.city}</p>
+              <p style="margin: 5px 0; font-size: 13px; color: #666;">Mob: ${sale.mobile}</p>
+            </div>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+              <p style="margin: 0 0 5px 0; font-size: 10px; color: #999; text-transform: uppercase; font-weight: bold;">Vehicle Specs</p>
+              <p style="margin: 0; font-weight: bold; font-size: 16px;">${sale.model}</p>
+              <p style="margin: 5px 0; font-size: 13px; color: #666;">Chassis: ${sale.chassisNumber}</p>
+              <p style="margin: 5px 0; font-size: 13px; color: #666;">Color: ${sale.color}</p>
+            </div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <thead>
+              <tr style="background: #10b981; color: white;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #10b981;">Description</th>
+                <th style="padding: 12px; text-align: center; border: 1px solid #10b981;">HSN</th>
+                <th style="padding: 12px; text-align: right; border: 1px solid #10b981;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 20px; border: 1px solid #eee;">
+                  <p style="margin: 0; font-weight: bold;">${sale.model} Electric Scooter</p>
+                  <p style="margin: 5px 0 0 0; font-size: 11px; color: #888;">Variant: ${sale.variant || 'Standard'} • Battery: ${sale.batteryType}</p>
+                </td>
+                <td style="padding: 20px; border: 1px solid #eee; text-align: center;">${sale.hsn || '871160'}</td>
+                <td style="padding: 20px; border: 1px solid #eee; text-align: right; font-weight: bold;">₹ ${sale.price.toLocaleString()}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr style="background: #f9f9f9; font-weight: bold;">
+                <td colspan="2" style="padding: 15px; text-align: right; border: 1px solid #eee; font-size: 18px;">Grand Total</td>
+                <td style="padding: 15px; text-align: right; border: 1px solid #eee; color: #10b981; font-size: 20px;">₹ ${sale.price.toLocaleString()}</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div style="background: #f0fdf4; padding: 20px; border-radius: 10px; border: 1px dashed #10b981;">
+            <p style="margin: 0; font-size: 12px; font-weight: bold; color: #10b981;">PAYMENT INFORMATION</p>
+            <p style="margin: 10px 0 0 0; font-size: 14px;">Method: <strong>${sale.paymentMethod}</strong></p>
+            ${sale.utrNumber ? `<p style="margin: 5px 0 0 0; font-size: 13px; color: #666;">Transaction Ref: ${sale.utrNumber}</p>` : ''}
+          </div>
+
+          <div style="margin-top: 40px; text-align: center; border-top: 1px solid #eee; pt-20">
+            <p style="color: #999; font-size: 12px;">This is a computer-generated tax invoice. No signature required.</p>
+            <p style="font-weight: bold; margin-top: 10px; color: #10b981;">Thank you for driving the future with Amresh Automobiles!</p>
+          </div>
+        </div>
+      `,
+    });
+
+    if (error) return { success: false, error };
+    return { success: true, data };
+  } catch (error) {
     return { success: false, error };
   }
 }
