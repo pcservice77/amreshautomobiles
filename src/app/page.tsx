@@ -1,3 +1,4 @@
+
 "use client"
 
 import Image from 'next/image';
@@ -60,7 +61,7 @@ export default function Home() {
               Electrify Your <span className="text-primary italic">Daily Journey.</span>
             </h1>
             <p className="text-lg text-foreground/90 mb-8 max-w-lg leading-relaxed font-medium drop-shadow-md">
-              Experience the power of sustainable engineering at <strong>Amresh Automobiles</strong>. We are the top-rated <strong>electric scooter showroom in Ranchi</strong> and Khunti, offering the latest EV technology.
+              Experience the power of sustainable engineering at <strong>Amresh Automobiles</strong>. We are the top-rated <strong>electric scooter showroom in Jharkhand</strong>, offering the latest EV technology.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/#showroom">
