@@ -190,7 +190,7 @@ export default function Home() {
           </h3>
         </div>
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3674.3826227284457!2d85.2758!3d23.0722!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39f4e3c9a6a8b1a7%3A0x7d6b3b5b6b3b5b6b!2sAmresh%20Automobiles!5e0!3m2!1sen!2sin!4v1739540000000!5m2!1sen!2sin"
+          src="https://maps.google.com/maps?q=Amresh%20Automobiles%20Padampur%20Khunti%20Jharkhand&t=&z=15&ie=UTF8&iwloc=&output=embed"
           width="100%"
           height="100%"
           style={{ border: 0 }}
