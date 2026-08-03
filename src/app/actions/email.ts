@@ -25,7 +25,7 @@ export async function sendBookingConfirmationEmail(email: string, details: {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Amresh Automobiles <onboarding@resend.dev>',
+      from: 'Amresh Automobiles <bookings@amreshautomobiles.in>',
       to: email,
       subject: 'Test Ride Booking Received - Amresh Automobiles',
       html: `
@@ -76,7 +76,7 @@ export async function sendStatusUpdateEmail(email: string, details: {
   
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Amresh Automobiles <onboarding@resend.dev>',
+      from: 'Amresh Automobiles <bookings@amreshautomobiles.in>',
       to: email,
       subject: subject,
       html: `
