@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -11,7 +10,24 @@ export const metadata: Metadata = {
     template: '%s | Amresh Automobiles'
   },
   description: 'Discover the future of mobility at Amresh Automobiles. The leading EV scooty showroom in Ranchi, Khunti, and Jharkhand. Explore high-performance electric scooters, book test rides, and get easy EMI options.',
-  keywords: ['amresh automobiles', 'automobiles', 'ev scooty in jharkhand', 'ev scooty in ranchi', 'new ev scooty', 'ev scooty around me', 'electric scooter showroom khunti', 'best ev scooty 2025', 'electric bike ranchi', 'amresh automobiles padampur'],
+  keywords: [
+    'amresh automobiles', 
+    'automobiles', 
+    'ev scooty in jharkhand', 
+    'ev scooty in ranchi', 
+    'new ev scooty', 
+    'ev scooty around me', 
+    'electric scooter showroom khunti', 
+    'best ev scooty 2025', 
+    'electric bike ranchi', 
+    'amresh automobiles padampur',
+    'electric vehicle showroom jharkhand',
+    'buy electric scooter online india',
+    'eco-friendly scooty jharkhand'
+  ],
+  alternates: {
+    canonical: 'https://amreshautomobiles.in',
+  },
   authors: [{ name: 'Amresh Automobiles' }],
   creator: 'Amresh Automobiles',
   publisher: 'Amresh Automobiles',
@@ -55,6 +71,42 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'AutomotiveBusiness',
+  'name': 'Amresh Automobiles',
+  'image': 'https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png',
+  '@id': 'https://amreshautomobiles.in',
+  'url': 'https://amreshautomobiles.in',
+  'telephone': '+91 97989 10854',
+  'address': {
+    '@type': 'PostalAddress',
+    'streetAddress': 'Main Showroom, Padampur',
+    'addressLocality': 'Khunti',
+    'addressRegion': 'JH',
+    'postalCode': '835210',
+    'addressCountry': 'IN'
+  },
+  'geo': {
+    '@type': 'GeoCoordinates',
+    'latitude': 23.0722,
+    'longitude': 85.2758
+  },
+  'openingHoursSpecification': {
+    '@type': 'OpeningHoursSpecification',
+    'dayOfWeek': [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday'
+    ],
+    'opens': '09:00',
+    'closes': '19:00'
+  }
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -67,6 +119,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
         <link rel="canonical" href="https://amreshautomobiles.in" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body className="font-body antialiased bg-background text-foreground">
         <FirebaseClientProvider>
