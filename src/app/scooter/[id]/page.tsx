@@ -201,7 +201,7 @@ export default function ScooterDetailsPage() {
             className="flex flex-col"
           >
             <div className="mb-12">
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-8">
                  <div>
                    <motion.h1 
                     initial={{ opacity: 0, y: 20 }}
@@ -215,41 +215,61 @@ export default function ScooterDetailsPage() {
                    </p>
                  </div>
 
-                 {/* Variant Selection */}
-                 {variants.length > 0 && (
-                   <div className="space-y-4">
-                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Compare Options</p>
-                     <div className="flex flex-wrap gap-3">
+                 {/* Variant Selection - Expanded to fill space */}
+                 <div className="space-y-6">
+                   <div className="flex items-center justify-between">
+                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Select Configuration</p>
+                     <Badge variant="outline" className="border-primary/20 text-primary uppercase text-[9px] tracking-widest">{variants.length + 1} Variants Available</Badge>
+                   </div>
+                   
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <button 
+                       onClick={() => setSelectedVariantIdx(-1)}
+                       className={cn(
+                         "p-6 rounded-3xl text-left transition-all border flex flex-col gap-2 shadow-sm group",
+                         selectedVariantIdx === -1 ? "bg-primary text-primary-foreground border-primary glow-primary" : "bg-white/5 text-muted-foreground border-white/10 hover:border-primary/50"
+                       )}
+                     >
+                       <div className="flex justify-between items-center w-full">
+                         <span className="text-sm font-black uppercase tracking-widest">Standard</span>
+                         {selectedVariantIdx === -1 && <div className="h-2 w-2 rounded-full bg-white animate-pulse" />}
+                       </div>
+                       <div className="space-y-1">
+                         <p className={cn("text-xs font-bold", selectedVariantIdx === -1 ? "text-white" : "text-foreground")}>Range is {scooter.range}</p>
+                         <p className={cn("text-[10px] opacity-70", selectedVariantIdx === -1 ? "text-white" : "text-primary")}>Price: {scooter.price}</p>
+                       </div>
+                     </button>
+
+                     {variants.map((v: any, idx: number) => (
                        <button 
-                         onClick={() => setSelectedVariantIdx(-1)}
+                         key={idx}
+                         onClick={() => setSelectedVariantIdx(idx)}
                          className={cn(
-                           "px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex flex-col items-start gap-1 min-w-[140px] shadow-sm",
-                           selectedVariantIdx === -1 ? "bg-primary text-primary-foreground border-primary glow-primary" : "bg-white/5 text-muted-foreground border-white/10 hover:border-primary/50"
+                           "p-6 rounded-3xl text-left transition-all border flex flex-col gap-2 shadow-sm group",
+                           selectedVariantIdx === idx ? "bg-primary text-primary-foreground border-primary glow-primary" : "bg-white/5 text-muted-foreground border-white/10 hover:border-primary/50"
                          )}
                        >
-                         <span className="text-xs">Standard</span>
-                         <span className={cn("text-[9px] opacity-80", selectedVariantIdx === -1 ? "text-white" : "text-primary")}>{scooter.range} • {scooter.price}</span>
+                         <div className="flex justify-between items-center w-full">
+                           <span className="text-sm font-black uppercase tracking-widest">{v.name}</span>
+                           {selectedVariantIdx === idx && <div className="h-2 w-2 rounded-full bg-white animate-pulse" />}
+                         </div>
+                         <div className="space-y-1">
+                           <p className={cn("text-xs font-bold", selectedVariantIdx === idx ? "text-white" : "text-foreground")}>Range is {v.range}</p>
+                           <p className={cn("text-[10px] opacity-70", selectedVariantIdx === idx ? "text-white" : "text-primary")}>Price: {v.price}</p>
+                         </div>
                        </button>
-                       {variants.map((v: any, idx: number) => (
-                         <button 
-                           key={idx}
-                           onClick={() => setSelectedVariantIdx(idx)}
-                           className={cn(
-                             "px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex flex-col items-start gap-1 min-w-[140px] shadow-sm",
-                             selectedVariantIdx === idx ? "bg-primary text-primary-foreground border-primary glow-primary" : "bg-white/5 text-muted-foreground border-white/10 hover:border-primary/50"
-                           )}
-                         >
-                           <span className="text-xs">{v.name}</span>
-                           <span className={cn("text-[9px] opacity-80", selectedVariantIdx === idx ? "text-white" : "text-primary")}>{v.range} • {v.price}</span>
-                         </button>
-                       ))}
-                     </div>
+                     ))}
                    </div>
-                 )}
+                 </div>
 
-                 <div className="flex items-end gap-2">
-                    <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2">Ex-Showroom ({currentVariantName} • {currentRange})</span>
-                    <p className="text-5xl font-black text-white">{currentPrice}</p>
+                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-6 border-t border-white/5">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2 block">Current Selection: {currentVariantName} • Range: {currentRange}</span>
+                      <p className="text-6xl font-black text-white tracking-tighter">{currentPrice}</p>
+                    </div>
+                    <div className="hidden sm:block">
+                      <Zap className="h-10 w-10 text-primary opacity-20" />
+                    </div>
                  </div>
               </div>
             </div>
