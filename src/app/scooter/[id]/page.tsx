@@ -25,7 +25,6 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Navbar } from '@/components/navbar';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -84,7 +83,7 @@ export default function ScooterDetailsPage() {
 
   return (
     <main className="min-h-screen bg-[#050505] text-foreground pb-32 selection:bg-primary/30">
-      <Navbar />
+      {/* Navbar hidden for immersive experience */}
       
       {/* Background Decorative Blurs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -92,7 +91,7 @@ export default function ScooterDetailsPage() {
         <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px]" />
       </div>
 
-      <div className="container mx-auto px-4 pt-24 md:pt-40 relative z-10">
+      <div className="container mx-auto px-4 pt-12 md:pt-20 relative z-10">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -213,7 +212,7 @@ export default function ScooterDetailsPage() {
                  {/* Variant Selection */}
                  <div className="space-y-6">
                    <div className="flex items-center justify-between">
-                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Select Configuration</p>
+                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Compare Options</p>
                      <Badge variant="outline" className="border-primary/20 text-primary uppercase text-[9px] tracking-widest">{variants.length + 1} Variants Available</Badge>
                    </div>
                    
@@ -230,7 +229,7 @@ export default function ScooterDetailsPage() {
                          {selectedVariantIdx === -1 && <div className="h-2 w-2 rounded-full bg-white animate-pulse" />}
                        </div>
                        <div className="space-y-1">
-                         <p className={cn("text-xs font-bold", selectedVariantIdx === -1 ? "text-white" : "text-foreground")}>Range is {scooter.range}</p>
+                         <p className={cn("text-xs font-bold", selectedVariantIdx === -1 ? "text-white" : "text-foreground")}>{scooter.range} Range</p>
                          <p className={cn("text-[10px] opacity-70", selectedVariantIdx === -1 ? "text-white" : "text-primary")}>Price: {scooter.price}</p>
                        </div>
                      </button>
@@ -249,7 +248,7 @@ export default function ScooterDetailsPage() {
                            {selectedVariantIdx === idx && <div className="h-2 w-2 rounded-full bg-white animate-pulse" />}
                          </div>
                          <div className="space-y-1">
-                           <p className={cn("text-xs font-bold", selectedVariantIdx === idx ? "text-white" : "text-foreground")}>Range is {v.range}</p>
+                           <p className={cn("text-xs font-bold", selectedVariantIdx === idx ? "text-white" : "text-foreground")}>{v.range} Range</p>
                            <p className={cn("text-[10px] opacity-70", selectedVariantIdx === idx ? "text-white" : "text-primary")}>Price: {v.price}</p>
                          </div>
                        </button>
@@ -259,7 +258,7 @@ export default function ScooterDetailsPage() {
 
                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-6 border-t border-white/5">
                     <div>
-                      <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2 block">Current Selection: {currentVariantName} • Range: {currentRange}</span>
+                      <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2 block">Ex-Showroom ({currentVariantName} • {currentRange})</span>
                       <p className="text-6xl font-black text-white tracking-tighter">{currentPrice}</p>
                     </div>
                     <div className="hidden sm:block">
@@ -304,7 +303,7 @@ export default function ScooterDetailsPage() {
         >
           <div className="flex items-center justify-between">
             <h3 className="text-4xl md:text-5xl font-headline font-bold uppercase tracking-tighter">
-              TECHNICAL <span className="text-primary italic">DEEP DIVE.</span>
+              Performance Specs.
             </h3>
             <ShieldCheck className="h-10 w-10 text-primary opacity-50" />
           </div>
@@ -322,7 +321,7 @@ export default function ScooterDetailsPage() {
             <div className="space-y-8 pt-12">
               <div className="flex items-center gap-3">
                 <Palette className="h-6 w-6 text-primary" />
-                <h4 className="font-black text-xs uppercase tracking-[0.4em] text-muted-foreground">The Palette</h4>
+                <h4 className="font-black text-xs uppercase tracking-[0.4em] text-muted-foreground">Available Colors</h4>
               </div>
               <div className="flex flex-wrap gap-4">
                 {colors.map((color: string, i: number) => (
