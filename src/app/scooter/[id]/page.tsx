@@ -163,11 +163,6 @@ export default function ScooterDetailsPage() {
                   </button>
                 </div>
               )}
-
-              <div className="absolute top-10 left-10 flex flex-col gap-3 z-10">
-                <Badge className="bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-[0.2em] px-5 py-2 rounded-full shadow-lg">New Release</Badge>
-                <Badge className="bg-white/10 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-[0.2em] px-5 py-2 rounded-full border border-white/10">Limited</Badge>
-              </div>
             </div>
 
             <motion.div 
@@ -215,7 +210,7 @@ export default function ScooterDetailsPage() {
                    </p>
                  </div>
 
-                 {/* Variant Selection - Expanded to fill space */}
+                 {/* Variant Selection */}
                  <div className="space-y-6">
                    <div className="flex items-center justify-between">
                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Select Configuration</p>
@@ -300,7 +295,7 @@ export default function ScooterDetailsPage() {
           </motion.div>
         </div>
 
-        {/* Technical Deep Dive: Expands into "Empty Spaces" */}
+        {/* Technical Deep Dive */}
         <motion.section
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
