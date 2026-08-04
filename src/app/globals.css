@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -23,24 +24,44 @@
     --border: 229 22% 90%;
     --input: 229 22% 90%;
     --ring: 142 69% 34%;
-    --radius: 0.5rem;
+    --radius: 1rem;
   }
   .dark {
-    --background: 229 22% 5%;
+    --background: 229 22% 3%;
     --foreground: 210 20% 98%;
-    --card: 229 22% 7%;
+    --card: 229 22% 5%;
     --card-foreground: 210 20% 98%;
-    --primary: 142 69% 45%;
-    --border: 229 22% 15%;
+    --primary: 142 75% 48%;
+    --border: 229 22% 10%;
+    --secondary: 229 22% 8%;
+    --muted: 229 22% 7%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border selection:bg-primary/30;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline tracking-tight;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-background/60 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 transition-all duration-500;
+  }
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-white via-white to-primary/50;
+  }
+  .glow-primary {
+    @apply shadow-[0_0_50px_-12px_rgba(16,185,129,0.3)];
   }
 }
 
@@ -54,7 +75,6 @@
     visibility: hidden !important;
   }
 
-  /* Force display of the bill container and its specific children */
   .print-container, 
   .print-container * {
     visibility: visible !important;
@@ -68,7 +88,6 @@
     height: 297mm !important;
     background: white !important;
     margin: 0 !important;
-    /* Removed padding: 0 !important to allow Tailwind padding to work */
     z-index: 9999 !important;
     display: flex !important;
     flex-direction: column !important;
@@ -87,7 +106,6 @@
     display: none !important;
   }
 
-  /* Reset Dialog positioning during print to prevent half-page offset */
   [role="dialog"] {
     position: absolute !important;
     top: 0 !important;
@@ -101,23 +119,4 @@
     box-shadow: none !important;
     transform: none !important;
   }
-}
-
-.invoice-table th {
-  @apply bg-primary text-primary-foreground font-bold uppercase py-2 px-3 text-[10px] border border-black;
-}
-
-.invoice-table td {
-  @apply py-2 px-3 text-[11px] border border-black;
-}
-
-.invoice-watermark {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-30deg);
-  opacity: 0.05;
-  z-index: 0;
-  pointer-events: none;
-  white-space: nowrap;
 }

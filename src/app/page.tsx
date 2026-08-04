@@ -9,8 +9,25 @@ import { CompareBar } from '@/components/compare-bar';
 import { Button } from '@/components/ui/button';
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap, Calendar } from 'lucide-react';
+import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap, Calendar, ArrowUpRight } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.3
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
+};
 
 export default function Home() {
   const firestore = useFirestore();
@@ -35,7 +52,7 @@ export default function Home() {
   const { data: showroom } = useDoc(showroomRef);
 
   return (
-    <main className="min-h-screen pb-20">
+    <main className="min-h-screen pb-20 bg-[#050505]">
       <Navbar />
 
       {/* Hidden SEO Keywords Section */}
@@ -47,144 +64,202 @@ export default function Home() {
       </section>
 
       {/* Hero Section */}
-      <section className="relative h-[85vh] md:h-[95vh] flex items-center pt-16 overflow-hidden">
-        <div className="absolute inset-0 z-0">
+      <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+        <motion.div 
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 0.4, scale: 1 }}
+          transition={{ duration: 2, ease: "easeOut" }}
+          className="absolute inset-0 z-0"
+        >
           <Image
             src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
             alt="Amresh Automobiles - Best EV Scooty in Jharkhand and India. Visit our Amresh Automobile showroom."
             fill
-            className="object-cover opacity-70"
+            className="object-cover"
             priority
             data-ai-hint="electric scooter"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/20" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent" />
-        </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+        </motion.div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center rounded-full border border-primary text-primary px-4 py-1 text-xs font-semibold mb-4 bg-primary/10 backdrop-blur-sm">
-              Future of Urban Mobility in Jharkhand & India
-            </div>
-            <h1 className="font-headline text-5xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-2xl">
-              Electrify Your <span className="text-primary italic">Daily Journey.</span>
-            </h1>
-            <p className="text-lg text-foreground/90 mb-8 max-w-lg leading-relaxed font-medium drop-shadow-md">
-              Experience the power of sustainable engineering at <strong>Amresh Automobiles</strong>. We are the top-rated <strong>electric scooter showroom in Jharkhand</strong>, offering the latest EV technology.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="max-w-4xl mx-auto text-center"
+          >
+            <motion.div variants={itemVariants} className="inline-flex items-center rounded-full border border-primary/30 text-primary px-6 py-2 text-xs font-black tracking-[0.2em] uppercase mb-8 bg-primary/5 backdrop-blur-xl">
+              Future of Urban Mobility
+            </motion.div>
+            
+            <motion.h1 variants={itemVariants} className="font-headline text-6xl md:text-9xl font-bold mb-8 leading-[0.9] tracking-tighter text-gradient">
+              ELECTRIFY YOUR <br/> <span className="italic font-light">DESTINY.</span>
+            </motion.h1>
+            
+            <motion.p variants={itemVariants} className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed font-light">
+              Experience the silent power of sustainable luxury. <strong>Amresh Automobiles</strong> is redefining the electric experience in Jharkhand.
+            </motion.p>
+            
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link href="/#showroom">
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 text-lg w-full shadow-lg shadow-primary/20">
-                  Browse New EV Scooty
+                <Button size="lg" className="h-16 px-12 bg-primary text-primary-foreground hover:scale-105 transition-all text-lg shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)]">
+                  Explore Showroom
                 </Button>
               </Link>
               <Link href="/test-ride">
-                <Button size="lg" variant="outline" className="border-white/20 text-lg bg-background/20 backdrop-blur-md hover:bg-white/10 w-full">
+                <Button size="lg" variant="outline" className="h-16 px-12 border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all text-lg">
                   Book Test Ride
                 </Button>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
+
+        {/* Floating Decorative Elements */}
+        <motion.div 
+          animate={{ y: [0, -20, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-20 left-10 w-64 h-64 bg-primary/20 rounded-full blur-[100px] pointer-events-none" 
+        />
+        <motion.div 
+          animate={{ y: [0, 20, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute top-40 right-10 w-72 h-72 bg-accent/20 rounded-full blur-[120px] pointer-events-none" 
+        />
       </section>
 
       {/* Showroom Grid */}
-      <section id="showroom" className="py-24 container mx-auto px-4">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-          <div>
-            <h2 className="font-headline text-4xl font-bold mb-4">Latest <span className="text-primary">Electric Scooters in India</span></h2>
-            <p className="text-muted-foreground">Find the perfect EV scooty at Amresh Automobiles, Jharkhand's leading showroom.</p>
-          </div>
+      <section id="showroom" className="py-32 container mx-auto px-4 relative">
+        <div className="flex flex-col items-center mb-24 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="font-headline text-5xl md:text-7xl font-bold mb-6 tracking-tighter">THE <span className="text-primary italic">FLEET.</span></h2>
+            <div className="w-24 h-1 bg-primary mb-8 mx-auto" />
+            <p className="text-muted-foreground text-xl max-w-xl">Curated performance. Exceptional design. The best electric scooters in India, available now at Amresh Automobiles.</p>
+          </motion.div>
         </div>
 
         {loading ? (
-          <div className="text-center py-20">Loading our fleet...</div>
+          <div className="text-center py-40 text-muted-foreground animate-pulse">Scanning Showroom...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {scooters?.map((scooter) => (
-              <ScooterCard key={scooter.id} scooter={scooter as any} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            {scooters?.map((scooter, i) => (
+              <motion.div
+                key={scooter.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+              >
+                <ScooterCard scooter={scooter as any} />
+              </motion.div>
             ))}
           </div>
         )}
       </section>
 
-      {/* Branches Section */}
-      <section className="py-24 bg-card/10">
+      {/* Feature Section */}
+      <section id="features" className="py-40 bg-secondary/30 relative overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="font-headline text-4xl font-bold mb-4">Our <span className="text-primary">Showroom Network</span></h2>
-            <p className="text-muted-foreground">Visit Amresh Automobiles for a personalized EV experience at the best price in India.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {branches?.map((branch) => (
-              <Card key={branch.id} className="bg-card/40 border-white/5 group hover:border-primary/50 transition-all overflow-hidden">
-                <div className="relative aspect-square w-full">
-                  <Image 
-                    src={branch.imageUrl || 'https://picsum.photos/seed/br/600/400'} 
-                    alt={`${branch.name} - Amresh Automobiles showroom near Khunti and Ranchi`} 
-                    fill 
-                    className="object-cover" 
-                  />
-                </div>
-                <CardHeader className="p-4">
-                  <CardTitle className="text-lg">{branch.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0 space-y-2 text-sm">
-                  <div className="flex items-start gap-2 text-muted-foreground">
-                    <MapPin className="h-4 w-4 text-primary shrink-0" />
-                    <span>{branch.address}, {branch.city} - {branch.pincode}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Phone className="h-4 w-4 text-primary" />
-                    <span>{branch.contact}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+              className="relative aspect-video rounded-3xl overflow-hidden border border-white/5 shadow-2xl glow-primary"
+            >
+              <Image
+                src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
+                alt="Amresh Automobiles Showroom Interior"
+                fill
+                className="object-cover scale-110 hover:scale-100 transition-transform duration-1000"
+                data-ai-hint="showroom interior"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+            >
+              <h2 className="font-headline text-5xl md:text-6xl font-bold mb-10 tracking-tighter">CRAFTED FOR <br/><span className="text-primary italic">PRECISION.</span></h2>
+              <div className="space-y-10">
+                {[
+                  { title: "Smart Ecosystem", desc: "Proprietary OS integration with real-time analytics and predictive maintenance." },
+                  { title: "Next-Gen Energy", desc: "High-density LFP cells offering up to 150km of uninterrupted luxury on a single charge." },
+                  { title: "White-Glove Service", desc: "Experience 24/7 dedicated support and concierge roadside assistance." }
+                ].map((item, i) => (
+                  <motion.div 
+                    key={i} 
+                    whileHover={{ x: 10 }}
+                    className="flex gap-6 group"
+                  >
+                    <div className="bg-primary/10 border border-primary/20 p-4 rounded-2xl h-fit group-hover:bg-primary transition-colors">
+                      <Zap className="h-6 w-6 text-primary group-hover:text-primary-foreground" />
+                    </div>
+                    <div>
+                      <h3 className="font-headline text-2xl font-bold mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{item.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Feature Section */}
-      <section id="features" className="py-24 border-y border-white/5">
+      {/* Branches Section */}
+      <section className="py-32 relative">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10">
-              <Image
-                src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
-                alt="Amresh Automobiles Showroom Interior - Best EV Scooty showrrom in jharkhand"
-                fill
-                className="object-cover"
-                data-ai-hint="showroom interior"
-              />
-            </div>
-            <div>
-              <h2 className="font-headline text-4xl font-bold mb-6">Why Choose <span className="text-primary">Amresh Automobiles?</span></h2>
-              <div className="space-y-6">
-                {[
-                  { title: "Smart Connectivity", desc: "Integrated app with GPS tracking, remote diagnostics, and OTA updates for all our electric scooters." },
-                  { title: "Rapid Charging", desc: "Get from 0 to 80% in less than 2 hours with our specialized charging points." },
-                  { title: "Premium Service", desc: "Lifetime battery warranty and 24/7 roadside assistance for our EV customers across Jharkhand." }
-                ].map((item, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="bg-primary/20 p-2 rounded-lg h-fit">
-                      <ArrowRight className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg">{item.title}</h3>
-                      <p className="text-muted-foreground">{item.desc}</p>
+          <div className="text-center mb-24">
+            <h2 className="font-headline text-5xl font-bold mb-6 tracking-tighter">OUR <span className="text-primary italic">ATELIERS.</span></h2>
+            <p className="text-muted-foreground text-xl">Find your nearest Amresh Automobiles boutique.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {branches?.map((branch, i) => (
+              <motion.div
+                key={branch.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+              >
+                <Card className="glass-card overflow-hidden group">
+                  <div className="relative aspect-[4/5] w-full overflow-hidden">
+                    <Image 
+                      src={branch.imageUrl || 'https://picsum.photos/seed/br/600/400'} 
+                      alt={`${branch.name} Showroom`} 
+                      fill 
+                      className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60" />
+                    <div className="absolute bottom-6 left-6 right-6">
+                      <h3 className="text-2xl font-bold text-white mb-2">{branch.name}</h3>
+                      <div className="flex items-center gap-2 text-white/70 text-sm">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        <span>{branch.city}</span>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-              <div className="inline-block mt-8">
-                <Link href="/test-ride">
-                  <Button className="gap-2 bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-                    <Calendar className="h-4 w-4" /> Book a Test Ride
-                  </Button>
-                </Link>
-              </div>
-            </div>
+                  <CardContent className="p-6 text-sm text-muted-foreground leading-relaxed">
+                    <p className="mb-4">{branch.address}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground">{branch.contact}</span>
+                      <ArrowUpRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -192,62 +267,62 @@ export default function Home() {
       {/* Compare Floating Bar */}
       <CompareBar />
 
-      {/* Footer / Contact */}
-      <footer id="contact" className="pt-24 border-t border-white/5">
+      {/* Footer */}
+      <footer id="contact" className="pt-32 border-t border-white/5 bg-[#050505]">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-            <div className="space-y-6">
-              <div className="flex items-center gap-2">
-                <Zap className="h-8 w-8 text-primary" />
-                <span className="font-headline text-2xl font-bold tracking-tight uppercase">AMRESH AUTOMOBILES</span>
-              </div>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Leading the charge towards a greener future in India. Visit our amresh automobiles showroom to test ride the best electric scooters.
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20 mb-24">
+            <div className="space-y-8">
+              <Link href="/" className="flex items-center gap-3">
+                <Zap className="h-10 w-10 text-primary" />
+                <span className="font-headline text-3xl font-black tracking-tighter uppercase">AMRESH</span>
+              </Link>
+              <p className="text-muted-foreground leading-relaxed text-lg font-light italic">
+                Pioneering the silent revolution. <br/> Jharkhand's premier electric boutique.
               </p>
-              <div className="flex gap-4">
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary hover:text-primary-foreground" aria-label="Facebook">
+              <div className="flex gap-6">
+                <Button variant="ghost" size="icon" className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-primary hover:text-primary-foreground transition-all">
                   <Facebook className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary hover:text-primary-foreground" aria-label="Twitter">
-                  <Twitter className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary hover:text-primary-foreground" aria-label="Instagram">
+                <Button variant="ghost" size="icon" className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-primary hover:text-primary-foreground transition-all">
                   <Instagram className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-primary hover:text-primary-foreground transition-all">
+                  <Twitter className="h-5 w-5" />
                 </Button>
               </div>
             </div>
             
             <div>
-              <h2 className="font-bold mb-6 text-lg">Contact Amresh Automobile</h2>
-              <ul className="space-y-4 text-muted-foreground text-sm">
-                <li className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-primary shrink-0" />
-                  <span>{showroom?.address || 'Main Showroom, Padampur, Khunti, Jharkhand'}</span>
+              <h2 className="font-bold mb-10 text-xl tracking-tight uppercase text-primary">Inquiries</h2>
+              <ul className="space-y-6 text-muted-foreground">
+                <li className="flex items-start gap-4 hover:text-white transition-colors cursor-pointer">
+                  <MapPin className="h-6 w-6 text-primary shrink-0" />
+                  <span>{showroom?.address || 'Main Showroom, Padampur, Khunti, JH'}</span>
                 </li>
-                <li className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-primary shrink-0" />
-                  <span>{showroom?.contact || '+91 97989 10854'}</span>
+                <li className="flex items-center gap-4 hover:text-white transition-colors cursor-pointer">
+                  <Phone className="h-6 w-6 text-primary shrink-0" />
+                  <span className="font-bold">{showroom?.contact || '+91 97989 10854'}</span>
                 </li>
-                <li className="flex items-center gap-3">
-                  <Mail className="h-5 w-5 text-primary shrink-0" />
-                  <span>{showroom?.email || 'amreshautomobile@gmail.com'}</span>
+                <li className="flex items-center gap-4 hover:text-white transition-colors cursor-pointer">
+                  <Mail className="h-6 w-6 text-primary shrink-0" />
+                  <span>{showroom?.email || 'sales@amresh.com'}</span>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h2 className="font-bold mb-6 text-lg">Quick Links</h2>
-              <ul className="space-y-4 text-muted-foreground text-sm">
-                <li><Link href="/test-ride" className="hover:text-primary">Book EV Test Ride</Link></li>
-                <li><Link href="/#showroom" className="hover:text-primary">EV Scooty Models</Link></li>
-                <li><Link href="/login" className="hover:text-primary">Staff Login</Link></li>
-                <li><Link href="#" className="hover:text-primary">Terms of Service</Link></li>
+              <h2 className="font-bold mb-10 text-xl tracking-tight uppercase text-primary">Concierge</h2>
+              <ul className="space-y-6 text-muted-foreground">
+                <li><Link href="/test-ride" className="hover:text-white transition-colors font-medium">Book a Private Viewing</Link></li>
+                <li><Link href="/#showroom" className="hover:text-white transition-colors font-medium">Virtual Showroom</Link></li>
+                <li><Link href="/login" className="hover:text-white transition-colors font-medium">Partner Portal</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors font-medium">Investor Relations</Link></li>
               </ul>
             </div>
 
             <div>
-              <h2 className="font-bold mb-6 text-lg">Locate Showroom</h2>
-              <div className="w-full aspect-square rounded-xl overflow-hidden border border-white/10 bg-zinc-900">
+              <h2 className="font-bold mb-10 text-xl tracking-tight uppercase text-primary">Find Us</h2>
+              <div className="w-full aspect-square rounded-3xl overflow-hidden border border-white/5 bg-zinc-900 group">
                 <iframe
                   src="https://maps.google.com/maps?q=Amresh%20Automobiles%20Padampur%20Khunti%20Jharkhand&t=&z=14&ie=UTF8&iwloc=&output=embed"
                   width="100%"
@@ -255,15 +330,13 @@ export default function Home() {
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Amresh Automobiles Showroom Location Map"
-                  className="grayscale invert opacity-80 hover:grayscale-0 hover:invert-0 hover:opacity-100 transition-all duration-500"
+                  className="grayscale invert opacity-50 group-hover:opacity-100 group-hover:grayscale-0 group-hover:invert-0 transition-all duration-700"
                 ></iframe>
               </div>
             </div>
           </div>
-          <div className="py-8 border-t border-white/5 text-center text-muted-foreground text-sm">
-            © 2025 {showroom?.name || 'Amresh Automobiles'}. All rights reserved. | Best Electric Scooters in Jharkhand, Ranchi & India.
+          <div className="py-12 border-t border-white/5 text-center text-muted-foreground text-sm tracking-widest uppercase font-black">
+            © 2025 {showroom?.name || 'Amresh Automobiles'}. The Apex of Electric Luxury.
           </div>
         </div>
       </footer>
