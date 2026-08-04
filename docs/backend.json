@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -33,7 +34,18 @@
         "description": { "type": "string" },
         "features": { "type": "array", "items": { "type": "string" } },
         "availableColors": { "type": "string" },
-        "brochureUrl": { "type": "string" }
+        "brochureUrl": { "type": "string" },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "range": { "type": "string" },
+              "price": { "type": "string" }
+            }
+          }
+        }
       },
       "required": ["model", "range", "price", "images", "description"]
     },

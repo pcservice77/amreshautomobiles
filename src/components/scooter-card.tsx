@@ -29,6 +29,8 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
     ? scooter.images 
     : ['https://picsum.photos/seed/scoot/600/400'];
 
+  const hasVariants = scooter.variants && scooter.variants.length > 0;
+
   return (
     <motion.div
       whileHover={{ y: -10 }}
@@ -106,7 +108,9 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
                 <Battery className="h-3 w-3" />
                 <span className="text-[9px] font-black uppercase tracking-widest">Range</span>
               </div>
-              <span className="text-lg font-bold">{scooter.range}</span>
+              <span className="text-lg font-bold">
+                {hasVariants ? `Upto ${scooter.variants[scooter.variants.length-1].range}` : scooter.range}
+              </span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-accent">
@@ -119,7 +123,9 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
           
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Starting At</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">
+                {hasVariants ? 'Starting At' : 'Ex-Showroom'}
+              </p>
               <span className="text-3xl font-black text-white">{scooter.price}</span>
             </div>
             <div className="bg-primary/10 p-4 rounded-2xl group-hover:bg-primary transition-colors duration-500">

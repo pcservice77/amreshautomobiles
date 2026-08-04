@@ -1,10 +1,11 @@
+
 "use client"
 
 import { useState, useRef, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Sparkles, Loader2, Save, Upload, X, Plus, AlertCircle } from 'lucide-react';
+import { Sparkles, Loader2, Save, Upload, X, Plus, AlertCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +14,12 @@ import { generateScooterDescription } from '@/ai/flows/generate-scooter-descript
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Image from 'next/image';
+
+const variantSchema = z.object({
+  name: z.string().min(1, 'Variant name required'),
+  range: z.string().min(1, 'Range required'),
+  price: z.string().min(1, 'Price required'),
+});
 
 const formSchema = z.object({
   model: z.string().min(2, 'Model name is required'),
@@ -30,6 +37,7 @@ const formSchema = z.object({
   images: z.array(z.string()).min(1, 'At least one image is required'),
   availableColors: z.string().default(''),
   brochureUrl: z.string().default(''),
+  variants: z.array(variantSchema).default([]),
 });
 
 interface ScooterFormProps {
@@ -61,7 +69,13 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
       images: initialData?.images || [],
       availableColors: initialData?.availableColors || '',
       brochureUrl: initialData?.brochureUrl || '',
+      variants: initialData?.variants || [],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "variants"
   });
 
   useEffect(() => {
@@ -82,6 +96,7 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
         images: initialData.images || [],
         availableColors: initialData.availableColors || '',
         brochureUrl: initialData.brochureUrl || '',
+        variants: initialData.variants || [],
       });
     }
   }, [initialData, form]);
@@ -121,7 +136,6 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
           }
           ctx.drawImage(img, 0, 0, width, height);
           
-          // Compress to JPEG at 80% quality
           const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
           resolve(dataUrl);
         };
@@ -143,7 +157,6 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
 
     setIsUploading(true);
     const promises = Array.from(files).map((file) => {
-      // Support files up to 10MB as we will compress them
       if (file.size > 10 * 1024 * 1024) {
         toast({ variant: 'destructive', title: 'File too large', description: `${file.name} exceeds 10MB.` });
         return Promise.reject(new Error('File too large'));
@@ -201,7 +214,7 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Smart Image Engine Active</AlertTitle>
           <AlertDescription>
-            You can upload high-quality photos up to 10MB. Our system will automatically compress and resize them to ensure perfect site performance.
+            Images will be automatically optimized for high performance.
           </AlertDescription>
         </Alert>
 
@@ -234,17 +247,36 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
             <FormItem><FormLabel>Tagline</FormLabel><FormControl><Input placeholder="Drive Future" {...field} /></FormControl></FormItem>
           )} />
           <FormField control={form.control} name="price" render={({ field }) => (
-            <FormItem><FormLabel>Price</FormLabel><FormControl><Input placeholder="₹ 1,20,000" {...field} /></FormControl></FormItem>
+            <FormItem><FormLabel>Base Price</FormLabel><FormControl><Input placeholder="₹ 1,20,000" {...field} /></FormControl></FormItem>
           )} />
           <FormField control={form.control} name="range" render={({ field }) => (
-            <FormItem><FormLabel>Range</FormLabel><FormControl><Input placeholder="120 km" {...field} /></FormControl></FormItem>
+            <FormItem><FormLabel>Base Range</FormLabel><FormControl><Input placeholder="120 km" {...field} /></FormControl></FormItem>
           )} />
-          <FormField control={form.control} name="availableColors" render={({ field }) => (
-            <FormItem><FormLabel>Colors</FormLabel><FormControl><Input placeholder="Red, Black, Blue" {...field} /></FormControl></FormItem>
-          )} />
-          <FormField control={form.control} name="brochureUrl" render={({ field }) => (
-            <FormItem><FormLabel>Brochure Link</FormLabel><FormControl><Input placeholder="Google Drive Link" {...field} /></FormControl></FormItem>
-          )} />
+        </div>
+
+        <div className="space-y-4 border border-white/5 p-4 rounded-xl bg-white/5">
+          <div className="flex items-center justify-between">
+            <FormLabel className="text-primary font-bold">Model Variants (Optional)</FormLabel>
+            <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', range: '', price: '' })}>
+              <Plus className="h-4 w-4 mr-1" /> Add Variant
+            </Button>
+          </div>
+          {fields.map((field, index) => (
+            <div key={field.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border-b border-white/5 pb-4 last:border-0">
+              <FormField control={form.control} name={`variants.${index}.name`} render={({ field }) => (
+                <FormItem><FormLabel>Variant Name</FormLabel><FormControl><Input placeholder="Pro" {...field} /></FormControl></FormItem>
+              )} />
+              <FormField control={form.control} name={`variants.${index}.range`} render={({ field }) => (
+                <FormItem><FormLabel>Range</FormLabel><FormControl><Input placeholder="150 km" {...field} /></FormControl></FormItem>
+              )} />
+              <FormField control={form.control} name={`variants.${index}.price`} render={({ field }) => (
+                <FormItem><FormLabel>Price</FormLabel><FormControl><Input placeholder="₹ 1,40,000" {...field} /></FormControl></FormItem>
+              )} />
+              <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => remove(index)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
