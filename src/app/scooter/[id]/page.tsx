@@ -9,7 +9,6 @@ import {
   Gauge, 
   Zap, 
   ArrowLeft, 
-  Download, 
   CalendarDays, 
   ShoppingCart, 
   Activity, 
@@ -87,6 +86,7 @@ export default function ScooterDetailsPage() {
     <main className="min-h-screen bg-[#050505] text-foreground pb-32 selection:bg-primary/30">
       <Navbar />
       
+      {/* Background Decorative Blurs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px]" />
@@ -108,8 +108,10 @@ export default function ScooterDetailsPage() {
           </Button>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+        {/* Hero Section: Image + Primary Details */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start mb-24">
           
+          {/* Gallery Column */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -191,6 +193,7 @@ export default function ScooterDetailsPage() {
             </motion.div>
           </motion.div>
 
+          {/* Details Column */}
           <motion.div 
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -262,7 +265,7 @@ export default function ScooterDetailsPage() {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Link href="/test-ride" className="w-full">
                 <Button size="lg" className="h-20 text-xs font-black uppercase tracking-[0.3em] w-full bg-primary hover:bg-primary/90 shadow-[0_20px_40px_-10px_rgba(16,185,129,0.4)] transition-all active:scale-[0.97] rounded-3xl">
                   <ShoppingCart className="mr-3 h-5 w-5" /> Reserve Now
@@ -274,45 +277,54 @@ export default function ScooterDetailsPage() {
                 </Button>
               </Link>
             </div>
-
-            <div className="space-y-10 pt-12 border-t border-white/5">
-              <div className="flex items-center justify-between">
-                <h3 className="text-3xl font-headline font-bold uppercase tracking-tighter">Performance <span className="text-primary italic">Specs.</span></h3>
-                <ShieldCheck className="h-6 w-6 text-primary opacity-50" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <SpecItem icon={Battery} label="Range" value={currentRange} delay={0.8} />
-                <SpecItem icon={Gauge} label="Top Speed" value={scooter.topSpeed || '85 KM/H'} delay={0.9} />
-                <SpecItem icon={Zap} label="Voltage" value={scooter.voltage || '60V'} delay={1.0} />
-                <SpecItem icon={Activity} label="Class" value={scooter.category || 'High Performance'} delay={1.1} />
-                <SpecItem icon={Layers} label="Battery Tech" value={scooter.batterySystem || 'Modular LFP'} delay={1.2} />
-                <SpecItem icon={Battery} label="Cell Type" value={scooter.batteryType || 'Li-ion'} delay={1.3} />
-              </div>
-            </div>
-
-            {colors.length > 0 && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.4 }}
-                className="mt-16 space-y-6"
-              >
-                <div className="flex items-center gap-2">
-                  <Palette className="h-5 w-5 text-primary" />
-                  <h4 className="font-black text-[10px] uppercase tracking-[0.3em]">Available Colors</h4>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {colors.map((color: string, i: number) => (
-                    <Badge key={i} variant="outline" className="px-6 py-2 font-black text-[9px] uppercase tracking-widest bg-white/5 border-white/10 rounded-full hover:bg-primary/20 transition-colors">
-                      {color}
-                    </Badge>
-                  ))}
-                </div>
-              </motion.div>
-            )}
           </motion.div>
         </div>
+
+        {/* Technical Deep Dive: Expands into "Empty Spaces" */}
+        <motion.section
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="space-y-16 py-24 border-t border-white/5"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-4xl md:text-5xl font-headline font-bold uppercase tracking-tighter">
+              TECHNICAL <span className="text-primary italic">DEEP DIVE.</span>
+            </h3>
+            <ShieldCheck className="h-10 w-10 text-primary opacity-50" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <SpecItem icon={Battery} label="Range" value={currentRange} delay={0.1} />
+            <SpecItem icon={Gauge} label="Top Speed" value={scooter.topSpeed || '85 KM/H'} delay={0.2} />
+            <SpecItem icon={Zap} label="Voltage" value={scooter.voltage || '60V'} delay={0.3} />
+            <SpecItem icon={Activity} label="Class" value={scooter.category || 'High Performance'} delay={0.4} />
+            <SpecItem icon={Layers} label="Battery Tech" value={scooter.batterySystem || 'Modular LFP'} delay={0.5} />
+            <SpecItem icon={Battery} label="Cell Type" value={scooter.batteryType || 'Li-ion'} delay={0.6} />
+          </div>
+
+          {colors.length > 0 && (
+            <div className="space-y-8 pt-12">
+              <div className="flex items-center gap-3">
+                <Palette className="h-6 w-6 text-primary" />
+                <h4 className="font-black text-xs uppercase tracking-[0.4em] text-muted-foreground">The Palette</h4>
+              </div>
+              <div className="flex flex-wrap gap-4">
+                {colors.map((color: string, i: number) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="px-10 py-4 bg-zinc-900/40 border border-white/10 rounded-full font-black text-[10px] uppercase tracking-widest hover:border-primary/50 transition-colors cursor-default"
+                  >
+                    {color}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+        </motion.section>
       </div>
 
       {/* Fullscreen Lightbox */}
@@ -380,14 +392,14 @@ function SpecItem({ icon: Icon, label, value, delay }: { icon: any, label: strin
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay }}
       whileHover={{ y: -5, borderColor: 'rgba(16, 185, 129, 0.3)' }}
-      className="flex flex-col gap-4 p-6 bg-zinc-900/30 border border-white/5 rounded-[2rem] group transition-all"
+      className="flex flex-col gap-6 p-10 bg-zinc-900/30 border border-white/5 rounded-[2.5rem] group transition-all"
     >
-      <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
-        <Icon className="h-5 w-5" />
+      <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
+        <Icon className="h-7 w-7" />
       </div>
       <div>
-        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">{label}</p>
-        <p className="text-xl font-bold tracking-tight">{value}</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-2">{label}</p>
+        <p className="text-3xl font-bold tracking-tight">{value}</p>
       </div>
     </motion.div>
   );
