@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState } from 'react';
@@ -149,18 +150,21 @@ export default function BillingPage() {
 
     try {
       await addDoc(collection(firestore, 'sales'), saleData);
-      setIsSaved(true);
-      toast({ title: 'Invoice Saved', description: `Invoice ${invNo} generated.` });
-
-      // Auto-Email Invoice to Customer
+      
+      // Email Invoice with PDF attachment
       if (data.email) {
+        toast({ title: 'Preparing Invoice', description: 'Generating PDF and sending email...' });
         const emailResult = await sendInvoiceEmail(data.email, saleData, showroom || {});
         if (emailResult.success) {
-          toast({ title: 'Email Sent', description: `Copy sent to ${data.email}` });
+          toast({ title: 'Invoice Emailed', description: `Copy sent with PDF to ${data.email}` });
         } else {
           console.warn('Email failed to send:', emailResult.error);
+          toast({ variant: 'destructive', title: 'Email Error', description: 'Could not send automated invoice email.' });
         }
       }
+
+      setIsSaved(true);
+      toast({ title: 'Sale Recorded', description: `Invoice ${invNo} saved.` });
     } catch (err: any) {
       const permissionError = new FirestorePermissionError({
         path: 'sales',
@@ -178,7 +182,7 @@ export default function BillingPage() {
       setTimeout(() => {
         window.print();
         router.push('/admin/sales');
-      }, 800);
+      }, 1200);
     }
   }, [isSaved, router]);
 
@@ -199,7 +203,7 @@ export default function BillingPage() {
       <div className="flex justify-between items-center print:hidden">
         <div>
           <h1 className="text-3xl font-headline font-bold">Amresh Automobile Billing</h1>
-          <p className="text-muted-foreground">Generate GST compliant sales invoices for electric scooters.</p>
+          <p className="text-muted-foreground">Generate GST compliant sales invoices with automated PDF delivery.</p>
         </div>
         <Receipt className="h-10 w-10 text-primary" />
       </div>
@@ -231,7 +235,7 @@ export default function BillingPage() {
               )} />
               <FormField control={form.control} name="email" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email (For Auto-Billing)</FormLabel>
+                  <FormLabel>Email (For Automated PDF)</FormLabel>
                   <FormControl><Input placeholder="customer@example.com" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -349,7 +353,7 @@ export default function BillingPage() {
               {isSubmitting ? (
                 <><Loader2 className="mr-2 h-6 w-6 animate-spin" /> Finalizing...</>
               ) : (
-                <><Save className="mr-2 h-6 w-6" /> Finalize Sale & Save Invoice</>
+                <><Save className="mr-2 h-6 w-6" /> Finalize Sale & Email Invoice</>
               )}
             </Button>
           </div>

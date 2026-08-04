@@ -1,6 +1,8 @@
+
 'use server';
 
 import { Resend } from 'resend';
+import PDFDocument from 'pdfkit';
 
 // Initialize inside the function to ensure process.env is ready
 const getResend = () => {
@@ -11,6 +13,80 @@ const getResend = () => {
   }
   return new Resend(apiKey);
 };
+
+/**
+ * Generates a PDF buffer for the invoice using pdfkit
+ */
+async function generateInvoicePDFBuffer(sale: any, showroom: any): Promise<Buffer> {
+  return new Promise((resolve) => {
+    const doc = new PDFDocument({ margin: 50 });
+    const buffers: Buffer[] = [];
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => {
+      resolve(Buffer.concat(buffers));
+    });
+
+    // Brand Header
+    doc.fontSize(20).text('TAX INVOICE', { align: 'center', underline: true });
+    doc.moveDown();
+
+    doc.fontSize(14).text(showroom.name || 'AMRESH AUTOMOBILES', { bold: true });
+    doc.fontSize(10).text(showroom.address || 'Showroom Address');
+    doc.text(`GSTIN: ${sale.gstin || showroom.gstin || 'N/A'}`);
+    doc.text(`Email: ${showroom.email || 'contact@amreshautomobiles.in'}`);
+    doc.moveDown();
+
+    // Invoice Details
+    doc.fontSize(10).text(`Invoice No: ${sale.invoiceNo}`, { align: 'right' });
+    doc.text(`Date: ${new Date(sale.soldAt).toLocaleDateString('en-IN')}`, { align: 'right' });
+    doc.moveDown();
+
+    // Billed To
+    doc.fontSize(11).text('BILLED TO:', { bold: true });
+    doc.fontSize(10).text(sale.customerName);
+    doc.text(sale.address);
+    doc.text(`Mobile: ${sale.mobile}`);
+    doc.text(`ID: ${sale.idType} - ${sale.idNumber}`);
+    doc.moveDown();
+
+    // Vehicle Details
+    doc.fontSize(11).text('VEHICLE DETAILS:', { bold: true });
+    doc.fontSize(10).text(`Model: ${sale.model}`);
+    doc.text(`Chassis No: ${sale.chassisNumber}`);
+    doc.text(`Battery: ${sale.batteryType}`);
+    doc.text(`Color: ${sale.color}`);
+    doc.moveDown();
+
+    // Item Table
+    const tableTop = doc.y;
+    doc.moveTo(50, tableTop).lineTo(550, tableTop).stroke();
+    doc.fontSize(10).text('Description', 60, tableTop + 5);
+    doc.text('HSN', 300, tableTop + 5);
+    doc.text('Amount', 450, tableTop + 5, { align: 'right' });
+    doc.moveTo(50, tableTop + 20).lineTo(550, tableTop + 20).stroke();
+
+    const rowTop = tableTop + 30;
+    doc.text(`${sale.model} Electric Scooter`, 60, rowTop);
+    doc.text(sale.hsn || '871160', 300, rowTop);
+    doc.text(`₹ ${sale.price.toLocaleString()}`, 450, rowTop, { align: 'right' });
+
+    doc.moveTo(50, rowTop + 20).lineTo(550, rowTop + 20).stroke();
+
+    // Totals
+    doc.moveDown(2);
+    doc.fontSize(12).text(`Grand Total: ₹ ${sale.price.toLocaleString()}`, { align: 'right', bold: true });
+    doc.fontSize(10).text(`Payment Method: ${sale.paymentMethod}`, { align: 'right' });
+    if (sale.utrNumber) doc.text(`Transaction ID: ${sale.utrNumber}`, { align: 'right' });
+
+    // Footer
+    doc.moveDown(5);
+    doc.text('__________________________', 350, doc.y, { align: 'right' });
+    doc.text('Authorized Signatory', 350, doc.y + 5, { align: 'right' });
+    doc.text(`For ${showroom.name || 'Amresh Automobiles'}`, 350, doc.y + 15, { align: 'right' });
+
+    doc.end();
+  });
+}
 
 export async function sendBookingConfirmationEmail(email: string, details: {
   customerName: string;
@@ -105,10 +181,19 @@ export async function sendInvoiceEmail(email: string, sale: any, showroom: any) 
   if (!resend) return { success: false, error: 'API Key missing' };
 
   try {
+    // Generate the PDF Buffer
+    const pdfBuffer = await generateInvoicePDFBuffer(sale, showroom);
+
     const { data, error } = await resend.emails.send({
       from: 'Amresh Automobiles Billing <billing@contact.amreshautomobiles.in>',
       to: email,
       subject: `Invoice ${sale.invoiceNo} - Amresh Automobiles`,
+      attachments: [
+        {
+          filename: `Invoice_${sale.invoiceNo.replace(/\//g, '_')}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
       html: `
         <div style="font-family: sans-serif; padding: 40px; color: #333; max-width: 700px; margin: auto; border: 1px solid #eee; border-radius: 15px;">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #10b981; padding-bottom: 20px;">
@@ -123,55 +208,26 @@ export async function sendInvoiceEmail(email: string, sale: any, showroom: any) 
             </div>
           </div>
 
-          <div style="margin: 30px 0; display: grid; grid-template-cols: 1fr 1fr; gap: 20px;">
-            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
-              <p style="margin: 0 0 5px 0; font-size: 10px; color: #999; text-transform: uppercase; font-weight: bold;">Billed To</p>
-              <p style="margin: 0; font-weight: bold; font-size: 16px;">${sale.customerName}</p>
-              <p style="margin: 5px 0; font-size: 13px; color: #666;">${sale.address}, ${sale.city}</p>
-              <p style="margin: 5px 0; font-size: 13px; color: #666;">Mob: ${sale.mobile}</p>
-            </div>
-            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
-              <p style="margin: 0 0 5px 0; font-size: 10px; color: #999; text-transform: uppercase; font-weight: bold;">Vehicle Specs</p>
-              <p style="margin: 0; font-weight: bold; font-size: 16px;">${sale.model}</p>
-              <p style="margin: 5px 0; font-size: 13px; color: #666;">Chassis: ${sale.chassisNumber}</p>
-              <p style="margin: 5px 0; font-size: 13px; color: #666;">Color: ${sale.color}</p>
-            </div>
-          </div>
+          <p>Hello <strong>${sale.customerName}</strong>,</p>
+          <p>Please find attached your formal tax invoice for the purchase of your new electric vehicle. Thank you for choosing Amresh Automobiles!</p>
 
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
-            <thead>
-              <tr style="background: #10b981; color: white;">
-                <th style="padding: 12px; text-align: left; border: 1px solid #10b981;">Description</th>
-                <th style="padding: 12px; text-align: center; border: 1px solid #10b981;">HSN</th>
-                <th style="padding: 12px; text-align: right; border: 1px solid #10b981;">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="padding: 20px; border: 1px solid #eee;">
-                  <p style="margin: 0; font-weight: bold;">${sale.model} Electric Scooter</p>
-                  <p style="margin: 5px 0 0 0; font-size: 11px; color: #888;">Variant: ${sale.variant || 'Standard'} • Battery: ${sale.batteryType}</p>
-                </td>
-                <td style="padding: 20px; border: 1px solid #eee; text-align: center;">${sale.hsn || '871160'}</td>
-                <td style="padding: 20px; border: 1px solid #eee; text-align: right; font-weight: bold;">₹ ${sale.price.toLocaleString()}</td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr style="background: #f9f9f9; font-weight: bold;">
-                <td colspan="2" style="padding: 15px; text-align: right; border: 1px solid #eee; font-size: 18px;">Grand Total</td>
-                <td style="padding: 15px; text-align: right; border: 1px solid #eee; color: #10b981; font-size: 20px;">₹ ${sale.price.toLocaleString()}</td>
-              </tr>
-            </tfoot>
+          <table style="width: 100%; border-collapse: collapse; margin: 30px 0;">
+            <tr style="background: #f9f9f9;">
+              <td style="padding: 15px; border: 1px solid #eee;"><strong>Model</strong></td>
+              <td style="padding: 15px; border: 1px solid #eee;">${sale.model}</td>
+            </tr>
+            <tr>
+              <td style="padding: 15px; border: 1px solid #eee;"><strong>Invoice No</strong></td>
+              <td style="padding: 15px; border: 1px solid #eee;">${sale.invoiceNo}</td>
+            </tr>
+            <tr style="background: #f9f9f9;">
+              <td style="padding: 15px; border: 1px solid #eee;"><strong>Amount Paid</strong></td>
+              <td style="padding: 15px; border: 1px solid #eee; color: #10b981; font-weight: bold;">₹ ${sale.price.toLocaleString()}</td>
+            </tr>
           </table>
 
-          <div style="background: #f0fdf4; padding: 20px; border-radius: 10px; border: 1px dashed #10b981;">
-            <p style="margin: 0; font-size: 12px; font-weight: bold; color: #10b981;">PAYMENT INFORMATION</p>
-            <p style="margin: 10px 0 0 0; font-size: 14px;">Method: <strong>${sale.paymentMethod}</strong></p>
-            ${sale.utrNumber ? `<p style="margin: 5px 0 0 0; font-size: 13px; color: #666;">Transaction Ref: ${sale.utrNumber}</p>` : ''}
-          </div>
-
           <div style="margin-top: 40px; text-align: center; border-top: 1px solid #eee; pt-20">
-            <p style="color: #999; font-size: 12px;">This is a computer-generated tax invoice. No signature required.</p>
+            <p style="color: #999; font-size: 12px;">This is a computer-generated tax invoice. A downloadable PDF is attached to this email.</p>
             <p style="font-weight: bold; margin-top: 10px; color: #10b981;">Thank you for driving the future with Amresh Automobiles!</p>
           </div>
         </div>
