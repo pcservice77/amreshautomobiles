@@ -33,7 +33,7 @@ export function Navbar() {
             <Zap className="h-6 w-6 text-primary-foreground fill-current" />
           </motion.div>
           <span className="font-headline text-2xl font-black tracking-tighter text-foreground uppercase group-hover:text-primary transition-all duration-300">
-            AMRESH <span className="italic font-light opacity-50">AUTO</span>
+            AMRESH <span className="italic font-light opacity-50">AUTOMOBILES</span>
           </span>
         </Link>
         
