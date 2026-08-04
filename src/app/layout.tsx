@@ -12,6 +12,11 @@ export const metadata: Metadata = {
     template: '%s | Amresh Automobiles'
   },
   description: 'Discover the future of mobility at Amresh Automobiles. The leading EV scooty showroom in Jharkhand and across India. Explore high-performance electric scooters, book test rides, and get easy EMI options on top EV models.',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
   keywords: [
     'amresh automobiles', 
     'amresh automobile', 
