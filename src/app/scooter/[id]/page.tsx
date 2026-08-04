@@ -215,27 +215,29 @@ export default function ScooterDetailsPage() {
                  {/* Variant Selection */}
                  {variants.length > 0 && (
                    <div className="space-y-4">
-                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Select Variant</p>
-                     <div className="flex flex-wrap gap-2">
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Compare Options</p>
+                     <div className="flex flex-wrap gap-3">
                        <button 
                          onClick={() => setSelectedVariantIdx(-1)}
                          className={cn(
-                           "px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border",
-                           selectedVariantIdx === -1 ? "bg-primary text-primary-foreground border-primary" : "bg-white/5 text-muted-foreground border-white/10 hover:border-primary/50"
+                           "px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex flex-col items-start gap-1 min-w-[140px] shadow-sm",
+                           selectedVariantIdx === -1 ? "bg-primary text-primary-foreground border-primary glow-primary" : "bg-white/5 text-muted-foreground border-white/10 hover:border-primary/50"
                          )}
                        >
-                         Base
+                         <span className="text-xs">Standard</span>
+                         <span className={cn("text-[9px] opacity-80", selectedVariantIdx === -1 ? "text-white" : "text-primary")}>{scooter.range} • {scooter.price}</span>
                        </button>
                        {variants.map((v: any, idx: number) => (
                          <button 
                            key={idx}
                            onClick={() => setSelectedVariantIdx(idx)}
                            className={cn(
-                             "px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border",
-                             selectedVariantIdx === idx ? "bg-primary text-primary-foreground border-primary" : "bg-white/5 text-muted-foreground border-white/10 hover:border-primary/50"
+                             "px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex flex-col items-start gap-1 min-w-[140px] shadow-sm",
+                             selectedVariantIdx === idx ? "bg-primary text-primary-foreground border-primary glow-primary" : "bg-white/5 text-muted-foreground border-white/10 hover:border-primary/50"
                            )}
                          >
-                           {v.name}
+                           <span className="text-xs">{v.name}</span>
+                           <span className={cn("text-[9px] opacity-80", selectedVariantIdx === idx ? "text-white" : "text-primary")}>{v.range} • {v.price}</span>
                          </button>
                        ))}
                      </div>
@@ -243,7 +245,7 @@ export default function ScooterDetailsPage() {
                  )}
 
                  <div className="flex items-end gap-2">
-                    <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2">Ex-Showroom ({currentVariantName})</span>
+                    <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2">Ex-Showroom ({currentVariantName} • {currentRange})</span>
                     <p className="text-5xl font-black text-white">{currentPrice}</p>
                  </div>
               </div>
