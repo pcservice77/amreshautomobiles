@@ -279,7 +279,7 @@ export default function ScooterDetailsPage() {
                 </div>
               </motion.div>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </main>
