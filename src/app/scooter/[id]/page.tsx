@@ -328,6 +328,7 @@ export default function ScooterDetailsPage() {
           <div className="relative w-full h-full p-4 flex items-center justify-center">
             {scooter.images && scooter.images[activeImageIdx] && (
               <motion.div 
+                key={activeImageIdx}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative w-full h-full max-w-6xl"
@@ -340,6 +341,27 @@ export default function ScooterDetailsPage() {
                   unoptimized
                 />
               </motion.div>
+            )}
+
+            {/* Lightbox Navigation */}
+            {scooter.images?.length > 1 && (
+              <>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                  className="absolute left-6 p-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-full hover:bg-primary hover:text-white transition-all z-50 group"
+                >
+                  <ChevronLeft className="h-8 w-8 group-hover:-translate-x-1 transition-transform" />
+                </button>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                  className="absolute right-6 p-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-full hover:bg-primary hover:text-white transition-all z-50 group"
+                >
+                  <ChevronRight className="h-8 w-8 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 text-[12px] font-black uppercase tracking-[0.2em] z-50">
+                  {activeImageIdx + 1} / {scooter.images.length}
+                </div>
+              </>
             )}
           </div>
         </DialogContent>
