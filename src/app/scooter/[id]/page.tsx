@@ -179,7 +179,7 @@ export default function ScooterDetailsPage() {
             </motion.div>
           </motion.div>
 
-          {/* Technical Luxury Section */}
+          {/* Technical Section */}
           <motion.div 
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -197,7 +197,7 @@ export default function ScooterDetailsPage() {
                     {scooter.model}
                    </motion.h1>
                    <p className="text-primary font-headline text-2xl font-light tracking-[0.2em] uppercase italic">
-                    {scooter.tagline || 'Apex Mobility System'}
+                    {scooter.tagline || 'Excellence in Motion'}
                    </p>
                  </div>
                  <div className="flex items-end gap-2">
@@ -236,7 +236,7 @@ export default function ScooterDetailsPage() {
                   className="h-14 text-[9px] font-black uppercase tracking-[0.2em] border-white/5 text-muted-foreground hover:text-primary transition-all md:col-span-2"
                   onClick={() => window.open(scooter.brochureUrl, '_blank')}
                 >
-                  <Download className="mr-2 h-4 w-4" /> Technical Dossier (.PDF)
+                  <Download className="mr-2 h-4 w-4" /> Technical Brochure (.PDF)
                 </Button>
               )}
             </div>
@@ -244,17 +244,17 @@ export default function ScooterDetailsPage() {
             {/* Performance Specifications */}
             <div className="space-y-10 pt-12 border-t border-white/5">
               <div className="flex items-center justify-between">
-                <h3 className="text-3xl font-headline font-bold uppercase tracking-tighter">Performance <span className="text-primary italic">Matrix.</span></h3>
+                <h3 className="text-3xl font-headline font-bold uppercase tracking-tighter">Performance <span className="text-primary italic">Specs.</span></h3>
                 <ShieldCheck className="h-6 w-6 text-primary opacity-50" />
               </div>
 
               <div className="grid grid-cols-2 gap-6">
-                <SpecItem icon={Battery} label="Max Range" value={scooter.range || '120 KM'} delay={0.8} />
-                <SpecItem icon={Gauge} label="Top Velocity" value={scooter.topSpeed || '85 KM/H'} delay={0.9} />
-                <SpecItem icon={Zap} label="Voltage System" value={scooter.voltage || '60V'} delay={1.0} />
+                <SpecItem icon={Battery} label="Range" value={scooter.range || '120 KM'} delay={0.8} />
+                <SpecItem icon={Gauge} label="Top Speed" value={scooter.topSpeed || '85 KM/H'} delay={0.9} />
+                <SpecItem icon={Zap} label="Voltage" value={scooter.voltage || '60V'} delay={1.0} />
                 <SpecItem icon={Activity} label="Class" value={scooter.category || 'High Performance'} delay={1.1} />
-                <SpecItem icon={Layers} label="Architecture" value={scooter.batterySystem || 'Modular LFP'} delay={1.2} />
-                <SpecItem icon={Battery} label="Cells" value={scooter.batteryType || 'Li-ion'} delay={1.3} />
+                <SpecItem icon={Layers} label="Battery Tech" value={scooter.batterySystem || 'Modular LFP'} delay={1.2} />
+                <SpecItem icon={Battery} label="Cell Type" value={scooter.batteryType || 'Li-ion'} delay={1.3} />
               </div>
             </div>
 
@@ -268,7 +268,7 @@ export default function ScooterDetailsPage() {
               >
                 <div className="flex items-center gap-2">
                   <Palette className="h-5 w-5 text-primary" />
-                  <h4 className="font-black text-[10px] uppercase tracking-[0.3em]">Curation Palette</h4>
+                  <h4 className="font-black text-[10px] uppercase tracking-[0.3em]">Available Colors</h4>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {colors.map((color: string, i: number) => (

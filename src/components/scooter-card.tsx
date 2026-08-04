@@ -11,8 +11,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel"
 import Autoplay from "embla-carousel-autoplay"
 import { useCompare } from '@/hooks/use-compare';
@@ -88,7 +86,7 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
 
             <div className="absolute top-6 right-6 z-10">
               <Badge className="bg-primary/20 border border-primary/30 text-primary font-black tracking-widest text-[9px] uppercase px-4 py-1 rounded-full">
-                Apex 2025
+                New Model 2025
               </Badge>
             </div>
           </Carousel>
@@ -98,7 +96,7 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="font-headline text-3xl font-bold mb-1 tracking-tighter uppercase">{scooter.model}</h3>
-              <p className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">{scooter.tagline || 'Excellence'}</p>
+              <p className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">{scooter.tagline || 'Innovation'}</p>
             </div>
           </div>
 
@@ -106,14 +104,14 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-primary">
                 <Battery className="h-3 w-3" />
-                <span className="text-[9px] font-black uppercase tracking-widest">Endurance</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">Range</span>
               </div>
               <span className="text-lg font-bold">{scooter.range}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-accent">
                 <Gauge className="h-3 w-3" />
-                <span className="text-[9px] font-black uppercase tracking-widest">Velocity</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">Top Speed</span>
               </div>
               <span className="text-lg font-bold">{scooter.topSpeed || '85 km/h'}</span>
             </div>
@@ -133,7 +131,7 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
         <CardFooter className="p-10 pt-0">
           <Link href={`/scooter/${scooter.id}`} className="w-full">
             <Button className="w-full h-14 rounded-2xl bg-white/5 border border-white/10 text-white font-black tracking-widest text-[10px] uppercase hover:bg-primary hover:text-primary-foreground hover:scale-[1.02] transition-all duration-500">
-              View Blueprint <ArrowRight className="h-4 w-4 ml-2" />
+              View Details <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>
         </CardFooter>

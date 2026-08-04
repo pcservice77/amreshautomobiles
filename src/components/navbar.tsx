@@ -2,7 +2,7 @@
 "use client"
 
 import Link from 'next/link';
-import { Zap, ShieldCheck, ShoppingCart, LogOut, User, CalendarDays, Menu } from 'lucide-react';
+import { Zap, ShieldCheck, LogOut, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -39,7 +39,7 @@ export function Navbar() {
         
         <div className="hidden lg:flex items-center gap-16 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
           <Link href="/#showroom" className="hover:text-primary transition-all hover:scale-110 relative group">
-            Fleet
+            Scooters
             <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-primary transition-all group-hover:w-full" />
           </Link>
           <Link href="/#features" className="hover:text-primary transition-all hover:scale-110 relative group">
@@ -51,7 +51,7 @@ export function Navbar() {
             <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-primary transition-all group-hover:w-full" />
           </Link>
           <Link href="/#contact" className="hover:text-primary transition-all hover:scale-110 relative group">
-            Ateliers
+            Contact Us
             <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-primary transition-all group-hover:w-full" />
           </Link>
         </div>
@@ -79,13 +79,13 @@ export function Navbar() {
           ) : (
             <Link href="/login" className="hidden sm:block">
               <Button variant="ghost" size="sm" className="font-black tracking-[0.2em] text-[10px] uppercase hover:text-primary h-12 px-8">
-                Entry
+                Login
               </Button>
             </Link>
           )}
           <Link href="/test-ride">
             <Button className="h-12 px-10 bg-primary text-primary-foreground font-black uppercase tracking-[0.2em] text-[10px] rounded-full shadow-[0_10px_30px_-5px_rgba(16,185,129,0.5)] hover:scale-105 transition-all active:scale-95">
-              Secure Ride
+              Book Test Ride
             </Button>
           </Link>
           <Button variant="ghost" size="icon" className="lg:hidden rounded-full w-12 h-12 bg-white/5">

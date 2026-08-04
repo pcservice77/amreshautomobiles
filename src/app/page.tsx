@@ -138,7 +138,7 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-headline text-5xl md:text-7xl font-bold mb-6 tracking-tighter">THE <span className="text-primary italic">FLEET.</span></h2>
+            <h2 className="font-headline text-5xl md:text-7xl font-bold mb-6 tracking-tighter uppercase">OUR <span className="text-primary italic">SCOOTERS.</span></h2>
             <div className="w-24 h-1 bg-primary mb-8 mx-auto" />
             <p className="text-muted-foreground text-xl max-w-xl">Curated performance. Exceptional design. The best electric scooters in India, available now at Amresh Automobiles.</p>
           </motion.div>
@@ -190,7 +190,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 1 }}
             >
-              <h2 className="font-headline text-5xl md:text-6xl font-bold mb-10 tracking-tighter">CRAFTED FOR <br/><span className="text-primary italic">PRECISION.</span></h2>
+              <h2 className="font-headline text-5xl md:text-6xl font-bold mb-10 tracking-tighter uppercase">CRAFTED FOR <br/><span className="text-primary italic">PRECISION.</span></h2>
               <div className="space-y-10">
                 {[
                   { title: "Smart Ecosystem", desc: "Proprietary OS integration with real-time analytics and predictive maintenance." },
@@ -218,11 +218,11 @@ export default function Home() {
       </section>
 
       {/* Branches Section */}
-      <section className="py-32 relative">
+      <section id="branches" className="py-32 relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-24">
-            <h2 className="font-headline text-5xl font-bold mb-6 tracking-tighter">OUR <span className="text-primary italic">ATELIERS.</span></h2>
-            <p className="text-muted-foreground text-xl">Find your nearest Amresh Automobiles boutique.</p>
+            <h2 className="font-headline text-5xl font-bold mb-6 tracking-tighter uppercase">OUR <span className="text-primary italic">SHOWROOMS.</span></h2>
+            <p className="text-muted-foreground text-xl">Find your nearest Amresh Automobiles location.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {branches?.map((branch, i) => (
@@ -293,7 +293,7 @@ export default function Home() {
             </div>
             
             <div>
-              <h2 className="font-bold mb-10 text-xl tracking-tight uppercase text-primary">Inquiries</h2>
+              <h2 className="font-bold mb-10 text-xl tracking-tight uppercase text-primary">CONTACT US</h2>
               <ul className="space-y-6 text-muted-foreground">
                 <li className="flex items-start gap-4 hover:text-white transition-colors cursor-pointer">
                   <MapPin className="h-6 w-6 text-primary shrink-0" />
@@ -311,11 +311,11 @@ export default function Home() {
             </div>
 
             <div>
-              <h2 className="font-bold mb-10 text-xl tracking-tight uppercase text-primary">Concierge</h2>
+              <h2 className="font-bold mb-10 text-xl tracking-tight uppercase text-primary">ABOUT US</h2>
               <ul className="space-y-6 text-muted-foreground">
-                <li><Link href="/test-ride" className="hover:text-white transition-colors font-medium">Book a Private Viewing</Link></li>
-                <li><Link href="/#showroom" className="hover:text-white transition-colors font-medium">Virtual Showroom</Link></li>
-                <li><Link href="/login" className="hover:text-white transition-colors font-medium">Partner Portal</Link></li>
+                <li><Link href="/test-ride" className="hover:text-white transition-colors font-medium">Book a Test Ride</Link></li>
+                <li><Link href="/#showroom" className="hover:text-white transition-colors font-medium">Scooter Models</Link></li>
+                <li><Link href="/login" className="hover:text-white transition-colors font-medium">Partner Login</Link></li>
                 <li><Link href="#" className="hover:text-white transition-colors font-medium">Investor Relations</Link></li>
               </ul>
             </div>
