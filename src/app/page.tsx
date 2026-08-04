@@ -65,21 +65,25 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+        {/* ULTRA PREMIUM BACKGROUND BLENDING */}
         <motion.div 
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 0.4, scale: 1 }}
-          transition={{ duration: 2, ease: "easeOut" }}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 0.6, scale: 1 }}
+          transition={{ duration: 2.5, ease: "easeOut" }}
           className="absolute inset-0 z-0"
         >
           <Image
             src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
-            alt="Amresh Automobiles - Best EV Scooty in Jharkhand and India. Visit our Amresh Automobile showroom."
+            alt="Amresh Automobiles - Best EV Scooty in Jharkhand and India."
             fill
             className="object-cover"
             priority
             data-ai-hint="electric scooter"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+          {/* Multi-layer blending for "Perfect Blend" */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#050505_100%)] opacity-80" />
         </motion.div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -129,7 +133,7 @@ export default function Home() {
         />
       </section>
 
-      {/* Showroom Grid */}
+      {/* Our Scooters Grid */}
       <section id="showroom" className="py-32 container mx-auto px-4 relative">
         <div className="flex flex-col items-center mb-24 text-center">
           <motion.div
@@ -163,7 +167,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* Feature Section */}
+      {/* Innovation Section */}
       <section id="features" className="py-40 bg-secondary/30 relative overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
@@ -194,7 +198,7 @@ export default function Home() {
               <div className="space-y-10">
                 {[
                   { title: "Smart Ecosystem", desc: "Proprietary OS integration with real-time analytics and predictive maintenance." },
-                  { title: "Next-Gen Energy", desc: "High-density LFP cells offering up to 150km of uninterrupted luxury on a single charge." },
+                  { title: "Next-Gen Energy", desc: "High-density LFP cells offering up to 150km of uninterrupted range on a single charge." },
                   { title: "White-Glove Service", desc: "Experience 24/7 dedicated support and concierge roadside assistance." }
                 ].map((item, i) => (
                   <motion.div 
@@ -217,7 +221,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Branches Section */}
+      {/* Our Showrooms Section */}
       <section id="branches" className="py-32 relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-24">
