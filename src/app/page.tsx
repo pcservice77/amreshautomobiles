@@ -1,6 +1,7 @@
 
 "use client"
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Navbar } from '@/components/navbar';
@@ -31,6 +32,11 @@ const itemVariants = {
 
 export default function Home() {
   const firestore = useFirestore();
+  const [currentYear, setCurrentYear] = useState<number>(2026);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
   
   const scootersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -340,7 +346,7 @@ export default function Home() {
             </div>
           </div>
           <div className="py-12 border-t border-white/5 text-center text-muted-foreground text-sm tracking-widest uppercase font-black">
-            © 2025 {showroom?.name || 'Amresh Automobiles'}. The Apex of Electric Luxury.
+            © {currentYear} {showroom?.name || 'Amresh Automobiles'}. The Apex of Electric Luxury.
           </div>
         </div>
       </footer>

@@ -88,7 +88,7 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
 
             <div className="absolute top-6 right-6 z-10">
               <Badge className="bg-primary/20 border border-primary/30 text-primary font-black tracking-widest text-[9px] uppercase px-4 py-1 rounded-full">
-                New Model 2025
+                New Model 2026
               </Badge>
             </div>
           </Carousel>

@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     'ev scooty in khunti',
     'best electric scooter jharkhand', 
     'ev scooty in ranchi', 
-    'new ev scooty 2025', 
+    'new ev scooty 2026', 
     'ev scooty around me', 
     'electric scooter showroom khunti', 
     'showroom near ranchi',
