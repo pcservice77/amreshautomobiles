@@ -1,15 +1,15 @@
-
 "use client"
 
 import { useState, useRef, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Sparkles, Loader2, Save, Upload, X, Plus, AlertCircle, Trash2 } from 'lucide-react';
+import { Sparkles, Loader2, Save, Upload, X, Plus, AlertCircle, Trash2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { generateScooterDescription } from '@/ai/flows/generate-scooter-description';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -42,10 +42,11 @@ const formSchema = z.object({
 
 interface ScooterFormProps {
   initialData?: any;
+  existingScooters?: any[];
   onSubmit: (data: any) => Promise<void>;
 }
 
-export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
+export function ScooterForm({ initialData, existingScooters, onSubmit }: ScooterFormProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,7 +74,7 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
     name: "variants"
   });
@@ -100,6 +101,35 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
       });
     }
   }, [initialData, form]);
+
+  const handleImportTemplate = (scooterId: string) => {
+    const source = existingScooters?.find(s => s.id === scooterId);
+    if (!source) return;
+
+    form.reset({
+      ...form.getValues(),
+      model: source.model || '',
+      tagline: source.tagline || '',
+      range: source.range || '',
+      price: source.price || '',
+      topSpeed: source.topSpeed || '',
+      batteryType: source.batteryType || '',
+      batteryCapacity: source.batteryCapacity || '',
+      voltage: source.voltage || '',
+      category: source.category || '',
+      batterySystem: source.batterySystem || '',
+      chargingTime: source.chargingTime || '',
+      description: source.description || '',
+      availableColors: source.availableColors || '',
+      brochureUrl: source.brochureUrl || '',
+      variants: source.variants || [],
+    });
+    
+    toast({
+      title: 'Template Imported',
+      description: `Imported specifications from ${source.model}.`,
+    });
+  };
 
   const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -210,6 +240,32 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {!initialData && existingScooters && existingScooters.length > 0 && (
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2 text-primary font-bold text-sm">
+              <Copy className="h-4 w-4" />
+              Template Importer
+            </div>
+            <div className="flex gap-2">
+              <Select onValueChange={handleImportTemplate}>
+                <SelectTrigger className="bg-background border-primary/20">
+                  <SelectValue placeholder="Clone from existing model..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {existingScooters.map(s => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.model} ({s.availableColors || 'Std Color'})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-[10px] text-muted-foreground italic">
+              Use this to quickly add a new color of an existing model with all its variants and technical specs pre-filled.
+            </p>
+          </div>
+        )}
+
         <Alert variant="secondary" className="bg-primary/5 border-primary/20">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Smart Image Engine Active</AlertTitle>
@@ -256,7 +312,7 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
 
         <div className="space-y-4 border border-white/5 p-4 rounded-xl bg-white/5">
           <div className="flex items-center justify-between">
-            <FormLabel className="text-primary font-bold">Model Variants (Optional)</FormLabel>
+            <FormLabel className="text-primary font-bold">Model Variants (Range/Price Packs)</FormLabel>
             <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', range: '', price: '' })}>
               <Plus className="h-4 w-4 mr-1" /> Add Variant
             </Button>
@@ -281,10 +337,10 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <FormField control={form.control} name="topSpeed" render={({ field }) => (
-            <FormItem><FormLabel>Speed</FormLabel><FormControl><Input placeholder="80 km/h" {...field} /></FormControl></FormItem>
+            <FormItem><FormLabel>Top Speed</FormLabel><FormControl><Input placeholder="80 km/h" {...field} /></FormControl></FormItem>
           )} />
           <FormField control={form.control} name="batteryType" render={({ field }) => (
-            <FormItem><FormLabel>Battery</FormLabel><FormControl><Input placeholder="LFP" {...field} /></FormControl></FormItem>
+            <FormItem><FormLabel>Battery Type</FormLabel><FormControl><Input placeholder="LFP" {...field} /></FormControl></FormItem>
           )} />
           <FormField control={form.control} name="voltage" render={({ field }) => (
             <FormItem><FormLabel>Voltage</FormLabel><FormControl><Input placeholder="60V" {...field} /></FormControl></FormItem>
@@ -293,6 +349,10 @@ export function ScooterForm({ initialData, onSubmit }: ScooterFormProps) {
             <FormItem><FormLabel>Charge Time</FormLabel><FormControl><Input placeholder="4h" {...field} /></FormControl></FormItem>
           )} />
         </div>
+
+        <FormField control={form.control} name="availableColors" render={({ field }) => (
+          <FormItem><FormLabel>Available Colors</FormLabel><FormControl><Input placeholder="Red, Blue, Matte Black" {...field} /></FormControl><FormDescription>Comma separated list of colors.</FormDescription></FormItem>
+        )} />
 
         <FormField control={form.control} name="description" render={({ field }) => (
           <FormItem>

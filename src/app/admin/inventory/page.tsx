@@ -147,6 +147,7 @@ export default function InventoryPage() {
             </DialogHeader>
             <ScooterForm 
               initialData={editingScooter} 
+              existingScooters={scooters}
               onSubmit={handleSaveScooter} 
             />
           </DialogContent>
