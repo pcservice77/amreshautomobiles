@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,7 +17,10 @@ import {
   Edit2, 
   Zap, 
   Sparkles,
-  ToggleLeft
+  ToggleLeft,
+  Upload,
+  Loader2,
+  ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,11 +36,13 @@ import { format } from 'date-fns';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 const offerSchema = z.object({
   title: z.string().min(3, 'Title is required'),
   description: z.string().min(5, 'Description is required'),
   discount: z.string().min(1, 'Discount amount is required'),
+  imageUrl: z.string().optional(),
   branchId: z.string().default('global'),
   startDate: z.string().min(1, 'Start date required'),
   endDate: z.string().min(1, 'End date required'),
@@ -49,6 +55,8 @@ export default function AdminOffersPage() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingOffer, setEditingOffer] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const offersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -69,12 +77,65 @@ export default function AdminOffersPage() {
       title: '',
       description: '',
       discount: '',
+      imageUrl: '',
       branchId: 'global',
       startDate: format(new Date(), 'yyyy-MM-dd'),
       endDate: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
       isActive: true,
     },
   });
+
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject(new Error('Canvas Error'));
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+      };
+    });
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const compressed = await compressImage(file);
+      form.setValue('imageUrl', compressed);
+      toast({ title: 'Image Uploaded' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Upload Failed' });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const onSubmit = async (values: z.infer<typeof offerSchema>) => {
     if (!firestore) return;
@@ -129,7 +190,7 @@ export default function AdminOffersPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-headline font-bold">Festive Offers & Flash Sales</h1>
-          <p className="text-muted-foreground">Manage dynamic promo banners and branch-specific discounts.</p>
+          <p className="text-muted-foreground">Manage dynamic promo pop-ups and branch-specific discounts.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
@@ -143,15 +204,32 @@ export default function AdminOffersPage() {
               <Plus className="h-4 w-4" /> New Offer
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingOffer ? 'Edit Offer' : 'Create Festive Offer'}</DialogTitle>
               <DialogDescription>
-                This offer will appear as a banner on the home page for the selected duration.
+                This offer will appear as a floating side pop-up on the site.
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+                
+                <div className="flex flex-col items-center gap-4">
+                  <div className="relative w-full aspect-video bg-secondary rounded-xl overflow-hidden border-2 border-dashed border-white/10 flex items-center justify-center group">
+                    {form.watch('imageUrl') ? (
+                      <Image src={form.watch('imageUrl')!} alt="Offer Preview" fill className="object-cover" unoptimized />
+                    ) : (
+                      <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
+                        {isUploading ? <Loader2 className="animate-spin" /> : 'Select Image'}
+                      </Button>
+                    </div>
+                  </div>
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                </div>
+
                 <FormField control={form.control} name="title" render={({ field }) => (
                   <FormItem><FormLabel>Offer Title</FormLabel><FormControl><Input placeholder="Diwali Flash Sale" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
@@ -190,7 +268,7 @@ export default function AdminOffersPage() {
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   </FormItem>
                 )} />
-                <Button type="submit" className="w-full h-12">
+                <Button type="submit" className="w-full h-12" disabled={isUploading}>
                   {editingOffer ? 'Save Changes' : 'Launch Offer'}
                 </Button>
               </form>
@@ -213,6 +291,13 @@ export default function AdminOffersPage() {
           return (
             <Card key={offer.id} className={cn("bg-card/40 border-white/5 relative group overflow-hidden", !offer.isActive && "opacity-60")}>
               <div className={cn("absolute top-0 left-0 w-full h-1", offer.isActive ? "bg-primary" : "bg-muted")} />
+              
+              {offer.imageUrl && (
+                <div className="relative aspect-video w-full">
+                  <Image src={offer.imageUrl} alt={offer.title} fill className="object-cover" unoptimized />
+                </div>
+              )}
+
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
                   <Tag className={cn("h-5 w-5", offer.isActive ? "text-primary" : "text-muted-foreground")} />

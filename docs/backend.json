@@ -123,6 +123,7 @@
         "title": { "type": "string" },
         "description": { "type": "string" },
         "discount": { "type": "string" },
+        "imageUrl": { "type": "string", "description": "Base64 image for the offer banner/pop-up." },
         "branchId": { "type": "string", "description": "Specific branch this offer applies to, or 'global'." },
         "startDate": { "type": "string", "format": "date" },
         "endDate": { "type": "string", "format": "date" },
