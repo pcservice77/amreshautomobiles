@@ -114,6 +114,22 @@
         "letterheadUrl": { "type": "string" },
         "logoUrl": { "type": "string" }
       }
+    },
+    "FestiveOffer": {
+      "title": "Festive Offer",
+      "description": "A dynamic promotional offer shown on the site.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "discount": { "type": "string" },
+        "branchId": { "type": "string", "description": "Specific branch this offer applies to, or 'global'." },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "discount", "startDate", "endDate", "isActive"]
     }
   },
   "auth": {
@@ -143,6 +159,10 @@
     "/settings/showroom": {
       "schema": "ShowroomSettings",
       "description": "Showroom contact and name details."
+    },
+    "/offers/{offerId}": {
+      "schema": "FestiveOffer",
+      "description": "Promotional banners and flash sales."
     }
   }
 }

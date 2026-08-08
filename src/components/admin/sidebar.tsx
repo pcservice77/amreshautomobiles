@@ -1,8 +1,9 @@
+
 "use client"
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Box, FileText, Users, LogOut, Zap, Settings, MapPin, CalendarCheck, UserCog, Building } from 'lucide-react';
+import { LayoutDashboard, Box, FileText, Users, LogOut, Zap, Settings, MapPin, CalendarCheck, UserCog, Building, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -22,6 +23,10 @@ export function AdminSidebar() {
     { label: 'Billing', icon: FileText, href: '/admin/billing' },
     { label: 'Sales History', icon: Users, href: '/admin/sales' },
   ];
+
+  if (isBranchAdmin || isMainAdmin) {
+    navItems.push({ label: 'Festive Offers', icon: Sparkles, href: '/admin/offers' });
+  }
 
   if (isBranchAdmin) {
     navItems.push({ label: 'My Showroom', icon: Building, href: '/admin/my-branch' });
