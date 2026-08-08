@@ -13,6 +13,7 @@ import { collection, doc } from 'firebase/firestore';
 import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap, Calendar, ArrowUpRight } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -29,6 +30,27 @@ const itemVariants = {
   hidden: { y: 20, opacity: 0 },
   visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
 };
+
+function ScooterSkeletonGrid() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="rounded-[2rem] border border-white/5 bg-card/40 backdrop-blur-xl p-10 space-y-6">
+          <Skeleton className="w-full h-64 rounded-2xl bg-white/5" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-2/3 bg-white/10" />
+            <Skeleton className="h-4 w-1/3 bg-white/5" />
+          </div>
+          <Skeleton className="h-20 w-full rounded-3xl bg-white/5" />
+          <div className="flex justify-between items-end">
+            <Skeleton className="h-10 w-24 bg-white/10" />
+            <Skeleton className="h-14 w-14 rounded-2xl bg-white/5" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Home() {
   const firestore = useFirestore();
@@ -61,7 +83,6 @@ export default function Home() {
     <main className="min-h-screen pb-20 bg-[#050505]">
       <Navbar />
 
-      {/* Hidden SEO Keywords Section */}
       <section className="sr-only">
         <h2>Amresh Automobiles - Best EV Scooty Showroom</h2>
         <p>Also searched as amresh automobile, amreshautomobiles, and amresh autommobiles.</p>
@@ -69,9 +90,7 @@ export default function Home() {
         <p>Top electric vehicle showrrom in jharkhand and showroom in jharkhand.</p>
       </section>
 
-      {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
-        {/* ULTRA PREMIUM BACKGROUND BLENDING */}
         <motion.div 
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 0.6, scale: 1 }}
@@ -86,7 +105,6 @@ export default function Home() {
             priority
             data-ai-hint="electric scooter"
           />
-          {/* Multi-layer blending for "Perfect Blend" */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505]" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#050505_100%)] opacity-80" />
@@ -126,7 +144,6 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* Floating Decorative Elements */}
         <motion.div 
           animate={{ y: [0, -20, 0] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -139,7 +156,6 @@ export default function Home() {
         />
       </section>
 
-      {/* Our Scooters Grid */}
       <section id="showroom" className="py-32 container mx-auto px-4 relative">
         <div className="flex flex-col items-center mb-24 text-center">
           <motion.div
@@ -155,15 +171,14 @@ export default function Home() {
         </div>
 
         {loading ? (
-          <div className="text-center py-40 text-muted-foreground animate-pulse">Scanning Showroom...</div>
+          <ScooterSkeletonGrid />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {scooters?.map((scooter, i) => (
               <motion.div
                 key={scooter.id}
                 initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: i * 0.1 }}
               >
                 <ScooterCard scooter={scooter as any} />
@@ -173,7 +188,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* Innovation Section */}
       <section id="features" className="py-40 bg-secondary/30 relative overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
@@ -227,7 +241,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Our Showrooms Section */}
       <section id="branches" className="py-32 relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-24">
@@ -274,10 +287,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Compare Floating Bar */}
       <CompareBar />
 
-      {/* Footer */}
       <footer id="contact" className="pt-32 border-t border-white/5 bg-[#050505]">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20 mb-24">

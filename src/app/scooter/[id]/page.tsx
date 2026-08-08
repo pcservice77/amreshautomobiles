@@ -29,6 +29,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ScooterDetailsPage() {
   const { id } = useParams();
@@ -36,7 +37,7 @@ export default function ScooterDetailsPage() {
   const firestore = useFirestore();
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [selectedVariantIdx, setSelectedVariantIdx] = useState(-1); // -1 means base model
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState(-1);
 
   const scooterRef = useMemoFirebase(() => {
     if (!firestore || !id) return null;
@@ -46,10 +47,19 @@ export default function ScooterDetailsPage() {
   const { data: scooter, loading } = useDoc(scooterRef);
 
   if (loading) return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <Zap className="h-12 w-12 text-primary animate-pulse" />
-        <p className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground">Calibrating Performance...</p>
+    <div className="min-h-screen bg-[#050505] text-foreground p-12 md:p-24 space-y-12">
+      <Skeleton className="h-10 w-32 bg-white/10" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <Skeleton className="aspect-square w-full rounded-[3rem] bg-white/5" />
+        <div className="space-y-8">
+          <Skeleton className="h-24 w-full bg-white/10" />
+          <Skeleton className="h-12 w-2/3 bg-white/5" />
+          <div className="grid grid-cols-2 gap-4">
+            <Skeleton className="h-32 rounded-3xl bg-white/5" />
+            <Skeleton className="h-32 rounded-3xl bg-white/5" />
+          </div>
+          <Skeleton className="h-40 w-full rounded-3xl bg-white/5" />
+        </div>
       </div>
     </div>
   );
@@ -83,9 +93,6 @@ export default function ScooterDetailsPage() {
 
   return (
     <main className="min-h-screen bg-[#050505] text-foreground pb-32 selection:bg-primary/30">
-      {/* Navbar hidden for immersive experience */}
-      
-      {/* Background Decorative Blurs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px]" />
@@ -107,10 +114,7 @@ export default function ScooterDetailsPage() {
           </Button>
         </motion.div>
 
-        {/* Hero Section: Image + Primary Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start mb-24">
-          
-          {/* Gallery Column */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -134,6 +138,7 @@ export default function ScooterDetailsPage() {
                       fill 
                       className="object-contain p-8 transition-transform duration-1000 group-hover:scale-110"
                       unoptimized
+                      priority
                     />
                   ) : (
                     <div className="w-full h-full bg-secondary flex items-center justify-center">
@@ -187,7 +192,6 @@ export default function ScooterDetailsPage() {
             </motion.div>
           </motion.div>
 
-          {/* Details Column */}
           <motion.div 
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -209,7 +213,6 @@ export default function ScooterDetailsPage() {
                    </p>
                  </div>
 
-                 {/* Variant Selection */}
                  <div className="space-y-6">
                    <div className="flex items-center justify-between">
                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Compare Options</p>
@@ -294,7 +297,6 @@ export default function ScooterDetailsPage() {
           </motion.div>
         </div>
 
-        {/* Technical Deep Dive */}
         <motion.section
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -341,7 +343,6 @@ export default function ScooterDetailsPage() {
         </motion.section>
       </div>
 
-      {/* Fullscreen Lightbox */}
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
         <DialogContent className="max-w-[95vw] h-[90vh] bg-black/95 border-none p-0 flex items-center justify-center overflow-hidden">
           <DialogTitle className="sr-only">Vehicle Visualizer</DialogTitle>
@@ -371,7 +372,6 @@ export default function ScooterDetailsPage() {
               </motion.div>
             )}
 
-            {/* Lightbox Navigation */}
             {scooter.images?.length > 1 && (
               <>
                 <button 
