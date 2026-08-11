@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -6,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Zap, Loader2, ArrowRight, KeyRound } from 'lucide-react';
+import { Zap, Loader2, ArrowRight, KeyRound, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -29,6 +30,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [isResetOpen, setIsResetOpen] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -66,11 +68,11 @@ export default function LoginPage() {
     setResetLoading(true);
     try {
       await sendPasswordResetEmail(auth, data.email);
+      setResetSent(true);
       toast({ 
-        title: 'Reset Link Sent', 
-        description: `Check your inbox at ${data.email} to reset your password.` 
+        title: 'Email Sent', 
+        description: `Reset link has been sent to ${data.email}` 
       });
-      setIsResetOpen(false);
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -119,42 +121,65 @@ export default function LoginPage() {
                   <FormItem>
                     <div className="flex items-center justify-between">
                       <FormLabel>Password</FormLabel>
-                      <Dialog open={isResetOpen} onOpenChange={setIsResetOpen}>
+                      <Dialog open={isResetOpen} onOpenChange={(open) => {
+                        setIsResetOpen(open);
+                        if (!open) {
+                          setResetSent(false);
+                          forgotForm.reset();
+                        }
+                      }}>
                         <DialogTrigger asChild>
                           <button type="button" className="text-xs text-primary hover:underline font-medium">
                             Forgot password?
                           </button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
+                        <DialogContent className="sm:max-w-md bg-card border-white/10">
                           <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
                               <KeyRound className="h-5 w-5 text-primary" />
                               Reset Password
                             </DialogTitle>
                             <DialogDescription>
-                              Enter your email address and we'll send you a link to reset your password.
+                              {resetSent 
+                                ? "Check your inbox for the reset link." 
+                                : "Enter your email address and we'll send you a link to reset your password."}
                             </DialogDescription>
                           </DialogHeader>
-                          <Form {...forgotForm}>
-                            <form onSubmit={forgotForm.handleSubmit(onResetSubmit)} className="space-y-4 pt-4">
-                              <FormField
-                                control={forgotForm.control}
-                                name="email"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Registered Email</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="you@example.com" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <Button type="submit" className="w-full" disabled={resetLoading}>
-                                {resetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send Reset Link'}
+                          
+                          {resetSent ? (
+                            <div className="py-6 flex flex-col items-center text-center space-y-4">
+                              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                <CheckCircle2 className="h-6 w-6 text-primary" />
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                We've sent an email to <strong>{forgotForm.getValues('email')}</strong>. <br/> Please follow the instructions to reset your password.
+                              </p>
+                              <Button variant="outline" className="w-full" onClick={() => setIsResetOpen(false)}>
+                                Close
                               </Button>
-                            </form>
-                          </Form>
+                            </div>
+                          ) : (
+                            <Form {...forgotForm}>
+                              <form onSubmit={forgotForm.handleSubmit(onResetSubmit)} className="space-y-4 pt-4">
+                                <FormField
+                                  control={forgotForm.control}
+                                  name="email"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Registered Email</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="you@example.com" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <Button type="submit" className="w-full" disabled={resetLoading}>
+                                  {resetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send Reset Link'}
+                                </Button>
+                              </form>
+                            </Form>
+                          )}
                         </DialogContent>
                       </Dialog>
                     </div>
