@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -7,13 +6,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Zap, Loader2, ArrowRight } from 'lucide-react';
+import { Zap, Loader2, ArrowRight, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 
 const loginSchema = z.object({
@@ -21,8 +21,14 @@ const loginSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+const forgotSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -30,6 +36,11 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
+  });
+
+  const forgotForm = useForm<z.infer<typeof forgotSchema>>({
+    resolver: zodResolver(forgotSchema),
+    defaultValues: { email: '' },
   });
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
@@ -47,6 +58,27 @@ export default function LoginPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onResetSubmit = async (data: z.infer<typeof forgotSchema>) => {
+    if (!auth) return;
+    setResetLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, data.email);
+      toast({ 
+        title: 'Reset Link Sent', 
+        description: `Check your inbox at ${data.email} to reset your password.` 
+      });
+      setIsResetOpen(false);
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error.message || 'Could not send reset email.',
+      });
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -85,7 +117,47 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Password</FormLabel>
+                      <Dialog open={isResetOpen} onOpenChange={setIsResetOpen}>
+                        <DialogTrigger asChild>
+                          <button type="button" className="text-xs text-primary hover:underline font-medium">
+                            Forgot password?
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <KeyRound className="h-5 w-5 text-primary" />
+                              Reset Password
+                            </DialogTitle>
+                            <DialogDescription>
+                              Enter your email address and we'll send you a link to reset your password.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <Form {...forgotForm}>
+                            <form onSubmit={forgotForm.handleSubmit(onResetSubmit)} className="space-y-4 pt-4">
+                              <FormField
+                                control={forgotForm.control}
+                                name="email"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Registered Email</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="you@example.com" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <Button type="submit" className="w-full" disabled={resetLoading}>
+                                {resetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send Reset Link'}
+                              </Button>
+                            </form>
+                          </Form>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
