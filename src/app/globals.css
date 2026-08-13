@@ -95,52 +95,58 @@ html {
     background: white !important;
     color: black !important;
     height: auto !important;
+    width: 100% !important;
     overflow: visible !important;
   }
 
-  /* Hide the main application container during print */
-  body > *:not([data-radix-portal]) {
+  /* Hide Sidebars, Navbars and Buttons */
+  nav, aside, footer, header, .no-print, button, [role="button"], .fixed.inset-0.bg-black\/80 {
     display: none !important;
   }
 
-  /* Ensure the Radix Portal (Dialog) is visible and at the top */
+  /* Standard Application Root should be hidden if a Dialog is present */
+  body:has([data-radix-portal]) > *:not([data-radix-portal]) {
+    display: none !important;
+  }
+
+  /* Position Dialog Portals for Printing */
   [data-radix-portal] {
-    display: block !important;
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
     width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    z-index: 9999 !important;
   }
 
-  /* Target the dialog content specifically */
+  /* Force Invoice to fill page without rounded borders */
   [role="dialog"] {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
     width: 100% !important;
     height: auto !important;
-    padding: 0 !important;
     margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
+    color: black !important;
     box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
     transform: none !important;
     overflow: visible !important;
-    border-radius: 0 !important;
   }
 
   .print-container {
-    padding: 10mm !important;
+    padding: 15mm !important;
     margin: 0 !important;
     width: 100% !important;
     max-width: none !important;
-    box-shadow: none !important;
-    border: none !important;
+    background: white !important;
+    display: block !important;
   }
 
-  /* Force hide all standard UI elements */
-  header, footer, nav, aside, .no-print, button, [role="button"], .fixed.inset-0.z-50.bg-black\/80 {
-    display: none !important;
+  /* Force white background for colored elements during print if needed */
+  .bg-secondary, .bg-muted {
+    background-color: transparent !important;
   }
 }
