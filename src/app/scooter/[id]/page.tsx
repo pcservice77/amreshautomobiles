@@ -19,17 +19,23 @@ import {
   ShieldCheck,
   ZapIcon,
   Maximize2,
-  X
+  X,
+  Calculator,
+  IndianRupee,
+  TrendingUp,
+  Fuel
 } from 'lucide-react';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Slider } from '@/components/ui/slider';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function ScooterDetailsPage() {
   const { id } = useParams();
@@ -38,6 +44,11 @@ export default function ScooterDetailsPage() {
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [selectedVariantIdx, setSelectedVariantIdx] = useState(-1);
+
+  // EMI & Savings State
+  const [downPayment, setDownPayment] = useState(30000);
+  const [tenure, setTenure] = useState(24);
+  const [dailyCommute, setDailyCommute] = useState(40);
 
   const scooterRef = useMemoFirebase(() => {
     if (!firestore || !id) return null;
@@ -71,9 +82,30 @@ export default function ScooterDetailsPage() {
   );
 
   const variants = scooter.variants || [];
-  const currentPrice = selectedVariantIdx === -1 ? scooter.price : variants[selectedVariantIdx].price;
+  const currentPriceStr = selectedVariantIdx === -1 ? scooter.price : variants[selectedVariantIdx].price;
   const currentRange = selectedVariantIdx === -1 ? scooter.range : variants[selectedVariantIdx].range;
   const currentVariantName = selectedVariantIdx === -1 ? 'Standard' : variants[selectedVariantIdx].name;
+
+  // Numerical Price for Calculations
+  const numericPrice = parseFloat(currentPriceStr.replace(/[^\d.]/g, '')) || 100000;
+
+  // EMI Calculation (Simplified)
+  const interestRate = 0.12; // 12% Annual
+  const loanAmount = Math.max(0, numericPrice - downPayment);
+  const monthlyInterest = interestRate / 12;
+  const emi = loanAmount > 0 
+    ? (loanAmount * monthlyInterest * Math.pow(1 + monthlyInterest, tenure)) / (Math.pow(1 + monthlyInterest, tenure) - 1)
+    : 0;
+
+  // Petrol Savings Calculation
+  const petrolPrice = 100;
+  const petrolMileage = 40; // 40 km/l
+  const evElectricityCostPerKm = 0.15; // Approx ₹0.15 per km
+  const monthlyCommute = dailyCommute * 30;
+  
+  const petrolMonthlyCost = (monthlyCommute / petrolMileage) * petrolPrice;
+  const evMonthlyCost = monthlyCommute * evElectricityCostPerKm;
+  const monthlySavings = petrolMonthlyCost - evMonthlyCost;
 
   const nextImage = () => {
     if (scooter.images && scooter.images.length > 0) {
@@ -262,7 +294,7 @@ export default function ScooterDetailsPage() {
                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-6 border-t border-white/5">
                     <div>
                       <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2 block">Ex-Showroom ({currentVariantName} • {currentRange})</span>
-                      <p className="text-6xl font-black text-white tracking-tighter">{currentPrice}</p>
+                      <p className="text-6xl font-black text-white tracking-tighter">{currentPriceStr}</p>
                     </div>
                     <div className="hidden sm:block">
                       <Zap className="h-10 w-10 text-primary opacity-20" />
@@ -296,6 +328,132 @@ export default function ScooterDetailsPage() {
             </div>
           </motion.div>
         </div>
+
+        {/* Finance & Savings Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-12 py-24 border-t border-white/5"
+        >
+          <div className="space-y-10">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/20 rounded-2xl">
+                <Calculator className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-3xl font-headline font-bold uppercase tracking-tighter">Finance <span className="text-primary italic">Calculator.</span></h3>
+                <p className="text-muted-foreground text-xs uppercase tracking-[0.2em] font-black">Plan your premium investment.</p>
+              </div>
+            </div>
+
+            <div className="space-y-8 glass-card p-8 rounded-[2.5rem]">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Down Payment</span>
+                  <span className="text-xl font-bold">₹ {downPayment.toLocaleString()}</span>
+                </div>
+                <Slider 
+                  value={[downPayment]} 
+                  onValueChange={(val) => setDownPayment(val[0])} 
+                  max={numericPrice} 
+                  step={5000} 
+                  className="py-4"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Loan Tenure (Months)</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {[12, 24, 36].map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setTenure(m)}
+                      className={cn(
+                        "py-3 rounded-2xl font-bold text-sm transition-all border",
+                        tenure === m ? "bg-primary text-primary-foreground border-primary" : "bg-zinc-900 border-white/5 hover:border-white/20"
+                      )}
+                    >
+                      {m} Months
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-8 border-t border-white/5 flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-primary mb-1">Estimated Monthly EMI</p>
+                  <p className="text-5xl font-black text-white tracking-tighter">₹ {Math.round(emi).toLocaleString()}</p>
+                </div>
+                <div className="bg-primary/10 p-4 rounded-2xl">
+                  <IndianRupee className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-10">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-accent/20 rounded-2xl">
+                <TrendingUp className="h-8 w-8 text-accent" />
+              </div>
+              <div>
+                <h3 className="text-3xl font-headline font-bold uppercase tracking-tighter">Monthly <span className="text-primary italic">Savings.</span></h3>
+                <p className="text-muted-foreground text-xs uppercase tracking-[0.2em] font-black">Electric vs Petrol Economics.</p>
+              </div>
+            </div>
+
+            <div className="space-y-8 glass-card p-8 rounded-[2.5rem] border-accent/20">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Daily Commute</span>
+                  <span className="text-xl font-bold">{dailyCommute} KM</span>
+                </div>
+                <Slider 
+                  value={[dailyCommute]} 
+                  onValueChange={(val) => setDailyCommute(val[0])} 
+                  max={150} 
+                  step={5} 
+                  className="py-4"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="bg-zinc-900/50 border-white/5 rounded-[2rem]">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Fuel className="h-4 w-4 text-red-500" />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Petrol Cost</span>
+                    </div>
+                    <p className="text-2xl font-bold">₹ {Math.round(petrolMonthlyCost).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">Monthly Avg.</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-primary/10 border-primary/20 rounded-[2rem]">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Zap className="h-4 w-4 text-primary" />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-primary">EV Cost</span>
+                    </div>
+                    <p className="text-2xl font-bold">₹ {Math.round(evMonthlyCost).toLocaleString()}</p>
+                    <p className="text-[10px] text-primary/60">Monthly Avg.</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="pt-8 border-t border-white/5 flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-accent mb-1">Your Monthly Profit</p>
+                  <p className="text-5xl font-black text-white tracking-tighter">₹ {Math.round(monthlySavings).toLocaleString()}</p>
+                  <p className="text-[10px] text-accent font-bold mt-1 animate-pulse">Save ₹ {Math.round(monthlySavings * 12).toLocaleString()} Yearly!</p>
+                </div>
+                <div className="bg-accent/10 p-4 rounded-2xl">
+                  <TrendingUp className="h-6 w-6 text-accent" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.section>
 
         <motion.section
           initial={{ opacity: 0, y: 50 }}
