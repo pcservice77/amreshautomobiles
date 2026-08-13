@@ -88,6 +88,7 @@ html {
     margin: 0 !important;
     size: auto;
   }
+  
   html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -96,20 +97,28 @@ html {
     height: auto !important;
     overflow: visible !important;
   }
-  .print-container {
-    padding: 10mm !important;
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: none !important;
-    box-shadow: none !important;
-    border: none !important;
-  }
-  header, footer, nav, aside, .no-print, [role="button"], button {
+
+  /* Hide the main application container during print */
+  body > *:not([data-radix-portal]) {
     display: none !important;
   }
-  /* Target Dialog components specifically for print */
+
+  /* Ensure the Radix Portal (Dialog) is visible and at the top */
+  [data-radix-portal] {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Target the dialog content specifically */
   [role="dialog"] {
-    position: static !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
     height: auto !important;
     padding: 0 !important;
@@ -118,9 +127,20 @@ html {
     box-shadow: none !important;
     transform: none !important;
     overflow: visible !important;
+    border-radius: 0 !important;
   }
-  /* Hide the dark overlay during print */
-  .fixed.inset-0.z-50.bg-black\/80 {
+
+  .print-container {
+    padding: 10mm !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Force hide all standard UI elements */
+  header, footer, nav, aside, .no-print, button, [role="button"], .fixed.inset-0.z-50.bg-black\/80 {
     display: none !important;
   }
 }
