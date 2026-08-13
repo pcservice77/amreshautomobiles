@@ -23,7 +23,8 @@ import {
   Calculator,
   IndianRupee,
   TrendingUp,
-  Fuel
+  Fuel,
+  Shield
 } from 'lucide-react';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -47,7 +48,7 @@ export default function ScooterDetailsPage() {
 
   // EMI & Savings State
   const [downPayment, setDownPayment] = useState(30000);
-  const [tenure, setTenure] = useState(24);
+  const [tenure, setTenure] = useState(12); // Default to 12 months
   const [dailyCommute, setDailyCommute] = useState(40);
 
   const scooterRef = useMemoFirebase(() => {
@@ -89,8 +90,8 @@ export default function ScooterDetailsPage() {
   // Numerical Price for Calculations
   const numericPrice = parseFloat(currentPriceStr.replace(/[^\d.]/g, '')) || 100000;
 
-  // EMI Calculation (Simplified)
-  const interestRate = 0.12; // 12% Annual
+  // EMI Calculation (Bajaj Finance: 12% Fixed)
+  const interestRate = 0.12; 
   const loanAmount = Math.max(0, numericPrice - downPayment);
   const monthlyInterest = interestRate / 12;
   const emi = loanAmount > 0 
@@ -343,7 +344,10 @@ export default function ScooterDetailsPage() {
               </div>
               <div>
                 <h3 className="text-3xl font-headline font-bold uppercase tracking-tighter">Finance <span className="text-primary italic">Calculator.</span></h3>
-                <p className="text-muted-foreground text-xs uppercase tracking-[0.2em] font-black">Plan your premium investment.</p>
+                <p className="text-muted-foreground text-[10px] uppercase tracking-[0.2em] font-black flex items-center gap-2">
+                   <Shield className="h-3 w-3 text-primary" />
+                   Powered by Bajaj Finance (12% Interest)
+                </p>
               </div>
             </div>
 
@@ -363,9 +367,9 @@ export default function ScooterDetailsPage() {
               </div>
 
               <div className="space-y-4">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Loan Tenure (Months)</span>
-                <div className="grid grid-cols-3 gap-2">
-                  {[12, 24, 36].map((m) => (
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Bajaj Finance Tenure (Months)</span>
+                <div className="grid grid-cols-4 gap-2">
+                  {[6, 9, 12, 15].map((m) => (
                     <button
                       key={m}
                       onClick={() => setTenure(m)}
@@ -374,10 +378,11 @@ export default function ScooterDetailsPage() {
                         tenure === m ? "bg-primary text-primary-foreground border-primary" : "bg-zinc-900 border-white/5 hover:border-white/20"
                       )}
                     >
-                      {m} Months
+                      {m} M
                     </button>
                   ))}
                 </div>
+                <p className="text-[9px] text-muted-foreground italic">* Max tenure restricted to 15 months by Bajaj Finance.</p>
               </div>
 
               <div className="pt-8 border-t border-white/5 flex items-center justify-between">
@@ -385,8 +390,9 @@ export default function ScooterDetailsPage() {
                   <p className="text-[9px] font-black uppercase tracking-widest text-primary mb-1">Estimated Monthly EMI</p>
                   <p className="text-5xl font-black text-white tracking-tighter">₹ {Math.round(emi).toLocaleString()}</p>
                 </div>
-                <div className="bg-primary/10 p-4 rounded-2xl">
-                  <IndianRupee className="h-6 w-6 text-primary" />
+                <div className="bg-primary/10 p-4 rounded-2xl flex flex-col items-center">
+                   <span className="text-[8px] font-black text-primary mb-1">BAJAJ</span>
+                   <IndianRupee className="h-6 w-6 text-primary" />
                 </div>
               </div>
             </div>
