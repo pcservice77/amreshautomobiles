@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from 'next/link';
@@ -39,7 +38,7 @@ export function AdminSidebar() {
   }
 
   return (
-    <div className="w-64 bg-sidebar border-r border-sidebar-border h-screen sticky top-0 flex flex-col p-6">
+    <div className="w-64 bg-sidebar border-r border-sidebar-border h-screen sticky top-0 flex flex-col p-6 print:hidden">
       <div className="flex items-center gap-2 mb-10 px-2">
         <div className="bg-primary p-1.5 rounded-lg">
           <Zap className="h-5 w-5 text-primary-foreground fill-current" />

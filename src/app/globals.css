@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -81,4 +80,26 @@ html {
 ::selection {
   background: rgba(16, 185, 129, 0.3);
   color: white;
+}
+
+/* Print Overrides */
+@media print {
+  @page {
+    margin: 0;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    background: white !important;
+    color: black !important;
+  }
+  .print-container {
+    padding: 15mm !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+  header, footer, nav, aside, .no-print {
+    display: none !important;
+  }
 }
