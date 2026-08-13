@@ -165,7 +165,7 @@ export default function SalesHistoryPage() {
       </div>
 
       <Dialog open={!!selectedSale} onOpenChange={(open) => !open && setSelectedSale(null)}>
-        <DialogContent className="max-w-[210mm] w-full max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none">
+        <DialogContent className="max-w-[210mm] w-full max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none print:max-h-none print:static print:w-full print:rounded-none print:shadow-none print:bg-white print:translate-x-0 print:translate-y-0 print:left-0 print:top-0">
           <DialogHeader className="sr-only">
             <DialogTitle>Invoice Details</DialogTitle>
             <DialogDescription>

@@ -85,21 +85,42 @@ html {
 /* Print Overrides */
 @media print {
   @page {
-    margin: 0;
+    margin: 0 !important;
+    size: auto;
   }
-  body {
-    margin: 0;
-    padding: 0;
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
     color: black !important;
+    height: auto !important;
+    overflow: visible !important;
   }
   .print-container {
-    padding: 15mm !important;
+    padding: 10mm !important;
     margin: 0 !important;
     width: 100% !important;
     max-width: none !important;
+    box-shadow: none !important;
+    border: none !important;
   }
-  header, footer, nav, aside, .no-print {
+  header, footer, nav, aside, .no-print, [role="button"], button {
+    display: none !important;
+  }
+  /* Target Dialog components specifically for print */
+  [role="dialog"] {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+    box-shadow: none !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+  /* Hide the dark overlay during print */
+  .fixed.inset-0.z-50.bg-black\/80 {
     display: none !important;
   }
 }
