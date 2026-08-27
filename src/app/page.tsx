@@ -11,7 +11,7 @@ import { PromoBanner } from '@/components/promo-banner';
 import { Button } from '@/components/ui/button';
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap, Calendar, ArrowUpRight } from 'lucide-react';
+import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap, Calendar, ArrowUpRight, Leaf, Shield, Gauge, CheckCircle2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -85,40 +85,30 @@ export default function Home() {
       <PromoBanner />
       <Navbar />
 
-      <section className="sr-only">
-        <h2>Amresh Automobiles - Best EV Scooty Showroom</h2>
-        <p>Also searched as amresh automobile, amreshautomobiles, and amresh autommobiles.</p>
-        <p>Providing the best ev scooty in khunti, showroom near ranchi, and showroom near khunti.</p>
-        <p>Top electric vehicle showrrom in jharkhand and showroom in jharkhand.</p>
-      </section>
-
-      <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative h-screen min-h-[800px] flex items-center pt-20 overflow-hidden">
         <motion.div 
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 0.6, scale: 1 }}
-          transition={{ duration: 2.5, ease: "easeOut" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.8 }}
+          transition={{ duration: 2 }}
           className="absolute inset-0 z-0"
         >
-          {/* Responsive Background Images from Public Folder */}
           <Image
             src="/homebackgrounddesktop.png"
-            alt="Amresh Automobiles - Premium EV Showroom"
+            alt="Amresh Automobiles - Futuristic EV Showroom"
             fill
             className="object-cover hidden md:block"
             priority
-            data-ai-hint="scooter desktop"
           />
           <Image
             src="/homebackgroundphone.png"
-            alt="Amresh Automobiles - Premium EV Showroom"
+            alt="Amresh Automobiles - Futuristic EV Showroom"
             fill
             className="object-cover md:hidden"
             priority
-            data-ai-hint="scooter mobile"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#050505_100%)] opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/80 via-transparent to-[#050505]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#050505_100%)] opacity-60" />
         </motion.div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -126,28 +116,36 @@ export default function Home() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="max-w-4xl mx-auto text-center"
+            className="max-w-5xl mx-auto text-center flex flex-col items-center"
           >
-            <motion.div variants={itemVariants} className="inline-flex items-center rounded-full border border-primary/30 text-primary px-6 py-2 text-xs font-black tracking-[0.2em] uppercase mb-8 bg-primary/5 backdrop-blur-xl">
+            <motion.div variants={itemVariants} className="inline-flex items-center rounded-full border border-primary/40 text-primary px-5 py-1.5 text-[9px] font-black tracking-[0.3em] uppercase mb-10 bg-primary/5 backdrop-blur-xl">
               Future of Urban Mobility
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="font-headline text-6xl md:text-9xl font-bold mb-8 leading-[0.9] tracking-tighter text-gradient">
-              ELECTRIFY YOUR <br/> <span className="italic font-light">DESTINY.</span>
+            <motion.h1 variants={itemVariants} className="font-headline text-6xl md:text-9xl font-black mb-6 leading-[0.85] tracking-tighter italic uppercase text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+              ELECTRIFY <br/> <span className="text-primary italic not-italic">YOUR DESTINY.</span>
             </motion.h1>
             
-            <motion.p variants={itemVariants} className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed font-light">
-              Experience the silent power of sustainable luxury. <strong>Amresh Automobiles</strong> is redefining the electric experience in Jharkhand.
+            <motion.div variants={itemVariants} className="flex items-center gap-4 mb-10">
+              <span className="w-12 h-[1px] bg-white/30" />
+              <p className="text-xs md:text-sm font-black tracking-[0.5em] uppercase text-white/90">
+                Drive Electric <span className="text-primary">•</span> Live Smart
+              </p>
+              <span className="w-12 h-[1px] bg-white/30" />
+            </motion.div>
+
+            <motion.p variants={itemVariants} className="text-sm md:text-base text-muted-foreground mb-12 max-w-lg mx-auto leading-relaxed opacity-80">
+              Experience the silent power of sustainable luxury. Amresh Automobiles is redefining the electric experience in Jharkhand.
             </motion.p>
             
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 justify-center">
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center w-full">
               <Link href="/#showroom">
-                <Button size="lg" className="h-16 px-12 bg-primary text-primary-foreground hover:scale-105 transition-all text-lg shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)]">
-                  Explore Showroom
+                <Button size="lg" className="h-14 px-10 bg-primary text-primary-foreground hover:scale-105 transition-all text-xs font-black uppercase tracking-widest rounded-full glow-primary">
+                  Explore Showroom <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/test-ride">
-                <Button size="lg" variant="outline" className="h-16 px-12 border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all text-lg">
+                <Button size="lg" variant="outline" className="h-14 px-10 border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all text-xs font-black uppercase tracking-widest rounded-full">
                   Book Test Ride
                 </Button>
               </Link>
@@ -155,18 +153,31 @@ export default function Home() {
           </motion.div>
         </div>
 
-        <motion.div 
-          animate={{ y: [0, -20, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-20 left-10 w-64 h-64 bg-primary/20 rounded-full blur-[100px] pointer-events-none" 
-        />
-        <motion.div 
-          animate={{ y: [0, 20, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute top-40 right-10 w-72 h-72 bg-accent/20 rounded-full blur-[120px] pointer-events-none" 
-        />
+        {/* Bottom Feature Bar */}
+        <div className="absolute bottom-10 left-0 w-full z-20">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t border-white/5">
+              <div className="flex flex-wrap justify-center md:justify-start gap-6 md:gap-12">
+                <FeatureItem icon={Zap} label="100% Electric" />
+                <FeatureItem icon={Gauge} label="Smart Ride" />
+                <FeatureItem icon={Leaf} label="Eco Friendly" />
+                <FeatureItem icon={Shield} label="Reliable & Safe" />
+              </div>
+              
+              <div className="flex flex-col items-center md:items-end">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Trusted By</span>
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Thousands of Happy Riders</p>
+                <div className="w-full h-[1px] bg-primary mt-2" />
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
+      {/* Showroom Section */}
       <section id="showroom" className="py-32 container mx-auto px-4 relative">
         <div className="flex flex-col items-center mb-24 text-center">
           <motion.div
@@ -175,9 +186,9 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-headline text-5xl md:text-7xl font-bold mb-6 tracking-tighter uppercase">OUR <span className="text-primary italic">SCOOTERS.</span></h2>
+            <h2 className="font-headline text-5xl md:text-7xl font-bold mb-6 tracking-tighter uppercase">OUR <span className="text-primary italic">FLEET.</span></h2>
             <div className="w-24 h-1 bg-primary mb-8 mx-auto" />
-            <p className="text-muted-foreground text-xl max-w-xl">Curated performance. Exceptional design. The best electric scooters in India, available now at Amresh Automobiles.</p>
+            <p className="text-muted-foreground text-xl max-w-xl">Curated performance. Exceptional design. The best electric scooters in India, available now.</p>
           </motion.div>
         </div>
 
@@ -214,7 +225,6 @@ export default function Home() {
                 alt="Amresh Automobiles Showroom Interior"
                 fill
                 className="object-cover scale-110 hover:scale-100 transition-transform duration-1000"
-                data-ai-hint="showroom interior"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             </motion.div>
@@ -373,5 +383,16 @@ export default function Home() {
         </div>
       </footer>
     </main>
+  );
+}
+
+function FeatureItem({ icon: Icon, label }: { icon: any; label: string }) {
+  return (
+    <div className="flex items-center gap-3 group">
+      <div className="w-10 h-10 rounded-full border border-primary/30 flex items-center justify-center bg-primary/5 group-hover:bg-primary group-hover:border-primary transition-all">
+        <Icon className="h-4 w-4 text-primary group-hover:text-black transition-colors" />
+      </div>
+      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80 group-hover:text-primary transition-colors">{label}</span>
+    </div>
   );
 }
