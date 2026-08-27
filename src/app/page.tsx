@@ -86,7 +86,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-screen min-h-[800px] flex items-start pt-20 md:pt-28 overflow-hidden">
+      <section className="relative h-screen min-h-[700px] md:min-h-[800px] flex items-start pt-20 md:pt-28 overflow-hidden">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.8 }}
@@ -116,41 +116,41 @@ export default function Home() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="max-w-5xl mx-auto text-center flex flex-col items-center"
+            className="max-w-5xl mx-auto text-center flex flex-col items-center mt-6 md:mt-0"
           >
-            <motion.div variants={itemVariants} className="inline-flex items-center rounded-full border border-primary/40 text-primary px-5 py-1.5 text-[9px] font-black tracking-[0.3em] uppercase mb-10 bg-primary/5 backdrop-blur-xl">
+            <motion.div variants={itemVariants} className="inline-flex items-center rounded-full border border-primary/40 text-primary px-5 py-1.5 text-[8px] md:text-[9px] font-black tracking-[0.3em] uppercase mb-8 md:mb-10 bg-primary/5 backdrop-blur-xl">
               Future of Urban Mobility
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="font-headline text-4xl md:text-6xl font-black mb-6 leading-[0.85] tracking-tighter italic uppercase text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+            <motion.h1 variants={itemVariants} className="font-headline text-4xl md:text-6xl font-black mb-4 md:mb-6 leading-[0.85] tracking-tighter italic uppercase text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
               ELECTRIFY <br/> <span className="text-primary italic not-italic">YOUR DESTINY.</span>
             </motion.h1>
             
-            <motion.div variants={itemVariants} className="flex items-center gap-4 mb-10">
-              <span className="w-12 h-[1px] bg-white/30" />
-              <p className="text-xs md:text-sm font-black tracking-[0.5em] uppercase text-white/90">
+            <motion.div variants={itemVariants} className="flex items-center gap-4 mb-8 md:mb-10">
+              <span className="w-8 md:w-12 h-[1px] bg-white/30" />
+              <p className="text-[10px] md:text-sm font-black tracking-[0.5em] uppercase text-white/90">
                 Drive Electric <span className="text-primary">•</span> Live Smart
               </p>
-              <span className="w-12 h-[1px] bg-white/30" />
+              <span className="w-8 md:w-12 h-[1px] bg-white/30" />
             </motion.div>
 
-            <motion.p variants={itemVariants} className="font-headline text-sm md:text-base text-muted-foreground mb-12 max-w-lg mx-auto leading-relaxed opacity-80">
+            <motion.p variants={itemVariants} className="font-headline text-[10px] md:text-base text-muted-foreground mb-8 md:mb-12 max-w-sm md:max-w-lg mx-auto leading-relaxed opacity-80">
               Experience the silent power of sustainable luxury. Amresh Automobiles is redefining the electric experience in Jharkhand.
             </motion.p>
             
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center w-full items-center">
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center w-full items-center px-4 md:px-0">
               <Link href="/#showroom" className="w-full sm:w-auto">
-                <Button size="lg" className="h-14 w-full sm:w-auto px-10 bg-primary text-primary-foreground hover:scale-105 transition-all text-xs font-black uppercase tracking-widest rounded-full glow-primary">
+                <Button size="lg" className="h-12 md:h-14 w-full sm:w-auto px-6 md:px-10 bg-primary text-primary-foreground hover:scale-105 transition-all text-[10px] md:text-xs font-black uppercase tracking-widest rounded-full glow-primary">
                   Explore Showroom <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/test-ride" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="h-14 w-full sm:w-auto px-10 border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all text-xs font-black uppercase tracking-widest rounded-full">
+                <Button size="lg" variant="outline" className="h-12 md:h-14 w-full sm:w-auto px-6 md:px-10 border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all text-[10px] md:text-xs font-black uppercase tracking-widest rounded-full">
                   Book Test Ride
                 </Button>
               </Link>
               <Link href="/service-booking" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="h-14 w-full sm:w-auto px-10 border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-all text-xs font-black uppercase tracking-widest rounded-full flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                <Button size="lg" variant="outline" className="h-12 md:h-14 w-full sm:w-auto px-6 md:px-10 border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-all text-[10px] md:text-xs font-black uppercase tracking-widest rounded-full flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
                   <Wrench className="h-4 w-4" /> Service Portal
                 </Button>
               </Link>
