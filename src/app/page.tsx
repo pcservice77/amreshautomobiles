@@ -152,30 +152,30 @@ export default function Home() {
             </motion.div>
           </motion.div>
         </div>
+      </section>
 
-        {/* Bottom Feature Bar */}
-        <div className="absolute bottom-10 left-0 w-full z-20">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t border-white/5">
-              <div className="flex flex-wrap justify-center md:justify-start gap-6 md:gap-12">
-                <FeatureItem icon={Zap} label="100% Electric" />
-                <FeatureItem icon={Gauge} label="Smart Ride" />
-                <FeatureItem icon={Leaf} label="Eco Friendly" />
-                <FeatureItem icon={Shield} label="Reliable & Safe" />
+      {/* Feature Bar - Positioned between Hero and Showroom */}
+      <div className="relative z-20 py-12 -mt-20">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t border-white/5">
+            <div className="flex flex-wrap justify-center md:justify-start gap-6 md:gap-12">
+              <FeatureItem icon={Zap} label="100% Electric" />
+              <FeatureItem icon={Gauge} label="Smart Ride" />
+              <FeatureItem icon={Leaf} label="Eco Friendly" />
+              <FeatureItem icon={Shield} label="Reliable & Safe" />
+            </div>
+            
+            <div className="flex flex-col items-center md:items-end">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Trusted By</span>
               </div>
-              
-              <div className="flex flex-col items-center md:items-end">
-                <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Trusted By</span>
-                </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Thousands of Happy Riders</p>
-                <div className="w-full h-[1px] bg-primary mt-2" />
-              </div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Thousands of Happy Riders</p>
+              <div className="w-full h-[1px] bg-primary mt-2" />
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Showroom Section */}
       <section id="showroom" className="py-32 container mx-auto px-4 relative">
