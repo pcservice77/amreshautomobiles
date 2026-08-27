@@ -2,7 +2,7 @@
 "use client"
 
 import Link from 'next/link';
-import { ShieldCheck, LogOut, Menu } from 'lucide-react';
+import { ShieldCheck, LogOut, Menu, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -49,16 +49,17 @@ export function Navbar() {
             Scooters
             <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-primary transition-all group-hover:w-full" />
           </Link>
-          <Link href="/#features" className="hover:text-primary transition-all hover:scale-105 relative group">
-            Innovation
-            <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-primary transition-all group-hover:w-full" />
-          </Link>
           <Link href="/test-ride" className="hover:text-primary transition-all hover:scale-105 relative group">
             Booking
             <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-primary transition-all group-hover:w-full" />
           </Link>
+          <Link href="/service-booking" className="hover:text-primary transition-all hover:scale-105 relative group flex items-center gap-2">
+            Service
+            <Wrench className="h-3 w-3 text-primary" />
+            <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-primary transition-all group-hover:w-full" />
+          </Link>
           <Link href="/#contact" className="hover:text-primary transition-all hover:scale-105 relative group">
-            Contact Us
+            Contact
             <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-primary transition-all group-hover:w-full" />
           </Link>
         </div>

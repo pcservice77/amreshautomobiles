@@ -60,7 +60,9 @@
         "model": { "type": "string" },
         "price": { "type": "number" },
         "branchId": { "type": "string" },
-        "soldAt": { "type": "string", "format": "date-time" }
+        "soldAt": { "type": "string", "format": "date-time" },
+        "chassisNumber": { "type": "string" },
+        "email": { "type": "string" }
       }
     },
     "Branch": {
@@ -98,6 +100,28 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["customerName", "email", "mobile", "scooterModel", "branchId", "preferredDate"]
+    },
+    "ServiceBooking": {
+      "title": "Service Booking",
+      "description": "A request for vehicle maintenance.",
+      "type": "object",
+      "properties": {
+        "saleId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "mobile": { "type": "string" },
+        "email": { "type": "string" },
+        "chassisNumber": { "type": "string" },
+        "model": { "type": "string" },
+        "branchId": { "type": "string" },
+        "currentKm": { "type": "number" },
+        "serviceType": { "type": "string", "enum": ["Routine", "Repair", "Warranty", "Battery Check"] },
+        "preferredDate": { "type": "string" },
+        "preferredTime": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled"] },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["saleId", "branchId", "currentKm", "preferredDate"]
     },
     "ShowroomSettings": {
       "title": "Showroom Settings",
@@ -156,6 +180,10 @@
     "/bookings/{bookingId}": {
       "schema": "TestRideBooking",
       "description": "Customer test ride bookings."
+    },
+    "/service-bookings/{bookingId}": {
+      "schema": "ServiceBooking",
+      "description": "Customer vehicle service requests."
     },
     "/settings/showroom": {
       "schema": "ShowroomSettings",

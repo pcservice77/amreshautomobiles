@@ -8,9 +8,12 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Simplified role check for reliability
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
     function getRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      return getUserData().role;
     }
 
     function isAdmin() {
@@ -18,7 +21,7 @@ service cloud.firestore {
     }
     
     function isBranchAdmin(branchId) {
-      let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      let userData = getUserData();
       return isAuthenticated() && 
         userData.role == 'branch_admin' && 
         userData.assignedBranchId == branchId;
@@ -40,10 +43,8 @@ service cloud.firestore {
 
     // Sales Record Rules
     match /sales/{saleId} {
-      allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
-      allow create: if isAdmin() || (isAuthenticated() && getRole() == 'branch_admin');
-      allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
-      allow delete: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow read: if true; // Allowed for customer lookup via specific queries
+      allow write: if isAdmin() || (isAuthenticated() && getRole() == 'branch_admin');
     }
 
     // Branch Rules
@@ -55,6 +56,14 @@ service cloud.firestore {
 
     // Test Ride Booking Rules
     match /bookings/{bookingId} {
+      allow create: if true;
+      allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow delete: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+    }
+
+    // Service Booking Rules
+    match /service-bookings/{bookingId} {
       allow create: if true;
       allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
       allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));

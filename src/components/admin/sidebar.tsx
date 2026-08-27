@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Box, FileText, Users, LogOut, Settings, MapPin, CalendarCheck, UserCog, Building, Sparkles, Zap } from 'lucide-react';
+import { LayoutDashboard, Box, FileText, Users, LogOut, Settings, MapPin, CalendarCheck, UserCog, Building, Sparkles, Zap, Wrench } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -20,6 +20,7 @@ export function AdminSidebar() {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
     { label: 'Bookings', icon: CalendarCheck, href: '/admin/bookings' },
+    { label: 'Services', icon: Wrench, href: '/admin/services' },
     { label: 'Inventory', icon: Box, href: '/admin/inventory' },
     { label: 'Billing', icon: FileText, href: '/admin/billing' },
     { label: 'Sales History', icon: Users, href: '/admin/sales' },
