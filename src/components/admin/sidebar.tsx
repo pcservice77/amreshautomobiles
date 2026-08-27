@@ -1,11 +1,13 @@
+
 "use client"
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Box, FileText, Users, LogOut, Zap, Settings, MapPin, CalendarCheck, UserCog, Building, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Box, FileText, Users, LogOut, Settings, MapPin, CalendarCheck, UserCog, Building, Sparkles, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
+import Image from 'next/image';
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -40,8 +42,8 @@ export function AdminSidebar() {
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border h-screen sticky top-0 flex flex-col p-6 print:hidden">
       <div className="flex items-center gap-2 mb-10 px-2">
-        <div className="bg-primary p-1.5 rounded-lg">
-          <Zap className="h-5 w-5 text-primary-foreground fill-current" />
+        <div className="relative h-10 w-10">
+          <Image src="/logo.png" alt="Logo" fill className="object-contain" />
         </div>
         <span className="font-headline text-lg font-bold uppercase">AMRESH <span className="text-primary">ADMIN</span></span>
       </div>

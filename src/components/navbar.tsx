@@ -2,11 +2,12 @@
 "use client"
 
 import Link from 'next/link';
-import { Zap, ShieldCheck, LogOut, Menu } from 'lucide-react';
+import { ShieldCheck, LogOut, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import Image from 'next/image';
 
 export function Navbar() {
   const { user } = useUser();
@@ -27,10 +28,16 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-24 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-4 group">
           <motion.div 
-            whileHover={{ rotate: 180, scale: 1.1 }}
-            className="bg-primary p-2.5 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.5)]"
+            whileHover={{ scale: 1.1 }}
+            className="relative h-12 w-12"
           >
-            <Zap className="h-6 w-6 text-black fill-current" />
+            <Image 
+              src="/logo.png" 
+              alt="Amresh Automobiles Logo" 
+              fill 
+              className="object-contain"
+              priority
+            />
           </motion.div>
           <span className="font-headline text-2xl font-black tracking-tighter text-white uppercase group-hover:text-primary transition-all duration-300">
             AMRESH <span className="italic font-light opacity-50">AUTOMOBILES</span>

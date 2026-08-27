@@ -134,7 +134,7 @@ export default function Home() {
               <span className="w-12 h-[1px] bg-white/30" />
             </motion.div>
 
-            <motion.p variants={itemVariants} className="font-headline text-sm md:text-lg text-white/70 mb-12 max-w-lg mx-auto leading-relaxed tracking-tight">
+            <motion.p variants={itemVariants} className="font-headline text-sm md:text-base text-muted-foreground mb-12 max-w-lg mx-auto leading-relaxed opacity-80">
               Experience the silent power of sustainable luxury. Amresh Automobiles is redefining the electric experience in Jharkhand.
             </motion.p>
             
@@ -224,7 +224,7 @@ export default function Home() {
                 src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
                 alt="Amresh Automobiles Showroom Interior"
                 fill
-                className="object-cover transition-transform duration-1000"
+                className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             </motion.div>
@@ -315,7 +315,9 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20 mb-24">
             <div className="space-y-8">
               <Link href="/" className="flex items-center gap-3">
-                <Zap className="h-10 w-10 text-primary" />
+                <div className="relative h-12 w-12">
+                  <Image src="/logo.png" alt="Logo" fill className="object-contain" />
+                </div>
                 <span className="font-headline text-3xl font-black tracking-tighter uppercase">AMRESH</span>
               </Link>
               <p className="text-muted-foreground leading-relaxed text-lg font-light italic">
