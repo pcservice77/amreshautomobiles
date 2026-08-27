@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -349,7 +348,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-center gap-4 hover:text-white transition-colors cursor-pointer">
                   <Mail className="h-6 w-6 text-primary shrink-0" />
-                  <span>{showroom?.email || 'sales@amresh.com'}</span>
+                  <span>{showroom?.email || 'amreshautomobiles@gmail.com'}</span>
                 </li>
               </ul>
             </div>
