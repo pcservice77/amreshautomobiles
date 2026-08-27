@@ -86,7 +86,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-screen min-h-[800px] flex items-center pt-20 overflow-hidden">
+      <section className="relative h-screen min-h-[800px] flex items-start pt-32 md:pt-40 overflow-hidden">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.8 }}
@@ -122,7 +122,7 @@ export default function Home() {
               Future of Urban Mobility
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="font-headline text-6xl md:text-9xl font-black mb-6 leading-[0.85] tracking-tighter italic uppercase text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+            <motion.h1 variants={itemVariants} className="font-headline text-5xl md:text-7xl font-black mb-6 leading-[0.85] tracking-tighter italic uppercase text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
               ELECTRIFY <br/> <span className="text-primary italic not-italic">YOUR DESTINY.</span>
             </motion.h1>
             
