@@ -11,8 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, getDocs, addDoc, orderBy, limit } from 'firebase/firestore';
+import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, query, where, getDocs, addDoc, orderBy, limit, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Wrench, Search, Loader2, Calendar, MapPin, CheckCircle2, History, Printer, Zap, Bike } from 'lucide-react';
 import { format } from 'date-fns';
@@ -47,7 +47,13 @@ export default function ServiceBookingPage() {
     return collection(firestore, 'branches');
   }, [firestore]);
 
+  const showroomRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return doc(firestore, 'settings', 'showroom');
+  }, [firestore]);
+
   const { data: branches } = useCollection(branchesQuery);
+  const { data: showroom } = useDoc(showroomRef);
 
   const searchForm = useForm<z.infer<typeof searchSchema>>({
     resolver: zodResolver(searchSchema),
@@ -66,6 +72,22 @@ export default function ServiceBookingPage() {
     },
   });
 
+  const generateServiceNo = async () => {
+    if (!firestore) return 'AA/SR/000001';
+    const q = query(collection(firestore, 'service-bookings'), orderBy('createdAt', 'desc'), limit(1));
+    try {
+      const snap = await getDocs(q);
+      if (snap.empty) return 'AA/SR/000001';
+      const last = snap.docs[0].data().serviceNo || 'AA/SR/000000';
+      const parts = last.split('/');
+      const lastNumStr = parts.pop() || '000000';
+      const num = parseInt(lastNumStr) + 1;
+      return `AA/SR/${num.toString().padStart(6, '0')}`;
+    } catch (e) {
+      return `AA/SR/${Math.floor(Math.random() * 999999).toString().padStart(6, '0')}`;
+    }
+  };
+
   const onSearch = async (data: z.infer<typeof searchSchema>) => {
     if (!firestore) return;
     setIsSearching(true);
@@ -76,7 +98,6 @@ export default function ServiceBookingPage() {
       const salesRef = collection(firestore, 'sales');
       const val = data.identifier.trim();
       
-      // Attempt search by multiple fields
       let snap = await getDocs(query(salesRef, where('mobile', '==', val)));
       if (snap.empty) snap = await getDocs(query(salesRef, where('chassisNumber', '==', val)));
       if (snap.empty) snap = await getDocs(query(salesRef, where('invoiceNo', '==', val)));
@@ -87,7 +108,6 @@ export default function ServiceBookingPage() {
         const sale = { ...snap.docs[0].data(), id: snap.docs[0].id };
         setMatchingSale(sale);
 
-        // Fetch last service - wrapped in try/catch to handle permission issues gracefully
         try {
           const servicesRef = collection(firestore, 'service-bookings');
           const sSnap = await getDocs(query(
@@ -114,8 +134,12 @@ export default function ServiceBookingPage() {
     if (!firestore || !matchingSale) return;
     setIsSubmitting(true);
 
+    const serviceNo = await generateServiceNo();
+    const branch = branches?.find(b => b.id === data.branchId);
+
     const bookingData = {
       ...data,
+      serviceNo,
       saleId: matchingSale.id,
       customerName: matchingSale.customerName,
       mobile: matchingSale.mobile,
@@ -124,26 +148,31 @@ export default function ServiceBookingPage() {
       model: matchingSale.model,
       status: 'pending',
       createdAt: new Date().toISOString(),
+      branchName: branch?.name || 'Amresh Automobiles',
     };
 
     try {
-      const docRef = await addDoc(collection(firestore, 'service-bookings'), bookingData);
+      await addDoc(collection(firestore, 'service-bookings'), bookingData);
       
-      const branch = branches?.find(b => b.id === data.branchId);
       if (matchingSale.email) {
         await sendServiceConfirmationEmail(matchingSale.email, {
+          serviceNo,
           customerName: matchingSale.customerName,
           scooterModel: matchingSale.model,
           date: data.preferredDate,
           time: data.preferredTime,
           branchName: branch?.name || 'Amresh Automobiles',
           serviceType: data.serviceType,
-        });
+          currentKm: data.currentKm,
+          chassisNumber: matchingSale.chassisNumber,
+          notes: data.notes,
+        }, showroom || {});
       }
 
-      setBookedDetails({ ...bookingData, id: docRef.id, branchName: branch?.name });
-      toast({ title: 'Service Booked!', description: 'Your appointment is registered.' });
+      setBookedDetails(bookingData);
+      toast({ title: 'Service Booked!', description: `Appointment ${serviceNo} registered.` });
     } catch (e) {
+      console.error(e);
       toast({ variant: 'destructive', title: 'Booking Failed' });
     } finally {
       setIsSubmitting(false);
@@ -159,7 +188,7 @@ export default function ServiceBookingPage() {
             <div className="bg-primary p-8 text-center text-primary-foreground relative overflow-hidden">
               <CheckCircle2 className="h-16 w-16 mx-auto mb-4" />
               <h1 className="text-3xl font-headline font-bold">Booking Confirmed</h1>
-              <p className="opacity-80">Reference ID: {bookedDetails.id}</p>
+              <p className="opacity-80">Service No: {bookedDetails.serviceNo}</p>
               <Zap className="absolute -right-4 -bottom-4 h-24 w-24 opacity-10" />
             </div>
             
@@ -209,7 +238,7 @@ export default function ServiceBookingPage() {
             
             <CardFooter className="p-8 border-t border-white/5 flex gap-4 no-print">
               <Button className="flex-1 h-12 gap-2" onClick={() => window.print()}>
-                <Printer className="h-4 w-4" /> Download Slip
+                <Printer className="h-4 w-4" /> Print Service Slip
               </Button>
               <Button variant="outline" className="flex-1 h-12" onClick={() => window.location.reload()}>
                 Book Another
@@ -228,7 +257,6 @@ export default function ServiceBookingPage() {
       <div className="container mx-auto px-4 pt-32 pb-20">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
           
-          {/* Left Column: Context */}
           <div className="lg:col-span-5 space-y-8">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -249,7 +277,6 @@ export default function ServiceBookingPage() {
             </div>
           </div>
 
-          {/* Right Column: Dynamic Form */}
           <div className="lg:col-span-7">
             <AnimatePresence mode="wait">
               {!matchingSale ? (

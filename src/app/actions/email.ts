@@ -102,6 +102,79 @@ async function generateInvoicePDFBuffer(sale: any, showroom: any): Promise<Buffe
   });
 }
 
+/**
+ * Generates a PDF buffer for the service booking slip.
+ */
+async function generateServiceSlipPDFBuffer(booking: any, showroom: any): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const buffers: Buffer[] = [];
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => resolve(Buffer.concat(buffers)));
+    doc.on('error', reject);
+
+    const primaryColor = '#10b981';
+    
+    // Showroom Info
+    doc.fillColor(primaryColor).fontSize(20).font('Helvetica-Bold').text(showroom.name || 'AMRESH AUTOMOBILES', { align: 'left' });
+    doc.fillColor('#666666').fontSize(10).font('Helvetica-Oblique').text(showroom.tagline || 'Drive Electric • Live Smart');
+    doc.moveDown(0.5);
+    doc.fillColor('#444444').font('Helvetica').fontSize(9).text(showroom.address || '', { width: 300 });
+    doc.text(`Contact: ${showroom.contact || ''}`);
+
+    doc.moveTo(50, 45).lineTo(545, 45).strokeColor('#eeeeee').stroke();
+    
+    doc.fillColor('#000000').fontSize(24).font('Helvetica-Bold').text('SERVICE SLIP', 300, 60, { align: 'right' });
+    doc.fillColor(primaryColor).fontSize(12).text(`# ${booking.serviceNo}`, { align: 'right' });
+    doc.fillColor('#888888').fontSize(9).font('Helvetica').text(`Date: ${new Date().toLocaleDateString('en-IN')}`, { align: 'right' });
+
+    doc.moveDown(3);
+    const sectionY = doc.y;
+
+    // Customer Details
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('CUSTOMER DETAILS', 50, sectionY);
+    doc.fillColor('#000000').fontSize(12).text(booking.customerName.toUpperCase(), 50, sectionY + 15);
+    doc.fillColor('#444444').fontSize(9).font('Helvetica').text(`Mobile: ${booking.mobile}`, 50, sectionY + 30);
+    doc.text(`Email: ${booking.email}`, 50, sectionY + 43);
+
+    // Vehicle Details
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('VEHICLE DETAILS', 300, sectionY);
+    doc.fillColor('#000000').fontSize(12).text(booking.model.toUpperCase(), 300, sectionY + 15);
+    doc.fillColor('#444444').fontSize(9).font('Helvetica').text(`Chassis: ${booking.chassisNumber}`, 300, sectionY + 30);
+    doc.text(`Current KM: ${booking.currentKm}`, 300, sectionY + 43);
+
+    doc.moveDown(4);
+    
+    // Appointment Details
+    const apptY = doc.y + 20;
+    doc.rect(50, apptY, 495, 25).fill(primaryColor);
+    doc.fillColor('#ffffff').fontSize(10).font('Helvetica-Bold').text('APPOINTMENT SUMMARY', 60, apptY + 7);
+
+    doc.fillColor('#000000').font('Helvetica').fontSize(11).text(`Service Type: ${booking.serviceType}`, 60, apptY + 40);
+    doc.text(`Scheduled Date: ${booking.preferredDate}`, 60, apptY + 55);
+    doc.text(`Time Slot: ${booking.preferredTime}`, 60, apptY + 70);
+    doc.text(`Service Center: ${booking.branchName || 'Amresh Automobiles'}`, 60, apptY + 85);
+
+    if (booking.notes) {
+      doc.moveDown(2);
+      doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('ADDITIONAL NOTES');
+      doc.fillColor('#444444').fontSize(9).font('Helvetica').text(booking.notes, { width: 450 });
+    }
+
+    // Guidelines
+    doc.moveDown(4);
+    doc.fillColor('#000000').fontSize(10).font('Helvetica-Bold').text('IMPORTANT GUIDELINES:');
+    doc.fontSize(9).font('Helvetica').fillColor('#666666');
+    doc.text('1. Please arrive 15 minutes prior to your slot.');
+    doc.text('2. Ensure your vehicle has at least 20% battery charge.');
+    doc.text('3. Bring this slip and a valid ID for faster processing.');
+
+    // Footer
+    doc.fillColor('#888888').fontSize(8).text('This is a computer-generated service slip.', 50, 720, { align: 'center', width: 495 });
+    doc.end();
+  });
+}
+
 export async function sendBookingConfirmationEmail(email: string, details: {
   customerName: string;
   scooterModel: string;
@@ -145,21 +218,34 @@ export async function sendBookingConfirmationEmail(email: string, details: {
 }
 
 export async function sendServiceConfirmationEmail(email: string, details: {
+  serviceNo: string;
   customerName: string;
   scooterModel: string;
   date: string;
   time: string;
   branchName: string;
   serviceType: string;
-}) {
+  currentKm: number;
+  chassisNumber: string;
+  notes?: string;
+}, showroom: any) {
   const resend = getResend();
   if (!resend) return { success: false, error: 'API Key missing' };
 
   try {
+    // Generate PDF Buffer
+    const pdfBuffer = await generateServiceSlipPDFBuffer(details, showroom);
+
     const { data, error } = await resend.emails.send({
       from: 'Amresh Automobiles Service <service@contact.amreshautomobiles.in>',
       to: email,
-      subject: `Service Appointment Booked - ${details.scooterModel}`,
+      subject: `Service Appointment Booked - ${details.serviceNo}`,
+      attachments: [
+        {
+          filename: `ServiceSlip_${details.serviceNo.replace(/\//g, '_')}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
       html: `
         <div style="font-family: sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 10px;">Service Request Received</h2>
@@ -167,12 +253,13 @@ export async function sendServiceConfirmationEmail(email: string, details: {
           <p>Your <strong>${details.serviceType}</strong> appointment for your <strong>${details.scooterModel}</strong> has been successfully registered.</p>
           
           <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+            <p style="margin: 5px 0;"><strong>Service Number:</strong> ${details.serviceNo}</p>
             <p style="margin: 5px 0;"><strong>Service Center:</strong> ${details.branchName}</p>
             <p style="margin: 5px 0;"><strong>Scheduled Date:</strong> ${details.date}</p>
             <p style="margin: 5px 0;"><strong>Arrival Slot:</strong> ${details.time}</p>
           </div>
           
-          <p>Please bring your digital service slip or a copy of your invoice for a faster check-in process.</p>
+          <p>We have attached your official <strong>Service Slip (PDF)</strong> to this email. Please bring it with you for a faster check-in process.</p>
           <p>Best Regards,<br/><strong>Amresh Automobiles Service Team</strong></p>
         </div>
       `,

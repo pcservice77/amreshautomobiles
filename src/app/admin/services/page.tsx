@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from 'react';
-import { Search, Calendar, Phone, CheckCircle2, Clock, XCircle, Wrench, Bike, User } from 'lucide-react';
+import { Search, Calendar, Phone, CheckCircle2, Clock, XCircle, Wrench, Bike, User, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -43,9 +43,10 @@ export default function AdminServicesPage() {
   };
 
   const filteredServices = services?.filter(s => 
-    s.customerName.toLowerCase().includes(search.toLowerCase()) ||
-    s.mobile.includes(search) ||
-    s.chassisNumber.toLowerCase().includes(search.toLowerCase())
+    s.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+    s.mobile?.includes(search) ||
+    s.chassisNumber?.toLowerCase().includes(search.toLowerCase()) ||
+    s.serviceNo?.toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => new Date(b.preferredDate).getTime() - new Date(a.preferredDate).getTime());
 
   const statusStyles: Record<string, string> = {
@@ -68,7 +69,7 @@ export default function AdminServicesPage() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input 
-          placeholder="Search by customer, mobile or chassis number..." 
+          placeholder="Search by ID, customer, mobile or chassis..." 
           className="pl-10 h-12" 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -79,6 +80,7 @@ export default function AdminServicesPage() {
         <Table>
           <TableHeader className="bg-secondary/50">
             <TableRow>
+              <TableHead>Service #</TableHead>
               <TableHead>Customer Details</TableHead>
               <TableHead>Vehicle & KM</TableHead>
               <TableHead>Service Type</TableHead>
@@ -89,11 +91,14 @@ export default function AdminServicesPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="py-20 text-center">Syncing service queue...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="py-20 text-center">Syncing service queue...</TableCell></TableRow>
             ) : filteredServices?.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="py-20 text-center text-muted-foreground">No service requests found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="py-20 text-center text-muted-foreground">No service requests found.</TableCell></TableRow>
             ) : filteredServices?.map((service) => (
               <TableRow key={service.id}>
+                <TableCell className="font-mono text-primary font-bold text-xs">
+                  {service.serviceNo || 'N/A'}
+                </TableCell>
                 <TableCell>
                   <div className="font-medium flex items-center gap-2">
                     <User className="h-3 w-3 text-primary" /> {service.customerName}
