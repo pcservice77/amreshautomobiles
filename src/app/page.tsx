@@ -91,20 +91,20 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.8 }}
           transition={{ duration: 2 }}
-          className="absolute inset-0 z-0"
+          className="absolute inset-0 z-0 bg-[#050505]"
         >
           <Image
             src="/homebackgrounddesktop.png"
             alt="Amresh Automobiles - Futuristic EV Showroom"
             fill
-            className="object-cover hidden md:block"
+            className="object-contain hidden md:block"
             priority
           />
           <Image
             src="/homebackgroundphone.png"
             alt="Amresh Automobiles - Futuristic EV Showroom"
             fill
-            className="object-cover md:hidden"
+            className="object-contain md:hidden"
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/80 via-transparent to-[#050505]" />
@@ -155,7 +155,7 @@ export default function Home() {
       </section>
 
       {/* Feature Bar - Positioned between Hero and Showroom */}
-      <div className="relative z-20 py-12 -mt-20">
+      <div className="relative z-20 py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t border-white/5">
             <div className="flex flex-wrap justify-center md:justify-start gap-6 md:gap-12">
@@ -224,7 +224,7 @@ export default function Home() {
                 src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
                 alt="Amresh Automobiles Showroom Interior"
                 fill
-                className="object-cover scale-110 hover:scale-100 transition-transform duration-1000"
+                className="object-cover transition-transform duration-1000"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             </motion.div>
