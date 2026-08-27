@@ -138,19 +138,19 @@ export default function Home() {
               Experience the silent power of sustainable luxury. Amresh Automobiles is redefining the electric experience in Jharkhand.
             </motion.p>
             
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center w-full">
-              <Link href="/#showroom">
-                <Button size="lg" className="h-14 px-10 bg-primary text-primary-foreground hover:scale-105 transition-all text-xs font-black uppercase tracking-widest rounded-full glow-primary">
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center w-full items-center">
+              <Link href="/#showroom" className="w-full sm:w-auto">
+                <Button size="lg" className="h-14 w-full sm:w-auto px-10 bg-primary text-primary-foreground hover:scale-105 transition-all text-xs font-black uppercase tracking-widest rounded-full glow-primary">
                   Explore Showroom <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/test-ride">
-                <Button size="lg" variant="outline" className="h-14 px-10 border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all text-xs font-black uppercase tracking-widest rounded-full">
+              <Link href="/test-ride" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="h-14 w-full sm:w-auto px-10 border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all text-xs font-black uppercase tracking-widest rounded-full">
                   Book Test Ride
                 </Button>
               </Link>
-              <Link href="/service-booking">
-                <Button size="lg" variant="ghost" className="h-14 px-10 text-white/60 hover:text-primary transition-all text-xs font-black uppercase tracking-widest rounded-full flex items-center gap-2">
+              <Link href="/service-booking" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="h-14 w-full sm:w-auto px-10 border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-all text-xs font-black uppercase tracking-widest rounded-full flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
                   <Wrench className="h-4 w-4" /> Service Portal
                 </Button>
               </Link>
@@ -264,6 +264,51 @@ export default function Home() {
               </div>
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* Dedicated Service Section */}
+      <section id="service-promo" className="py-32 relative bg-gradient-to-b from-transparent to-primary/5">
+        <div className="container mx-auto px-4">
+          <motion.div
+             initial={{ opacity: 0, y: 30 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             className="glass-card p-12 md:p-20 rounded-[3rem] border-primary/20 flex flex-col lg:flex-row items-center justify-between gap-16 overflow-hidden relative"
+          >
+            {/* Background Glow */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+            
+            <div className="max-w-2xl text-center lg:text-left relative z-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-8">
+                <Wrench className="h-3 w-3" /> Dedicated Owner Support
+              </div>
+              <h2 className="font-headline text-4xl md:text-6xl font-bold mb-8 tracking-tighter uppercase">WORLD-CLASS <br/><span className="text-primary italic">MAINTENANCE.</span></h2>
+              <p className="text-muted-foreground text-lg md:text-xl leading-relaxed mb-12 max-w-xl mx-auto lg:mx-0">
+                Keep your Amresh EV performing at its peak. Our expert technicians use genuine parts and state-of-the-art diagnostics to ensure your ride is always ready for the road.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start">
+                <Link href="/service-booking">
+                  <Button size="lg" className="h-16 px-12 bg-primary text-primary-foreground font-black uppercase tracking-widest rounded-2xl glow-primary hover:scale-105 transition-all">
+                    Access Service Portal <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-white/5 border border-white/5">
+                  <Phone className="h-5 w-5 text-primary" />
+                  <div className="text-left">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase">Service Hotline</p>
+                    <p className="text-sm font-bold">{showroom?.contact || '+91 97989 10854'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative aspect-square w-full max-w-[400px] flex items-center justify-center">
+              <div className="absolute inset-0 bg-primary/5 rounded-[4rem] rotate-12 border border-primary/10" />
+              <div className="absolute inset-0 bg-primary/5 rounded-[4rem] -rotate-6 border border-primary/5" />
+              <Wrench className="w-48 h-48 text-primary relative z-10 drop-shadow-[0_0_40px_rgba(16,185,129,0.4)]" />
+            </div>
+          </motion.div>
         </div>
       </section>
 
