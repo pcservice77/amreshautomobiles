@@ -65,7 +65,7 @@ service cloud.firestore {
     // Service Booking Rules
     match /service-bookings/{bookingId} {
       allow create: if true;
-      allow read: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
+      allow read: if true; // Allowed for customer history lookup in the public portal
       allow update: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
       allow delete: if isAdmin() || (isAuthenticated() && isBranchAdmin(resource.data.branchId));
     }

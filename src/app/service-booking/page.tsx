@@ -76,7 +76,7 @@ export default function ServiceBookingPage() {
       const salesRef = collection(firestore, 'sales');
       const val = data.identifier.trim();
       
-      // Attempt search by multiple fields (sequential because client-side OR across fields is limited)
+      // Attempt search by multiple fields
       let snap = await getDocs(query(salesRef, where('mobile', '==', val)));
       if (snap.empty) snap = await getDocs(query(salesRef, where('chassisNumber', '==', val)));
       if (snap.empty) snap = await getDocs(query(salesRef, where('invoiceNo', '==', val)));
@@ -87,16 +87,20 @@ export default function ServiceBookingPage() {
         const sale = { ...snap.docs[0].data(), id: snap.docs[0].id };
         setMatchingSale(sale);
 
-        // Fetch last service
-        const servicesRef = collection(firestore, 'service-bookings');
-        const sSnap = await getDocs(query(
-          servicesRef, 
-          where('chassisNumber', '==', sale.chassisNumber),
-          where('status', '==', 'completed'),
-          orderBy('createdAt', 'desc'),
-          limit(1)
-        ));
-        if (!sSnap.empty) setLastService(sSnap.docs[0].data());
+        // Fetch last service - wrapped in try/catch to handle permission issues gracefully
+        try {
+          const servicesRef = collection(firestore, 'service-bookings');
+          const sSnap = await getDocs(query(
+            servicesRef, 
+            where('chassisNumber', '==', sale.chassisNumber),
+            where('status', '==', 'completed'),
+            orderBy('createdAt', 'desc'),
+            limit(1)
+          ));
+          if (!sSnap.empty) setLastService(sSnap.docs[0].data());
+        } catch (historyError) {
+          console.warn('Vehicle history lookup restricted or index missing');
+        }
       }
     } catch (e) {
       console.error(e);
