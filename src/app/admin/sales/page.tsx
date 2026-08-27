@@ -1,7 +1,8 @@
+
 "use client"
 
 import { useState } from 'react';
-import { Search, Eye, Trash2, Zap, FileText } from 'lucide-react';
+import { Search, Eye, Trash2, Zap, FileText, Edit, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -16,20 +17,40 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { format } from 'date-fns';
 import { useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
-import { collection, doc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, doc, deleteDoc, updateDoc, query, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import Image from 'next/image';
+
+const saleEditSchema = z.object({
+  customerName: z.string().min(3, 'Required'),
+  mobile: z.string().length(10, '10-digits required'),
+  email: z.string().email().optional().or(z.literal('')),
+  address: z.string().min(5, 'Required'),
+  model: z.string().min(1, 'Required'),
+  variant: z.string().optional(),
+  color: z.string().min(1, 'Required'),
+  chassisNumber: z.string().min(5, 'Required'),
+  price: z.coerce.number().min(1, 'Required'),
+  paymentMethod: z.string().default('Cash'),
+});
 
 export default function SalesHistoryPage() {
   const firestore = useFirestore();
   const { user } = useUser();
   const [search, setSearch] = useState('');
   const [selectedSale, setSelectedSale] = useState<any>(null);
+  const [editingSale, setEditingSale] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
 
   const salesQuery = useMemoFirebase(() => {
@@ -55,6 +76,22 @@ export default function SalesHistoryPage() {
   const { data: branches } = useCollection(branchesQuery);
   const { data: showroom } = useDoc(showroomRef);
 
+  const editForm = useForm<z.infer<typeof saleEditSchema>>({
+    resolver: zodResolver(saleEditSchema),
+    defaultValues: {
+      customerName: '',
+      mobile: '',
+      email: '',
+      address: '',
+      model: '',
+      variant: '',
+      color: '',
+      chassisNumber: '',
+      price: 0,
+      paymentMethod: 'Cash',
+    },
+  });
+
   const filteredSales = (sales || []).filter(s => 
     (s.customerName as string)?.toLowerCase().includes(search.toLowerCase()) ||
     (s.mobile as string)?.includes(search) ||
@@ -69,6 +106,42 @@ export default function SalesHistoryPage() {
       .then(() => toast({ title: 'Invoice Deleted' }))
       .catch(() => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'delete' })));
     setDeleteId(null);
+  };
+
+  const handleEditClick = (sale: any) => {
+    setEditingSale(sale);
+    editForm.reset({
+      customerName: sale.customerName || '',
+      mobile: sale.mobile || '',
+      email: sale.email || '',
+      address: sale.address || '',
+      model: sale.model || '',
+      variant: sale.variant || '',
+      color: sale.color || '',
+      chassisNumber: sale.chassisNumber || '',
+      price: sale.price || 0,
+      paymentMethod: sale.paymentMethod || 'Cash',
+    });
+  };
+
+  const onEditSubmit = async (values: z.infer<typeof saleEditSchema>) => {
+    if (!firestore || !editingSale) return;
+    setIsUpdating(true);
+
+    const saleRef = doc(firestore, 'sales', editingSale.id);
+    try {
+      await updateDoc(saleRef, values);
+      toast({ title: 'Sale Updated', description: `Record for ${values.customerName} has been modified.` });
+      setEditingSale(null);
+    } catch (err) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: saleRef.path,
+        operation: 'update',
+        requestResourceData: values,
+      }));
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const getBranchDetails = (branchId: string) => {
@@ -150,6 +223,7 @@ export default function SalesHistoryPage() {
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="sm" onClick={() => setSelectedSale(sale)}><Eye className="h-4 w-4 mr-2" /> View</Button>
+                    <Button variant="ghost" size="sm" className="hover:text-primary" onClick={() => handleEditClick(sale)}><Edit className="h-4 w-4 mr-2" /> Edit</Button>
                     <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={(e) => {
                       e.stopPropagation();
                       setDeleteId(sale.id);
@@ -164,6 +238,78 @@ export default function SalesHistoryPage() {
         </Table>
       </div>
 
+      {/* Edit Sale Dialog */}
+      <Dialog open={!!editingSale} onOpenChange={(open) => !open && setEditingSale(null)}>
+        <DialogContent className="max-w-2xl bg-card border-white/10 max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Sale Record</DialogTitle>
+            <DialogDescription>
+              Update transaction details for invoice {editingSale?.invoiceNo}.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-6 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField control={editForm.control} name="customerName" render={({ field }) => (
+                  <FormItem><FormLabel>Customer Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="mobile" render={({ field }) => (
+                  <FormItem><FormLabel>Mobile</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="email" render={({ field }) => (
+                  <FormItem className="md:col-span-2"><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="address" render={({ field }) => (
+                  <FormItem className="md:col-span-2"><FormLabel>Full Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                
+                <div className="md:col-span-2 border-t border-white/5 pt-4 my-2" />
+                
+                <FormField control={editForm.control} name="model" render={({ field }) => (
+                  <FormItem><FormLabel>Model</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="variant" render={({ field }) => (
+                  <FormItem><FormLabel>Variant</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
+                <FormField control={editForm.control} name="color" render={({ field }) => (
+                  <FormItem><FormLabel>Color</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="chassisNumber" render={({ field }) => (
+                  <FormItem><FormLabel>Chassis Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+
+                <div className="md:col-span-2 border-t border-white/5 pt-4 my-2" />
+
+                <FormField control={editForm.control} name="price" render={({ field }) => (
+                  <FormItem><FormLabel>Sale Price</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="paymentMethod" render={({ field }) => (
+                  <FormItem><FormLabel>Payment Method</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="Cash">Cash</SelectItem>
+                        <SelectItem value="UPI">UPI / Net Banking</SelectItem>
+                        <SelectItem value="Finance">Finance / EMI</SelectItem>
+                        <SelectItem value="Card">Card</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )} />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <Button type="button" variant="outline" onClick={() => setEditingSale(null)}>Cancel</Button>
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Save Changes</>}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Invoice Dialog */}
       <Dialog open={!!selectedSale} onOpenChange={(open) => !open && setSelectedSale(null)}>
         <DialogContent className="max-w-[210mm] w-full max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none print:max-h-none print:absolute print:top-0 print:left-0 print:w-full print:rounded-none print:shadow-none print:bg-white print:translate-x-0 print:translate-y-0">
           <DialogHeader className="sr-only">
