@@ -86,7 +86,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-screen min-h-[800px] flex items-start pt-32 md:pt-40 overflow-hidden">
+      <section className="relative h-screen min-h-[800px] flex items-start pt-20 md:pt-28 overflow-hidden">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.8 }}
@@ -122,7 +122,7 @@ export default function Home() {
               Future of Urban Mobility
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="font-headline text-5xl md:text-7xl font-black mb-6 leading-[0.85] tracking-tighter italic uppercase text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+            <motion.h1 variants={itemVariants} className="font-headline text-4xl md:text-6xl font-black mb-6 leading-[0.85] tracking-tighter italic uppercase text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
               ELECTRIFY <br/> <span className="text-primary italic not-italic">YOUR DESTINY.</span>
             </motion.h1>
             
@@ -134,7 +134,7 @@ export default function Home() {
               <span className="w-12 h-[1px] bg-white/30" />
             </motion.div>
 
-            <motion.p variants={itemVariants} className="text-sm md:text-base text-muted-foreground mb-12 max-w-lg mx-auto leading-relaxed opacity-80">
+            <motion.p variants={itemVariants} className="font-headline text-sm md:text-lg text-white/70 mb-12 max-w-lg mx-auto leading-relaxed tracking-tight">
               Experience the silent power of sustainable luxury. Amresh Automobiles is redefining the electric experience in Jharkhand.
             </motion.p>
             
