@@ -99,13 +99,22 @@ export default function Home() {
           transition={{ duration: 2.5, ease: "easeOut" }}
           className="absolute inset-0 z-0"
         >
+          {/* Responsive Background Images from Public Folder */}
           <Image
-            src="https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png"
-            alt="Amresh Automobiles - Best EV Scooty in Jharkhand and India."
+            src="/homebackgrounddesktop.png"
+            alt="Amresh Automobiles - Premium EV Showroom"
             fill
-            className="object-cover"
+            className="object-cover hidden md:block"
             priority
-            data-ai-hint="electric scooter"
+            data-ai-hint="scooter desktop"
+          />
+          <Image
+            src="/homebackgroundphone.png"
+            alt="Amresh Automobiles - Premium EV Showroom"
+            fill
+            className="object-cover md:hidden"
+            priority
+            data-ai-hint="scooter mobile"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505]" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]" />

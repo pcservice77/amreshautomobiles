@@ -2,6 +2,18 @@
 {
   "placeholderImages": [
     {
+      "id": "hero-desktop",
+      "description": "Premium Desktop Hero Background",
+      "imageUrl": "/homebackgrounddesktop.png",
+      "imageHint": "scooter desktop"
+    },
+    {
+      "id": "hero-phone",
+      "description": "Premium Phone Hero Background",
+      "imageUrl": "/homebackgroundphone.png",
+      "imageHint": "scooter mobile"
+    },
+    {
       "id": "hero-scooter",
       "description": "Futuristic electric scooter in a dark showroom",
       "imageUrl": "https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png",
