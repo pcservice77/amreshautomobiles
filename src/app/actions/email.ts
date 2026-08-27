@@ -14,6 +14,94 @@ const getResend = () => {
   return new Resend(apiKey);
 };
 
+/**
+ * Generates a PDF buffer for the sales invoice.
+ */
+async function generateInvoicePDFBuffer(sale: any, showroom: any): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const buffers: Buffer[] = [];
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => resolve(Buffer.concat(buffers)));
+    doc.on('error', reject);
+
+    // Header - Branded Colors
+    const primaryColor = '#10b981';
+    
+    // Showroom Info
+    doc.fillColor(primaryColor).fontSize(20).font('Helvetica-Bold').text(showroom.name || 'AMRESH AUTOMOBILES', { align: 'left' });
+    doc.fillColor('#666666').fontSize(10).font('Helvetica-Oblique').text(showroom.tagline || 'Drive Electric • Live Smart');
+    doc.moveDown(0.5);
+    doc.fillColor('#444444').font('Helvetica').fontSize(9).text(showroom.address || '', { width: 300 });
+    doc.text(`GSTIN: ${showroom.gstin || 'N/A'}`);
+    doc.text(`Contact: ${showroom.contact || ''}`);
+
+    // Invoice Title
+    doc.moveTo(50, 45).lineTo(545, 45).strokeColor('#eeeeee').stroke();
+    
+    doc.fillColor('#000000').fontSize(24).font('Helvetica-Bold').text('INVOICE', 350, 60, { align: 'right' });
+    doc.fillColor(primaryColor).fontSize(12).text(`# ${sale.invoiceNo}`, { align: 'right' });
+    doc.fillColor('#888888').fontSize(9).font('Helvetica').text(`Date: ${sale.soldAt ? new Date(sale.soldAt).toLocaleDateString('en-IN') : 'N/A'}`, { align: 'right' });
+
+    doc.moveDown(3);
+    const sectionY = doc.y;
+
+    // Buyer Details Column
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('BUYER DETAILS', 50, sectionY);
+    doc.fillColor('#000000').fontSize(12).text(sale.customerName.toUpperCase(), 50, sectionY + 15);
+    doc.fillColor('#444444').fontSize(9).font('Helvetica').text(sale.address || '', 50, sectionY + 30, { width: 200 });
+    doc.text(`Mobile: ${sale.mobile}`, 50, sectionY + 55);
+    doc.text(`ID: ${sale.idType} - ${sale.idNumber}`, 50, sectionY + 68);
+
+    // Vehicle Details Column
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('VEHICLE SPECIFICATIONS', 300, sectionY);
+    doc.fillColor('#000000').fontSize(12).text(sale.model.toUpperCase(), 300, sectionY + 15);
+    doc.fillColor('#444444').fontSize(9).font('Helvetica').text(`Variant: ${sale.variant || 'Standard'}`, 300, sectionY + 30);
+    doc.text(`Chassis: ${sale.chassisNumber}`, 300, sectionY + 43);
+    doc.text(`Color: ${sale.color}`, 300, sectionY + 56);
+    doc.text(`Battery: ${sale.batteryType} (${sale.batteryCapacity || 'N/A'})`, 300, sectionY + 69);
+
+    doc.moveDown(8);
+
+    // Table Header
+    const tableTop = doc.y + 20;
+    doc.rect(50, tableTop, 495, 25).fill(primaryColor);
+    doc.fillColor('#ffffff').fontSize(10).font('Helvetica-Bold').text('DESCRIPTION', 60, tableTop + 7);
+    doc.text('HSN', 400, tableTop + 7);
+    doc.text('AMOUNT (INR)', 470, tableTop + 7, { align: 'right', width: 70 });
+
+    // Table Row
+    const rowY = tableTop + 35;
+    doc.fillColor('#000000').font('Helvetica').text(`${sale.model} Electric Vehicle`, 60, rowY);
+    doc.fontSize(8).fillColor('#666666').text(`HSN Code: ${sale.hsn || '871160'}`, 60, rowY + 12);
+    
+    doc.fillColor('#000000').fontSize(10).text(sale.hsn || '871160', 400, rowY);
+    doc.font('Helvetica-Bold').text(sale.price.toLocaleString('en-IN'), 470, rowY, { align: 'right', width: 70 });
+
+    doc.moveTo(50, rowY + 30).lineTo(545, rowY + 30).strokeColor('#eeeeee').stroke();
+
+    // Summary
+    const summaryY = rowY + 50;
+    doc.fillColor('#666666').fontSize(9).font('Helvetica').text('Payment Method:', 350, summaryY);
+    doc.fillColor('#000000').font('Helvetica-Bold').text(sale.paymentMethod, 450, summaryY, { align: 'right', width: 90 });
+    
+    doc.fillColor('#666666').fontSize(9).font('Helvetica').text('Subtotal:', 350, summaryY + 15);
+    doc.fillColor('#000000').text(sale.price.toLocaleString('en-IN'), 450, summaryY + 15, { align: 'right', width: 90 });
+
+    doc.rect(340, summaryY + 35, 205, 30).fill('#f9f9f9');
+    doc.fillColor(primaryColor).fontSize(12).font('Helvetica-Bold').text('TOTAL PAID', 350, summaryY + 43);
+    doc.text(`INR ${sale.price.toLocaleString('en-IN')}`, 450, summaryY + 43, { align: 'right', width: 90 });
+
+    // Footer
+    const footerY = 720;
+    doc.fillColor('#888888').fontSize(8).font('Helvetica').text('This is a computer-generated invoice and does not require a physical signature.', 50, footerY, { align: 'center', width: 495 });
+    doc.moveDown(1);
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text(`Thank you for choosing ${showroom.name}!`, { align: 'center', width: 495 });
+
+    doc.end();
+  });
+}
+
 export async function sendBookingConfirmationEmail(email: string, details: {
   customerName: string;
   scooterModel: string;
@@ -148,15 +236,24 @@ export async function sendInvoiceEmail(email: string, sale: any, showroom: any) 
   if (!resend) return { success: false, error: 'API Key missing' };
 
   try {
+    // Generate PDF Buffer
+    const pdfBuffer = await generateInvoicePDFBuffer(sale, showroom);
+
     const { data, error } = await resend.emails.send({
       from: 'Amresh Automobiles Billing <billing@contact.amreshautomobiles.in>',
       to: email,
       subject: `Invoice ${sale.invoiceNo} - Amresh Automobiles`,
+      attachments: [
+        {
+          filename: `Invoice_${sale.invoiceNo.replace(/\//g, '_')}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
       html: `
         <div style="font-family: sans-serif; padding: 40px; color: #333; max-width: 700px; margin: auto; border: 1px solid #eee; border-radius: 15px;">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #10b981; padding-bottom: 20px;">
             <div>
-              <h1 style="margin: 0; color: #10b981; text-transform: uppercase; font-size: 24px;">Amresh Automobiles</h1>
+              <h1 style="margin: 0; color: #10b981; text-transform: uppercase; font-size: 24px;">${showroom.name || 'Amresh Automobiles'}</h1>
               <p style="margin: 5px 0; font-size: 12px; color: #666;">${showroom.address || 'Showroom location'}</p>
             </div>
             <div style="text-align: right;">
@@ -164,9 +261,22 @@ export async function sendInvoiceEmail(email: string, sale: any, showroom: any) 
               <p style="margin: 5px 0; color: #10b981; font-weight: bold;"># ${sale.invoiceNo}</p>
             </div>
           </div>
-          <p>Hello <strong>${sale.customerName}</strong>,</p>
-          <p>Thank you for choosing Amresh Automobiles! Your invoice for ${sale.model} is attached below.</p>
-          <p>Amount Paid: <strong>₹ ${sale.price.toLocaleString()}</strong></p>
+          <div style="padding: 20px 0;">
+            <p>Hello <strong>${sale.customerName}</strong>,</p>
+            <p>Thank you for choosing <strong>${showroom.name || 'Amresh Automobiles'}</strong> for your electric mobility journey!</p>
+            <p>We are pleased to attach your official invoice for the <strong>${sale.model}</strong>.</p>
+            
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 10px; border-left: 4px solid #10b981; margin: 20px 0;">
+              <p style="margin: 5px 0;"><strong>Vehicle:</strong> ${sale.model}</p>
+              <p style="margin: 5px 0;"><strong>Amount Paid:</strong> ₹ ${sale.price.toLocaleString('en-IN')}</p>
+              <p style="margin: 5px 0;"><strong>Invoice Date:</strong> ${new Date(sale.soldAt).toLocaleDateString('en-IN')}</p>
+            </div>
+
+            <p style="font-size: 13px; color: #666;">Please find the detailed GST invoice attached as a PDF to this email.</p>
+          </div>
+          <div style="border-top: 1px solid #eee; padding-top: 20px; font-size: 12px; color: #999; text-align: center;">
+            <p>© ${new Date().getFullYear()} ${showroom.name || 'Amresh Automobiles'}. Drive Electric • Live Smart.</p>
+          </div>
         </div>
       `,
     });
@@ -174,6 +284,7 @@ export async function sendInvoiceEmail(email: string, sale: any, showroom: any) 
     if (error) return { success: false, error };
     return { success: true, data };
   } catch (error) {
+    console.error('PDF Email Error:', error);
     return { success: false, error };
   }
 }
