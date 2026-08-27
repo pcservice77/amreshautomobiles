@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -10,7 +11,7 @@ import { PromoBanner } from '@/components/promo-banner';
 import { Button } from '@/components/ui/button';
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap, Calendar, ArrowUpRight, Leaf, Shield, Gauge, CheckCircle2 } from 'lucide-react';
+import { MapPin, Phone, Mail, Instagram, Twitter, Facebook, ArrowRight, Zap, Calendar, ArrowUpRight, Leaf, Shield, Gauge, CheckCircle2, Wrench } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -146,6 +147,11 @@ export default function Home() {
               <Link href="/test-ride">
                 <Button size="lg" variant="outline" className="h-14 px-10 border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all text-xs font-black uppercase tracking-widest rounded-full">
                   Book Test Ride
+                </Button>
+              </Link>
+              <Link href="/service-booking">
+                <Button size="lg" variant="ghost" className="h-14 px-10 text-white/60 hover:text-primary transition-all text-xs font-black uppercase tracking-widest rounded-full flex items-center gap-2">
+                  <Wrench className="h-4 w-4" /> Service Portal
                 </Button>
               </Link>
             </motion.div>
