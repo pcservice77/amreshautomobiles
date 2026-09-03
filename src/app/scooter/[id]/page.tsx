@@ -58,6 +58,26 @@ export default function ScooterDetailsPage() {
 
   const { data: scooter, loading } = useDoc(scooterRef);
 
+  // JSON-LD for Product Schema (SEO)
+  const productSchema = scooter ? {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": `${scooter.model} Electric Scooter`,
+    "image": scooter.images || [],
+    "description": scooter.description,
+    "brand": {
+      "@type": "Brand",
+      "name": "Amresh Automobiles"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": `https://amreshautomobiles.in/scooter/${id}`,
+      "priceCurrency": "INR",
+      "price": parseFloat(scooter.price.replace(/[^\d.]/g, '')),
+      "availability": "https://schema.org/InStock"
+    }
+  } : null;
+
   if (loading) return (
     <div className="min-h-screen bg-[#050505] text-foreground p-12 md:p-24 space-y-12">
       <Skeleton className="h-10 w-32 bg-white/10" />
@@ -126,6 +146,14 @@ export default function ScooterDetailsPage() {
 
   return (
     <main className="min-h-screen bg-[#050505] text-foreground pb-32 selection:bg-primary/30">
+      {/* Schema Injection */}
+      {productSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        />
+      )}
+
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px]" />
@@ -167,7 +195,7 @@ export default function ScooterDetailsPage() {
                   {scooter.images && scooter.images.length > 0 ? (
                     <Image 
                       src={scooter.images[activeImageIdx]} 
-                      alt={scooter.model} 
+                      alt={`${scooter.model} Electric Scooter Photo - Amresh Automobiles`} 
                       fill 
                       className="object-contain p-8 transition-transform duration-1000 group-hover:scale-110"
                       unoptimized
@@ -219,7 +247,7 @@ export default function ScooterDetailsPage() {
                       : "border-white/5 opacity-40 hover:opacity-100 hover:border-white/20"
                   )}
                 >
-                  <Image src={img} alt={`${scooter.model} ${idx}`} fill className="object-contain p-2" unoptimized />
+                  <Image src={img} alt={`${scooter.model} Angle ${idx + 1}`} fill className="object-contain p-2" unoptimized />
                 </button>
               ))}
             </motion.div>
@@ -528,7 +556,7 @@ export default function ScooterDetailsPage() {
               >
                 <Image 
                   src={scooter.images[activeImageIdx]} 
-                  alt={scooter.model} 
+                  alt={`${scooter.model} Full HD View`} 
                   fill 
                   className="object-contain"
                   unoptimized

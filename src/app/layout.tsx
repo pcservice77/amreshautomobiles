@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     default: 'Amresh Automobiles | Best Electric Scooter Showroom in India',
     template: '%s | Amresh Automobiles'
   },
-  description: 'Discover the future of mobility at Amresh Automobiles. The leading EV scooty showroom in Jharkhand and across India. Explore high-performance electric scooters, book test rides, and get easy EMI options on top EV models.',
+  description: 'Discover the future of mobility at Amresh Automobiles. The leading EV scooty showroom in Jharkhand. Explore high-performance electric scooters like Volt Z1, book test rides, and get easy EMI options on top EV models.',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
@@ -32,7 +32,6 @@ export const metadata: Metadata = {
     'showroom near ranchi',
     'showroom near khunti',
     'showroom in jharkhand',
-    'showrrom in jharkhand',
     'electric bike ranchi', 
     'amresh automobiles padampur',
     'electric vehicle showroom jharkhand',
@@ -62,7 +61,7 @@ export const metadata: Metadata = {
         url: 'https://i.ibb.co/v6xDr5f4/Chat-GPT-Image-Jul-31-2026-06-06-56-PM.png',
         width: 1200,
         height: 630,
-        alt: 'Amresh Automobiles Showroom',
+        alt: 'Amresh Automobiles - Futuristic Electric Scooter Showroom',
       },
     ],
     locale: 'en_IN',

@@ -55,7 +55,7 @@ export function ScooterCard({ scooter }: ScooterCardProps) {
                   <div className="relative w-full h-80 overflow-hidden bg-zinc-900/20">
                     <Image
                       src={image}
-                      alt={`${scooter.model}`}
+                      alt={`${scooter.model} Electric Scooter - ${scooter.tagline || 'New Launch'} - Amresh Automobiles`}
                       fill
                       className="object-contain transition-transform duration-1000 group-hover:scale-110"
                       unoptimized
