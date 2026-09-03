@@ -48,7 +48,7 @@ export function AdminSidebar() {
         <span className="font-headline text-lg font-bold uppercase">AMRESH <span className="text-primary">ADMIN</span></span>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto scrollbar-hide pr-2 -mr-2">
+      <nav className="flex-1 space-y-1 overflow-y-auto pr-2 custom-scrollbar">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
