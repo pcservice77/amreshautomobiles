@@ -42,14 +42,14 @@ export function AdminSidebar() {
 
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border h-screen sticky top-0 flex flex-col p-6 print:hidden">
-      <div className="flex items-center gap-2 mb-10 px-2">
+      <div className="flex items-center gap-2 mb-10 px-2 flex-shrink-0">
         <div className="relative h-10 w-10">
           <Image src="/logo.png" alt="Logo" fill className="object-contain" />
         </div>
         <span className="font-headline text-lg font-bold uppercase">AMRESH <span className="text-primary">ADMIN</span></span>
       </div>
 
-      <nav className="flex-1 space-y-1">
+      <nav className="flex-1 space-y-1 overflow-y-auto scrollbar-hide pr-2 -mr-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -70,7 +70,7 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      <div className="pt-6 border-t border-sidebar-border space-y-2">
+      <div className="pt-6 mt-6 border-t border-sidebar-border space-y-2 flex-shrink-0">
         <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-sidebar-accent transition-colors group">
           <Zap className="h-5 w-5 group-hover:text-primary" />
           View Site
