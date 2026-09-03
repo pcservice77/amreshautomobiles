@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from 'next/link';
@@ -21,7 +20,7 @@ export function Navbar() {
   const auth = useAuth();
   const { scrollY } = useScroll();
   
-  const backgroundColor = useTransform(scrollY, [0, 100], ["rgba(5, 5, 5, 0)", "rgba(5, 5, 5, 0.95)"]);
+  const backgroundColor = useTransform(scrollY, [0, 100], ["rgba(5, 5, 5, 0)", "rgba(5, 5, 5, 0.98)"]);
   const backdropBlur = useTransform(scrollY, [0, 100], ["blur(0px)", "blur(30px)"]);
   const borderOpacity = useTransform(scrollY, [0, 100], ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.1)"]);
 
@@ -74,9 +73,9 @@ export function Navbar() {
               <div className="flex items-center gap-1.5 sm:gap-4">
                 {isAdmin && (
                   <Link href="/admin">
-                    <Button variant="ghost" size="sm" className="flex gap-1 sm:gap-2 text-primary font-black text-[9px] uppercase tracking-widest hover:bg-primary/10 rounded-full px-2 sm:px-8 h-10 sm:h-12 border border-primary/30 bg-primary/5">
+                    <Button variant="ghost" size="sm" className="flex gap-1 sm:gap-2 text-primary font-black text-[9px] uppercase tracking-widest hover:bg-primary/10 rounded-full px-3 sm:px-8 h-10 sm:h-12 border border-primary/30 bg-primary/5">
                       <ShieldCheck className="h-4 w-4" />
-                      <span className="hidden sm:inline">Portal</span>
+                      <span className="hidden xs:inline">Portal</span>
                     </Button>
                   </Link>
                 )}
@@ -91,7 +90,7 @@ export function Navbar() {
               </div>
             ) : (
               <Link href="/login">
-                <Button variant="ghost" size="sm" className="font-black tracking-[0.2em] text-[10px] uppercase text-white hover:text-primary h-10 sm:h-12 px-3 sm:px-8 border border-white/5 rounded-full bg-white/5">
+                <Button variant="ghost" size="sm" className="font-black tracking-[0.2em] text-[10px] uppercase text-white hover:text-primary h-10 sm:h-12 px-4 sm:px-8 border border-white/5 rounded-full bg-white/5">
                   Login
                 </Button>
               </Link>
@@ -111,25 +110,28 @@ export function Navbar() {
                 <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="bg-[#050505] border-white/10 w-full sm:max-w-md">
-              <SheetHeader className="text-left mb-12">
-                <SheetTitle className="text-2xl font-black tracking-tighter uppercase text-white">
-                  AMRESH <span className="text-primary italic">MENU</span>
-                </SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-col gap-8">
-                {navLinks.map((link) => (
-                  <Link 
-                    key={link.name} 
-                    href={link.href} 
-                    className="text-4xl font-black uppercase tracking-tight text-white hover:text-primary transition-colors flex items-center justify-between group"
-                  >
-                    {link.name}
-                    <X className="h-8 w-8 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </Link>
-                ))}
+            <SheetContent side="right" className="bg-[#050505] border-white/10 w-full sm:max-w-md overflow-y-auto custom-scrollbar flex flex-col p-0">
+              <div className="p-6 sm:p-10 flex flex-col min-h-full">
+                <SheetHeader className="text-left mb-12">
+                  <SheetTitle className="text-2xl font-black tracking-tighter uppercase text-white">
+                    AMRESH <span className="text-primary italic">MENU</span>
+                  </SheetTitle>
+                </SheetHeader>
                 
-                <div className="mt-12 pt-12 border-t border-white/10 space-y-4">
+                <div className="flex flex-col gap-6 sm:gap-8 flex-1">
+                  {navLinks.map((link) => (
+                    <Link 
+                      key={link.name} 
+                      href={link.href} 
+                      className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-white hover:text-primary transition-colors flex items-center justify-between group"
+                    >
+                      {link.name}
+                      <X className="h-6 w-6 sm:h-8 sm:w-8 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  ))}
+                </div>
+                
+                <div className="mt-auto pt-12 pb-10 space-y-4">
                   <Link href="/service-booking" className="block">
                     <Button className="w-full h-16 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-lg glow-primary">
                       <Wrench className="mr-2 h-4 w-4" /> Service Portal
