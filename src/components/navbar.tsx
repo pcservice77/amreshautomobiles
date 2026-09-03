@@ -39,11 +39,11 @@ export function Navbar() {
       style={{ backgroundColor, backdropBlur, borderBottomColor: borderOpacity }}
       className="fixed top-0 w-full z-[100] border-b transition-all duration-500"
     >
-      <div className="container mx-auto px-4 h-24 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-4 group">
+      <div className="container mx-auto px-2 sm:px-4 h-24 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2 sm:gap-4 group shrink-0">
           <motion.div 
             whileHover={{ scale: 1.1 }}
-            className="relative h-12 w-12"
+            className="relative h-10 w-10 sm:h-12 sm:w-12"
           >
             <Image 
               src="/logo.png" 
@@ -53,8 +53,8 @@ export function Navbar() {
               priority
             />
           </motion.div>
-          <span className="font-headline text-2xl font-black tracking-tighter text-white uppercase group-hover:text-primary transition-all duration-300">
-            AMRESH <span className="italic font-light opacity-50">AUTOMOBILES</span>
+          <span className="font-headline text-lg sm:text-2xl font-black tracking-tighter text-white uppercase group-hover:text-primary transition-all duration-300">
+            AMRESH <span className="italic font-light opacity-50 hidden xs:inline">AUTOMOBILES</span>
           </span>
         </Link>
         
@@ -68,22 +68,22 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="hidden xl:flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
+          <div className="flex items-center gap-2 sm:gap-4">
             {user ? (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
                 {isAdmin && (
                   <Link href="/admin">
-                    <Button variant="ghost" size="sm" className="flex gap-2 text-primary font-black text-[9px] uppercase tracking-widest hover:bg-primary/10 rounded-full px-8 h-12 border border-primary/30 bg-primary/5">
+                    <Button variant="ghost" size="sm" className="flex gap-2 text-primary font-black text-[9px] uppercase tracking-widest hover:bg-primary/10 rounded-full px-3 sm:px-8 h-10 sm:h-12 border border-primary/30 bg-primary/5">
                       <ShieldCheck className="h-4 w-4" />
-                      Portal
+                      <span className="hidden sm:inline">Portal</span>
                     </Button>
                   </Link>
                 )}
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="rounded-full bg-white/5 hover:bg-destructive/10 hover:text-destructive w-12 h-12 transition-all"
+                  className="rounded-full bg-white/5 hover:bg-destructive/10 hover:text-destructive w-10 h-10 sm:w-12 sm:h-12 transition-all"
                   onClick={() => signOut(auth!)}
                 >
                   <LogOut className="h-4 w-4" />
@@ -91,23 +91,24 @@ export function Navbar() {
               </div>
             ) : (
               <Link href="/login">
-                <Button variant="ghost" size="sm" className="font-black tracking-[0.2em] text-[10px] uppercase text-white hover:text-primary h-12 px-8">
+                <Button variant="ghost" size="sm" className="font-black tracking-[0.2em] text-[10px] uppercase text-white hover:text-primary h-10 sm:h-12 px-3 sm:px-8">
                   Login
                 </Button>
               </Link>
             )}
           </div>
 
-          <Link href="/test-ride">
-            <Button className="h-12 px-10 bg-primary text-black font-black uppercase tracking-[0.2em] text-[10px] rounded-full shadow-[0_10px_30px_-5px_rgba(16,185,129,0.5)] hover:scale-105 transition-all active:scale-95 glow-primary">
-              Book Test Ride
+          <Link href="/test-ride" className="hidden xs:block">
+            <Button className="h-10 sm:h-12 px-4 sm:px-10 bg-primary text-black font-black uppercase tracking-[0.2em] text-[9px] sm:text-[10px] rounded-full shadow-[0_10px_30px_-5px_rgba(16,185,129,0.5)] hover:scale-105 transition-all active:scale-95 glow-primary">
+              <span className="hidden sm:inline">Book Test Ride</span>
+              <span className="sm:hidden">Book</span>
             </Button>
           </Link>
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden rounded-full w-12 h-12 bg-white/5 text-white">
-                <Menu className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className="lg:hidden rounded-full w-10 h-10 sm:w-12 sm:h-12 bg-white/5 text-white">
+                <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-[#050505] border-white/10 w-full sm:max-w-md">
@@ -132,6 +133,11 @@ export function Navbar() {
                   <Link href="/service-booking" className="block">
                     <Button className="w-full h-16 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-lg glow-primary">
                       <Wrench className="mr-2 h-4 w-4" /> Service Portal
+                    </Button>
+                  </Link>
+                  <Link href="/test-ride" className="block xs:hidden">
+                    <Button className="w-full h-16 rounded-2xl bg-white/5 border border-primary/20 text-primary font-black uppercase tracking-widest text-xs">
+                      Book Test Ride
                     </Button>
                   </Link>
                   {user ? (
