@@ -70,12 +70,6 @@ export function Navbar() {
 
         <div className="flex items-center gap-6">
           <div className="hidden xl:flex items-center gap-4">
-            <Link href="/service-booking">
-              <Button variant="outline" size="sm" className="flex gap-2 text-primary font-black text-[9px] uppercase tracking-widest bg-primary/5 hover:bg-primary/10 rounded-full px-6 h-12 border-primary/30 shadow-[0_0_20px_rgba(16,185,129,0.1)] transition-all">
-                <Wrench className="h-4 w-4" />
-                Service Portal
-              </Button>
-            </Link>
             {user ? (
               <div className="flex items-center gap-4">
                 {isAdmin && (
