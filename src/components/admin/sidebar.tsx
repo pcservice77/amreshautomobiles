@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from 'next/link';
@@ -70,14 +69,14 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      <div className="pt-6 mt-6 border-t border-sidebar-border space-y-2 flex-shrink-0">
-        <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-sidebar-accent transition-colors group">
+      <div className="pt-4 mt-4 border-t border-sidebar-border space-y-1 flex-shrink-0">
+        <Link href="/" className="flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-sidebar-accent transition-colors group">
           <Zap className="h-5 w-5 group-hover:text-primary" />
           View Site
         </Link>
         <button 
           onClick={() => auth && signOut(auth)}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
         >
           <LogOut className="h-5 w-5" />
           Sign Out
