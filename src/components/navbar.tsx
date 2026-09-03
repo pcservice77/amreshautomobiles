@@ -39,11 +39,11 @@ export function Navbar() {
       style={{ backgroundColor, backdropBlur, borderBottomColor: borderOpacity }}
       className="fixed top-0 w-full z-[100] border-b transition-all duration-500"
     >
-      <div className="container mx-auto px-2 sm:px-4 h-24 flex items-center justify-between">
+      <div className="container mx-auto px-2 sm:px-4 h-24 flex items-center justify-between gap-2">
         <Link href="/" className="flex items-center gap-2 sm:gap-4 group shrink-0">
           <motion.div 
             whileHover={{ scale: 1.1 }}
-            className="relative h-10 w-10 sm:h-12 sm:w-12"
+            className="relative h-10 w-10 sm:h-12 sm:w-12 shrink-0"
           >
             <Image 
               src="/logo.png" 
@@ -53,12 +53,12 @@ export function Navbar() {
               priority
             />
           </motion.div>
-          <span className="font-headline text-lg sm:text-2xl font-black tracking-tighter text-white uppercase group-hover:text-primary transition-all duration-300">
-            AMRESH <span className="italic font-light opacity-50 hidden xs:inline">AUTOMOBILES</span>
+          <span className="font-headline text-lg sm:text-2xl font-black tracking-tighter text-white uppercase group-hover:text-primary transition-all duration-300 leading-none">
+            AMRESH <span className="italic font-light opacity-50 block sm:inline">AUTOMOBILES</span>
           </span>
         </Link>
         
-        <div className="hidden lg:flex items-center gap-12 text-[10px] font-black uppercase tracking-[0.3em] text-white/70">
+        <div className="hidden xl:flex items-center gap-10 text-[10px] font-black uppercase tracking-[0.3em] text-white/70">
           {navLinks.map((link) => (
             <Link key={link.name} href={link.href} className="hover:text-primary transition-all hover:scale-105 relative group flex items-center gap-2">
               {link.name}
@@ -68,13 +68,13 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
-          <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-4">
             {user ? (
-              <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-1.5 sm:gap-4">
                 {isAdmin && (
                   <Link href="/admin">
-                    <Button variant="ghost" size="sm" className="flex gap-2 text-primary font-black text-[9px] uppercase tracking-widest hover:bg-primary/10 rounded-full px-3 sm:px-8 h-10 sm:h-12 border border-primary/30 bg-primary/5">
+                    <Button variant="ghost" size="sm" className="flex gap-1 sm:gap-2 text-primary font-black text-[9px] uppercase tracking-widest hover:bg-primary/10 rounded-full px-2 sm:px-8 h-10 sm:h-12 border border-primary/30 bg-primary/5">
                       <ShieldCheck className="h-4 w-4" />
                       <span className="hidden sm:inline">Portal</span>
                     </Button>
@@ -91,7 +91,7 @@ export function Navbar() {
               </div>
             ) : (
               <Link href="/login">
-                <Button variant="ghost" size="sm" className="font-black tracking-[0.2em] text-[10px] uppercase text-white hover:text-primary h-10 sm:h-12 px-3 sm:px-8">
+                <Button variant="ghost" size="sm" className="font-black tracking-[0.2em] text-[10px] uppercase text-white hover:text-primary h-10 sm:h-12 px-3 sm:px-8 border border-white/5 rounded-full bg-white/5">
                   Login
                 </Button>
               </Link>
@@ -107,7 +107,7 @@ export function Navbar() {
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden rounded-full w-10 h-10 sm:w-12 sm:h-12 bg-white/5 text-white">
+              <Button variant="ghost" size="icon" className="xl:hidden rounded-full w-10 h-10 sm:w-12 sm:h-12 bg-white/5 text-white">
                 <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             </SheetTrigger>
