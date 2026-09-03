@@ -37,6 +37,7 @@ const billSchema = z.object({
   color: z.string().min(1, 'Required'),
   batteryType: z.string().default('Lithium-ion'),
   batteryCapacity: z.string().optional(),
+  batterySerialNumber: z.string().optional(),
   claimedRange: z.string().optional(),
   chassisNumber: z.string().min(5, 'Required'),
   motorNumber: z.string().optional(),
@@ -95,6 +96,7 @@ export default function BillingPage() {
       color: '',
       batteryType: 'Lithium-ion',
       batteryCapacity: '',
+      batterySerialNumber: '',
       claimedRange: '',
       chassisNumber: '',
       motorNumber: '',
@@ -239,6 +241,7 @@ export default function BillingPage() {
             <p className="text-[9px] font-black uppercase text-gray-400 mb-2">Vehicle Details</p>
             <p className="text-lg font-black uppercase text-primary">{lastSavedSale.model}</p>
             <p className="text-xs font-bold">Chassis: {lastSavedSale.chassisNumber}</p>
+            {lastSavedSale.batterySerialNumber && <p className="text-xs font-bold">Battery S/N: {lastSavedSale.batterySerialNumber}</p>}
             <p className="text-xs font-bold">Color: {lastSavedSale.color}</p>
           </div>
         </div>
@@ -373,6 +376,9 @@ export default function BillingPage() {
               )} />
               <FormField control={form.control} name="batteryType" render={({ field }) => (
                 <FormItem><FormLabel>Battery Type</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+              )} />
+              <FormField control={form.control} name="batterySerialNumber" render={({ field }) => (
+                <FormItem><FormLabel>Battery Serial Number (Optional)</FormLabel><FormControl><Input placeholder="BATT-XXXXXX" {...field} /></FormControl></FormItem>
               )} />
               <FormField control={form.control} name="chassisNumber" render={({ field }) => (
                 <FormItem className="col-span-2"><FormLabel>Chassis Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>

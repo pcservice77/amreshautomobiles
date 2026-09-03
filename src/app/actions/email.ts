@@ -1,4 +1,3 @@
-
 'use server';
 
 import { Resend } from 'resend';
@@ -58,8 +57,16 @@ async function generateInvoicePDFBuffer(sale: any, showroom: any): Promise<Buffe
     doc.fillColor('#000000').fontSize(12).text(sale.model.toUpperCase(), 300, sectionY + 15);
     doc.fillColor('#444444').fontSize(9).font('Helvetica').text(`Variant: ${sale.variant || 'Standard'}`, 300, sectionY + 30);
     doc.text(`Chassis: ${sale.chassisNumber}`, 300, sectionY + 43);
-    doc.text(`Color: ${sale.color}`, 300, sectionY + 56);
-    doc.text(`Battery: ${sale.batteryType} (${sale.batteryCapacity || 'N/A'})`, 300, sectionY + 69);
+    
+    let currentY = sectionY + 56;
+    if (sale.batterySerialNumber) {
+      doc.text(`Battery S/N: ${sale.batterySerialNumber}`, 300, currentY);
+      currentY += 13;
+    }
+    
+    doc.text(`Color: ${sale.color}`, 300, currentY);
+    currentY += 13;
+    doc.text(`Battery: ${sale.batteryType} (${sale.batteryCapacity || 'N/A'})`, 300, currentY);
 
     doc.moveDown(8);
 

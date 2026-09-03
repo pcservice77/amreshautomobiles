@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -62,6 +61,7 @@
         "branchId": { "type": "string" },
         "soldAt": { "type": "string", "format": "date-time" },
         "chassisNumber": { "type": "string" },
+        "batterySerialNumber": { "type": "string", "description": "Optional serial number of the battery unit." },
         "email": { "type": "string" }
       }
     },

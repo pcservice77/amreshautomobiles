@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -39,6 +38,7 @@ const saleEditSchema = z.object({
   variant: z.string().optional(),
   color: z.string().min(1, 'Required'),
   chassisNumber: z.string().min(5, 'Required'),
+  batterySerialNumber: z.string().optional(),
   price: z.coerce.number().min(1, 'Required'),
   paymentMethod: z.string().default('Cash'),
 });
@@ -87,6 +87,7 @@ export default function SalesHistoryPage() {
       variant: '',
       color: '',
       chassisNumber: '',
+      batterySerialNumber: '',
       price: 0,
       paymentMethod: 'Cash',
     },
@@ -119,6 +120,7 @@ export default function SalesHistoryPage() {
       variant: sale.variant || '',
       color: sale.color || '',
       chassisNumber: sale.chassisNumber || '',
+      batterySerialNumber: sale.batterySerialNumber || '',
       price: sale.price || 0,
       paymentMethod: sale.paymentMethod || 'Cash',
     });
@@ -277,6 +279,9 @@ export default function SalesHistoryPage() {
                 <FormField control={editForm.control} name="chassisNumber" render={({ field }) => (
                   <FormItem><FormLabel>Chassis Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
+                <FormField control={editForm.control} name="batterySerialNumber" render={({ field }) => (
+                  <FormItem><FormLabel>Battery Serial Number (Optional)</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
 
                 <div className="md:col-span-2 border-t border-white/5 pt-4 my-2" />
 
@@ -356,6 +361,7 @@ export default function SalesHistoryPage() {
                 <p className="text-lg font-black uppercase text-primary">{selectedSale?.model}</p>
                 <p className="text-xs font-bold">Chassis: {selectedSale?.chassisNumber}</p>
                 {selectedSale?.motorNumber && <p className="text-xs font-bold">Motor: {selectedSale?.motorNumber}</p>}
+                {selectedSale?.batterySerialNumber && <p className="text-xs font-bold">Battery S/N: {selectedSale?.batterySerialNumber}</p>}
                 <p className="text-xs font-bold">Color: {selectedSale?.color}</p>
               </div>
             </div>
