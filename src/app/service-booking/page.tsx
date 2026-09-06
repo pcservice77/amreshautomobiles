@@ -162,7 +162,7 @@ export default function ServiceBookingPage() {
       await addDoc(collection(firestore, 'service-bookings'), bookingData);
       
       if (matchingSale.email) {
-        // CRITICAL FIX: Find and pass specific branch details for the confirmation email
+        // Find and pass specific branch details for the confirmation email
         const branchData = branches?.find(b => b.id === data.branchId);
         await sendServiceConfirmationEmail(matchingSale.email, {
           serviceNo,
@@ -222,6 +222,7 @@ export default function ServiceBookingPage() {
   const billShowroomGstin = currentBranchForBill?.gstin || showroom?.gstin;
 
   if (bookedDetails) {
+    const branchForConfirmation = branches?.find(b => b.id === bookedDetails.branchId);
     return (
       <main className="min-h-screen bg-background text-foreground">
         <Navbar />
@@ -254,6 +255,7 @@ export default function ServiceBookingPage() {
                   <div>
                     <p className="text-xs text-muted-foreground">Service Center</p>
                     <p className="font-bold">{bookedDetails.branchName}</p>
+                    <p className="text-xs text-muted-foreground">{branchForConfirmation?.address}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -264,6 +266,20 @@ export default function ServiceBookingPage() {
                   </div>
                 </div>
               </div>
+
+              {branchForConfirmation?.googleMapUrl && (
+                <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
+                   <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Navigate to center</p>
+                   <a 
+                    href={branchForConfirmation.googleMapUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm font-bold text-primary hover:underline flex items-center gap-2"
+                   >
+                     Click here for Google Maps Location <Printer className="h-3 w-3" />
+                   </a>
+                </div>
+              )}
             </CardContent>
             
             <CardFooter className="p-8 border-t border-white/5 flex gap-4 no-print">

@@ -220,24 +220,36 @@ async function generateServiceSlipPDFBuffer(booking: any, showroom: any): Promis
 
     // Vehicle Details
     doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('VEHICLE DETAILS', 300, sectionY);
-    doc.fillColor('#000000').fontSize(12).text(booking.model.toUpperCase(), 300, sectionY + 15);
+    doc.fillColor('#000000').fontSize(12).text(booking.scooterModel?.toUpperCase() || booking.model?.toUpperCase() || 'EV SCOOTER', 300, sectionY + 15);
     doc.fillColor('#444444').fontSize(9).font('Helvetica').text(`Chassis: ${booking.chassisNumber}`, 300, sectionY + 30);
     doc.text(`Current KM: ${booking.currentKm}`, 300, sectionY + 43);
 
     doc.moveDown(4);
     
-    // Appointment Details
+    // Appointment Details Box
     const apptY = doc.y + 20;
-    doc.rect(50, apptY, 495, 25).fill(primaryColor);
-    doc.fillColor('#ffffff').fontSize(10).font('Helvetica-Bold').text('APPOINTMENT SUMMARY', 60, apptY + 7);
+    doc.rect(50, apptY, 495, 100).fill('#f9f9f9').stroke('#eeeeee');
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('APPOINTMENT SUMMARY', 60, apptY + 15);
 
-    doc.fillColor('#000000').font('Helvetica').fontSize(11).text(`Service Type: ${booking.serviceType}`, 60, apptY + 40);
-    doc.text(`Scheduled Date: ${booking.preferredDate}`, 60, apptY + 55);
-    doc.text(`Time Slot: ${booking.preferredTime}`, 60, apptY + 70);
-    doc.text(`Service Center: ${booking.branchName || 'Amresh Automobiles'}`, 60, apptY + 85);
+    doc.fillColor('#000000').font('Helvetica').fontSize(11).text(`Service Type: ${booking.serviceType}`, 60, apptY + 35);
+    doc.text(`Scheduled Date: ${booking.date || booking.preferredDate}`, 60, apptY + 50);
+    doc.text(`Arrival Slot: ${booking.time || booking.preferredTime}`, 60, apptY + 65);
+    doc.text(`Service Center: ${showroom.name || 'Amresh Automobiles'}`, 60, apptY + 80);
+
+    // Showroom Address Guidance
+    doc.moveDown(6);
+    const guideY = doc.y;
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('REPORT TO:', 50, guideY);
+    doc.fillColor('#444444').fontSize(9).font('Helvetica').text(showroom.address, 50, guideY + 15, { width: 450 });
+
+    if (showroom.googleMapUrl) {
+      doc.moveDown(3);
+      doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('Navigate to Service Center:', 50, doc.y);
+      doc.fillColor('blue').fontSize(9).text(showroom.googleMapUrl, { link: showroom.googleMapUrl, underline: true });
+    }
 
     if (booking.notes) {
-      doc.moveDown(2);
+      doc.moveDown(4);
       doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('ADDITIONAL NOTES');
       doc.fillColor('#444444').fontSize(9).font('Helvetica').text(booking.notes, { width: 450 });
     }
@@ -387,13 +399,17 @@ export async function sendServiceConfirmationEmail(email: string, details: {
   currentKm: number;
   chassisNumber: string;
   notes?: string;
+  googleMapUrl?: string;
 }, showroom: any) {
   const resend = getResend();
   if (!resend) return { success: false, error: 'API Key missing' };
 
   try {
     // Generate PDF Buffer
-    const pdfBuffer = await generateServiceSlipPDFBuffer(details, showroom);
+    const pdfBuffer = await generateServiceSlipPDFBuffer({
+      ...details,
+      googleMapUrl: showroom.googleMapUrl,
+    }, showroom);
 
     const { data, error } = await resend.emails.send({
       from: 'Amresh Automobiles Service <service@contact.amreshautomobiles.in>',
@@ -416,6 +432,7 @@ export async function sendServiceConfirmationEmail(email: string, details: {
             <p style="margin: 5px 0;"><strong>Service Center:</strong> ${details.branchName}</p>
             <p style="margin: 5px 0;"><strong>Scheduled Date:</strong> ${details.date}</p>
             <p style="margin: 5px 0;"><strong>Arrival Slot:</strong> ${details.time}</p>
+            ${showroom.googleMapUrl ? `<p style="margin: 15px 0;"><a href="${showroom.googleMapUrl}" style="background-color: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Navigate to Showroom</a></p>` : ''}
           </div>
           
           <p>We have attached your official <strong>Service Slip (PDF)</strong> to this email. Please bring it with you for a faster check-in process.</p>
