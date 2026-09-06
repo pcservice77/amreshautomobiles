@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, where, getDocs, addDoc, orderBy, limit, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Wrench, Search, Loader2, Calendar, MapPin, CheckCircle2, History, Printer, Zap, Bike, ShieldCheck, FileText, Download, TrendingUp, IndianRupee } from 'lucide-react';
+import { Wrench, Search, Loader2, Calendar, MapPin, CheckCircle2, History, Printer, Zap, Bike, ShieldCheck, FileText, Download, TrendingUp, IndianRupee, Eye } from 'lucide-react';
 import { format, addYears, isAfter } from 'date-fns';
 import { sendServiceConfirmationEmail } from '@/app/actions/email';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,6 +45,7 @@ export default function ServiceBookingPage() {
   const [isBooking, setIsSubmitting] = useState(false);
   const [bookedDetails, setBookedDetails] = useState<any>(null);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
+  const [selectedHistoryBill, setSelectedHistoryBill] = useState<any>(null);
 
   const branchesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -112,17 +113,21 @@ export default function ServiceBookingPage() {
         const sale = { ...snap.docs[0].data(), id: snap.docs[0].id };
         setMatchingSale(sale);
 
-        // Fetch full service history
+        // Fetch full service history - Sort client side to avoid index issues
         try {
           const servicesRef = collection(firestore, 'service-bookings');
           const sSnap = await getDocs(query(
             servicesRef, 
-            where('chassisNumber', '==', sale.chassisNumber),
-            orderBy('createdAt', 'desc')
+            where('chassisNumber', '==', sale.chassisNumber)
           ));
-          setServiceHistory(sSnap.docs.map(d => ({ ...d.data(), id: d.id })));
+          
+          const history = sSnap.docs.map(d => ({ ...d.data(), id: d.id }));
+          // Sort by preferredDate (latest first)
+          history.sort((a, b) => new Date(b.preferredDate).getTime() - new Date(a.preferredDate).getTime());
+          
+          setServiceHistory(history);
         } catch (historyError) {
-          console.warn('Vehicle history lookup restricted or index missing');
+          console.warn('Vehicle history lookup error:', historyError);
         }
       }
     } catch (e) {
@@ -202,7 +207,6 @@ export default function ServiceBookingPage() {
 
   const soldDate = matchingSale?.soldAt ? new Date(matchingSale.soldAt) : null;
   
-  // Warranty Periods
   const vehicleExpiry = soldDate ? addYears(soldDate, 1) : null;
   const chargerExpiry = soldDate ? addYears(soldDate, 1) : null;
   const batteryExpiry = soldDate ? addYears(soldDate, 3) : null;
@@ -210,6 +214,12 @@ export default function ServiceBookingPage() {
   const isVehicleActive = vehicleExpiry ? isAfter(vehicleExpiry, new Date()) : false;
   const isChargerActive = chargerExpiry ? isAfter(chargerExpiry, new Date()) : false;
   const isBatteryActive = batteryExpiry ? isAfter(batteryExpiry, new Date()) : false;
+
+  const currentBranchForBill = selectedHistoryBill ? branches?.find(b => b.id === selectedHistoryBill.branchId) : null;
+  const billShowroomName = currentBranchForBill?.name || showroom?.name || 'AMRESH AUTOMOBILE';
+  const billShowroomAddress = currentBranchForBill?.address || showroom?.address;
+  const billShowroomLogo = currentBranchForBill?.imageUrl || showroom?.logoUrl;
+  const billShowroomGstin = currentBranchForBill?.gstin || showroom?.gstin;
 
   if (bookedDetails) {
     return (
@@ -335,14 +345,13 @@ export default function ServiceBookingPage() {
                </motion.div>
                <div className="flex gap-3">
                  <Button variant="outline" className="h-12 px-6 rounded-xl gap-2 border-primary/20 text-primary hover:bg-primary/10" onClick={() => setIsInvoiceOpen(true)}>
-                   <FileText className="h-4 w-4" /> View Invoice
+                   <FileText className="h-4 w-4" /> View Sales Invoice
                  </Button>
                  <Button variant="ghost" className="h-12 px-6 rounded-xl" onClick={() => setMatchingSale(null)}>Exit Garage</Button>
                </div>
              </div>
 
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-               {/* Vehicle Identity & Warranties */}
                <Card className="bg-card/40 border-white/10 rounded-3xl p-8 space-y-8 h-fit">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-2xl">
@@ -360,7 +369,6 @@ export default function ServiceBookingPage() {
                     <div className="pt-6 border-t border-white/5 space-y-6">
                       <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Warranty Coverage</h4>
                       
-                      {/* Vehicle Warranty */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-[9px] font-bold uppercase text-white/70">Scooty (1 Year)</span>
@@ -374,7 +382,6 @@ export default function ServiceBookingPage() {
                         <p className="text-[8px] text-muted-foreground italic">Ends: {vehicleExpiry ? format(vehicleExpiry, 'dd MMM yyyy') : 'N/A'}</p>
                       </div>
 
-                      {/* Charger Warranty */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-[9px] font-bold uppercase text-white/70">Charger (1 Year)</span>
@@ -388,7 +395,6 @@ export default function ServiceBookingPage() {
                         <p className="text-[8px] text-muted-foreground italic">Ends: {chargerExpiry ? format(chargerExpiry, 'dd MMM yyyy') : 'N/A'}</p>
                       </div>
 
-                      {/* Battery Warranty */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-[9px] font-bold uppercase text-primary">Battery (3 Years)</span>
@@ -405,7 +411,6 @@ export default function ServiceBookingPage() {
                   </div>
                </Card>
 
-               {/* Service Hub */}
                <div className="lg:col-span-2 space-y-8">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <Card className="bg-primary/5 border-primary/20 rounded-3xl p-8 space-y-6">
@@ -501,7 +506,6 @@ export default function ServiceBookingPage() {
                     </Card>
                  </div>
 
-                 {/* History Timeline */}
                  <div className="space-y-6">
                     <div className="flex items-center gap-3">
                       <History className="h-5 w-5 text-primary" />
@@ -530,9 +534,13 @@ export default function ServiceBookingPage() {
                                    <h5 className="font-bold text-lg">{s.serviceType} Service</h5>
                                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{s.serviceNo}</p>
                                  </div>
-                                 <div className="text-right">
+                                 <div className="text-right flex flex-col items-end gap-2">
                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-40">{format(new Date(s.preferredDate), 'dd MMM yyyy')}</span>
-                                   {s.totalAmount > 0 && <p className="text-primary font-black text-sm">₹ {s.totalAmount.toLocaleString()}</p>}
+                                   {s.status === 'completed' && (
+                                     <Button variant="outline" size="sm" className="h-8 text-[10px] gap-2 rounded-lg border-primary/20 text-primary hover:bg-primary/10" onClick={() => setSelectedHistoryBill(s)}>
+                                       <Eye className="h-3 w-3" /> View Bill
+                                     </Button>
+                                   )}
                                  </div>
                                </div>
                                <div className="flex gap-4 items-center">
@@ -543,7 +551,6 @@ export default function ServiceBookingPage() {
                             </div>
                           </div>
 
-                          {/* Billing Breakdown in History */}
                           {s.parts && s.parts.length > 0 && (
                             <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-4">
                                <div className="space-y-2">
@@ -585,21 +592,14 @@ export default function ServiceBookingPage() {
         )}
       </div>
 
-      {/* Digital Invoice Modal */}
       <Dialog open={isInvoiceOpen} onOpenChange={setIsInvoiceOpen}>
         <DialogContent className="max-w-[210mm] w-full max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none print:max-h-none print:fixed print:inset-0 print:m-0 print:w-full">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Digital Invoice</DialogTitle>
-          </DialogHeader>
+          <DialogHeader className="sr-only"><DialogTitle>Digital Invoice</DialogTitle></DialogHeader>
           <div className="print-container relative bg-white p-[20mm] text-black">
             <div className="flex justify-between items-start border-b-4 border-primary pb-6 mb-8">
               <div className="flex gap-4">
                 <div className="bg-primary p-2 rounded-xl h-16 w-16 flex items-center justify-center relative overflow-hidden">
-                  {showroom?.logoUrl ? (
-                    <Image src={showroom.logoUrl} alt="Logo" fill className="object-cover" unoptimized />
-                  ) : (
-                    <Zap className="h-8 w-8 text-white fill-current" />
-                  )}
+                  {showroom?.logoUrl ? <Image src={showroom.logoUrl} alt="Logo" fill className="object-cover" unoptimized /> : <Zap className="h-8 w-8 text-white fill-current" />}
                 </div>
                 <div>
                   <h1 className="text-2xl font-black text-primary uppercase">{showroom?.name || 'AMRESH AUTOMOBILE'}</h1>
@@ -626,7 +626,6 @@ export default function ServiceBookingPage() {
                 <p className="text-[9px] font-black uppercase text-gray-400 mb-2">Vehicle Details</p>
                 <p className="text-lg font-black uppercase text-primary">{matchingSale?.model}</p>
                 <p className="text-xs font-bold">Chassis: {matchingSale?.chassisNumber}</p>
-                {matchingSale?.batterySerialNumber && <p className="text-xs font-bold">Battery S/N: {matchingSale?.batterySerialNumber}</p>}
                 <p className="text-xs font-bold">Color: {matchingSale?.color}</p>
               </div>
             </div>
@@ -662,22 +661,85 @@ export default function ServiceBookingPage() {
             </div>
 
             <div className="mt-20 flex justify-between items-end">
-              <div className="text-center">
-                <div className="w-40 border-t border-gray-300 mb-1"></div>
-                <p className="text-[10px] font-bold">Buyer Signature</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs font-black uppercase mb-10 text-primary">For {showroom?.name || 'Amresh Automobiles'}</p>
-                <div className="w-56 border-t-2 border-black mb-1"></div>
-                <p className="text-[10px] font-bold">Authorized Signatory</p>
-              </div>
+              <div className="text-center"><div className="w-40 border-t border-gray-300 mb-1"></div><p className="text-[10px] font-bold">Buyer Signature</p></div>
+              <div className="text-center"><p className="text-xs font-black uppercase mb-10 text-primary">For {showroom?.name || 'Amresh Automobiles'}</p><div className="w-56 border-t-2 border-black mb-1"></div><p className="text-[10px] font-bold">Authorized Signatory</p></div>
             </div>
           </div>
           <div className="p-6 border-t flex justify-end gap-3 no-print bg-secondary">
-             <Button className="gap-2 h-12" onClick={() => window.print()}>
-               <Printer className="h-4 w-4" /> Print GST Invoice
-             </Button>
+             <Button className="gap-2 h-12" onClick={() => window.print()}><Printer className="h-4 w-4" /> Print GST Invoice</Button>
              <Button variant="outline" className="h-12" onClick={() => setIsInvoiceOpen(false)}>Close Window</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!selectedHistoryBill} onOpenChange={(open) => !open && setSelectedHistoryBill(null)}>
+        <DialogContent className="max-w-[210mm] w-full max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none print:max-h-none print:fixed print:inset-0 print:m-0 print:w-full">
+          <DialogHeader className="sr-only"><DialogTitle>Service Bill</DialogTitle></DialogHeader>
+          <div className="print-container relative bg-white p-[20mm] text-black">
+            <div className="flex justify-between items-start border-b-4 border-primary pb-6 mb-8">
+              <div className="flex gap-4">
+                <div className="bg-primary p-2 rounded-xl h-16 w-16 flex items-center justify-center relative overflow-hidden">
+                  {billShowroomLogo ? <Image src={billShowroomLogo} alt="Logo" fill className="object-cover" unoptimized /> : <Zap className="h-8 w-8 text-white fill-current" />}
+                </div>
+                <div>
+                  <h1 className="text-2xl font-black text-primary uppercase">{billShowroomName}</h1>
+                  <p className="text-[10px] text-gray-500 font-bold italic mb-1">Drive Electric • Live Smart</p>
+                  <p className="text-[9px] text-gray-500 leading-tight max-w-[250px]">{billShowroomAddress}</p>
+                  <p className="text-[10px] text-gray-800 font-bold mt-1">GSTIN: {billShowroomGstin || 'N/A'}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <h2 className="text-4xl font-black text-black">SERVICE BILL</h2>
+                <p className="text-sm font-bold text-primary">{selectedHistoryBill?.serviceNo}</p>
+                <p className="text-xs text-gray-400">{selectedHistoryBill?.preferredDate ? format(new Date(selectedHistoryBill.preferredDate), 'dd/MM/yyyy') : 'N/A'}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 mb-8">
+              <div className="border border-black p-4 rounded-xl">
+                <p className="text-[9px] font-black uppercase text-gray-400 mb-2">Customer</p>
+                <p className="text-lg font-black uppercase">{selectedHistoryBill?.customerName}</p>
+                <p className="text-xs font-bold text-gray-600">Mob: {selectedHistoryBill?.mobile}</p>
+              </div>
+              <div className="border border-black p-4 rounded-xl">
+                <p className="text-[9px] font-black uppercase text-gray-400 mb-2">Vehicle Details</p>
+                <p className="text-lg font-black uppercase text-primary">{selectedHistoryBill?.model}</p>
+                <p className="text-xs font-bold">Chassis: {selectedHistoryBill?.chassisNumber}</p>
+                <p className="text-xs font-bold">Odometer: {selectedHistoryBill?.currentKm} KM</p>
+              </div>
+            </div>
+
+            <table className="w-full border-collapse border border-black mb-8">
+              <thead><tr className="bg-primary text-white"><th className="border border-black p-2 text-left">Job Description / Part Name</th><th className="border border-black p-2 text-right w-32">Amount</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td className="border border-black p-3 align-top"><p className="font-bold uppercase">{selectedHistoryBill?.serviceType} Service Charge</p><p className="text-[10px] text-gray-500">Professional labor and diagnostics</p></td>
+                  <td className="border border-black p-3 text-right font-bold align-top">₹ {selectedHistoryBill?.laborCharge?.toLocaleString() || '0'}.00</td>
+                </tr>
+                {selectedHistoryBill?.parts?.map((part: any, idx: number) => (
+                  <tr key={idx}>
+                    <td className="border border-black p-3 align-top"><p className="font-medium uppercase">{part.name}</p><p className="text-[10px] text-gray-400 italic">Spare part replacement</p></td>
+                    <td className="border border-black p-3 text-right font-bold align-top">₹ {part.price?.toLocaleString()}.00</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="flex justify-end">
+              <div className="w-1/3 bg-gray-50 p-4 border-2 border-black rounded-xl h-fit">
+                <div className="flex justify-between font-bold text-xs mb-2"><span>Subtotal</span> <span>₹ {selectedHistoryBill?.totalAmount?.toLocaleString()}</span></div>
+                <div className="flex justify-between font-black text-lg border-t border-black pt-2"><span>TOTAL BILL</span> <span>₹ {selectedHistoryBill?.totalAmount?.toLocaleString()}</span></div>
+              </div>
+            </div>
+
+            <div className="mt-20 flex justify-between items-end">
+              <div className="text-center"><div className="w-40 border-t border-gray-300 mb-1"></div><p className="text-[10px] font-bold">Customer Signature</p></div>
+              <div className="text-center"><p className="text-xs font-black uppercase mb-10 text-primary">For {billShowroomName}</p><div className="w-56 border-t-2 border-black mb-1"></div><p className="text-[10px] font-bold">Service In-Charge</p></div>
+            </div>
+          </div>
+          <div className="p-6 border-t flex justify-end gap-3 no-print bg-secondary">
+             <Button className="gap-2 h-12" onClick={() => window.print()}><Printer className="h-4 w-4" /> Print Service Bill</Button>
+             <Button variant="outline" className="h-12" onClick={() => setSelectedHistoryBill(null)}>Close</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -688,9 +750,7 @@ export default function ServiceBookingPage() {
 function SimpleFeature({ icon: Icon, label }: { icon: any, label: string }) {
   return (
     <div className="flex flex-col items-center gap-3 p-6 bg-white/[0.03] border border-white/5 rounded-2xl group hover:bg-primary/5 hover:border-primary/20 transition-all">
-       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-         <Icon className="h-6 w-6 text-primary" />
-       </div>
+       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform"><Icon className="h-6 w-6 text-primary" /></div>
        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-white transition-colors">{label}</span>
     </div>
   );
