@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react';
-import { Search, Eye, Trash2, Zap, FileText, Edit, Save, Loader2 } from 'lucide-react';
+import { Search, Eye, Trash2, Zap, FileText, Edit, Save, Loader2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -146,6 +146,37 @@ export default function SalesHistoryPage() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (!filteredSales || filteredSales.length === 0) return;
+    
+    const headers = ["Invoice No", "Customer Name", "Mobile", "Email", "Model", "Variant", "Color", "Chassis", "Battery S/N", "Price", "Date"];
+    const rows = filteredSales.map(s => [
+      `"${s.invoiceNo}"`,
+      `"${s.customerName}"`,
+      `"${s.mobile}"`,
+      `"${s.email || 'N/A'}"`,
+      `"${s.model}"`,
+      `"${s.variant || 'Standard'}"`,
+      `"${s.color}"`,
+      `"${s.chassisNumber}"`,
+      `"${s.batterySerialNumber || 'N/A'}"`,
+      s.price,
+      format(new Date(s.soldAt), 'yyyy-MM-dd')
+    ]);
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Amresh_Sales_Report_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast({ title: 'Export Successful', description: 'Your CSV report has been downloaded.' });
+  };
+
   const getBranchDetails = (branchId: string) => {
     return branches?.find(b => b.id === branchId);
   };
@@ -185,7 +216,12 @@ export default function SalesHistoryPage() {
             {user?.role === 'branch_admin' ? 'Viewing records for your branch.' : 'Complete showroom sales overview.'}
           </p>
         </div>
-        <FileText className="h-10 w-10 text-primary opacity-20" />
+        <div className="flex gap-4">
+          <Button variant="outline" className="gap-2" onClick={handleExportCSV}>
+            <Download className="h-4 w-4" /> Export Data
+          </Button>
+          <FileText className="h-10 w-10 text-primary opacity-20" />
+        </div>
       </div>
 
       <div className="relative print:hidden">

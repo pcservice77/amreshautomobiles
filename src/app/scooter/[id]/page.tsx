@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useParams, useRouter } from 'next/navigation';
@@ -24,7 +23,8 @@ import {
   IndianRupee,
   TrendingUp,
   Fuel,
-  Shield
+  Shield,
+  MessageCircle
 } from 'lucide-react';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -143,6 +143,12 @@ export default function ScooterDetailsPage() {
   const colors = typeof scooter.availableColors === 'string' 
     ? scooter.availableColors.split(',').map((c: string) => c.trim()).filter(Boolean) 
     : [];
+
+  const handleWhatsAppEnquiry = () => {
+    const message = `Hi Amresh Automobiles, I am interested in the ${scooter.model} (${currentVariantName} variant). Please tell me the current on-road price and delivery timeline.`;
+    const encoded = encodeURIComponent(message);
+    window.open(`https://wa.me/919798910854?text=${encoded}`, '_blank');
+  };
 
   return (
     <main className="min-h-screen bg-[#050505] text-foreground pb-32 selection:bg-primary/30">
@@ -343,17 +349,27 @@ export default function ScooterDetailsPage() {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Link href="/test-ride" className="w-full">
-                <Button size="lg" className="h-20 text-xs font-black uppercase tracking-[0.3em] w-full bg-primary hover:bg-primary/90 shadow-[0_20px_40px_-10px_rgba(16,185,129,0.4)] transition-all active:scale-[0.97] rounded-3xl">
-                  <ShoppingCart className="mr-3 h-5 w-5" /> Reserve Now
-                </Button>
-              </Link>
-              <Link href="/test-ride" className="w-full">
-                <Button variant="outline" size="lg" className="h-20 text-xs font-black uppercase tracking-[0.3em] w-full border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all rounded-3xl">
-                  <CalendarDays className="mr-3 h-5 w-5" /> Schedule Viewing
-                </Button>
-              </Link>
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link href="/test-ride" className="w-full">
+                  <Button size="lg" className="h-20 text-xs font-black uppercase tracking-[0.3em] w-full bg-primary hover:bg-primary/90 shadow-[0_20px_40px_-10px_rgba(16,185,129,0.4)] transition-all active:scale-[0.97] rounded-3xl">
+                    <ShoppingCart className="mr-3 h-5 w-5" /> Reserve Now
+                  </Button>
+                </Link>
+                <Link href="/test-ride" className="w-full">
+                  <Button variant="outline" size="lg" className="h-20 text-xs font-black uppercase tracking-[0.3em] w-full border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all rounded-3xl">
+                    <CalendarDays className="mr-3 h-5 w-5" /> Schedule Viewing
+                  </Button>
+                </Link>
+              </div>
+              
+              <Button 
+                onClick={handleWhatsAppEnquiry}
+                className="h-16 w-full bg-[#25D366] hover:bg-[#20ba5a] text-white font-black uppercase tracking-widest text-[10px] rounded-3xl gap-3 shadow-xl"
+              >
+                <MessageCircle className="h-5 w-5" />
+                Chat with Expert on WhatsApp
+              </Button>
             </div>
           </motion.div>
         </div>

@@ -1,9 +1,9 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 import { CompareProvider } from '@/hooks/use-compare';
+import { FloatingWhatsApp } from '@/components/floating-whatsapp';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://amreshautomobiles.in'),
@@ -151,6 +151,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <CompareProvider>
             {children}
+            <FloatingWhatsApp />
             <Toaster />
           </CompareProvider>
         </FirebaseClientProvider>
