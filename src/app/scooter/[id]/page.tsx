@@ -81,7 +81,7 @@ export default function ScooterDetailsPage() {
   if (loading) return (
     <div className="min-h-screen bg-[#050505] text-foreground p-12 md:p-24 space-y-12">
       <Skeleton className="h-10 w-32 bg-white/10" />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 houses-grid">
         <Skeleton className="aspect-square w-full rounded-[3rem] bg-white/5" />
         <div className="space-y-8">
           <Skeleton className="h-24 w-full bg-white/10" />
@@ -293,8 +293,8 @@ export default function ScooterDetailsPage() {
                          {selectedVariantIdx === -1 && <div className="h-2 w-2 rounded-full bg-white animate-pulse" />}
                        </div>
                        <div className="space-y-1">
-                         <p className={cn("text-xs font-bold", selectedVariantIdx === -1 ? "text-white" : "text-foreground")}>{scooter.range} Range</p>
-                         <p className={cn("text-[10px] opacity-70", selectedVariantIdx === -1 ? "text-white" : "text-primary")}>Price: {scooter.price}</p>
+                         <p className={cn("text-xs font-black", selectedVariantIdx === -1 ? "text-white" : "text-foreground")}>{scooter.range} Range</p>
+                         <p className={cn("text-[10px] font-black", selectedVariantIdx === -1 ? "text-white" : "text-primary")}>Price: {scooter.price}</p>
                        </div>
                      </button>
 
@@ -312,8 +312,8 @@ export default function ScooterDetailsPage() {
                            {selectedVariantIdx === idx && <div className="h-2 w-2 rounded-full bg-white animate-pulse" />}
                          </div>
                          <div className="space-y-1">
-                           <p className={cn("text-xs font-bold", selectedVariantIdx === idx ? "text-white" : "text-foreground")}>{v.range} Range</p>
-                           <p className={cn("text-[10px] opacity-70", selectedVariantIdx === idx ? "text-white" : "text-primary")}>Price: {v.price}</p>
+                           <p className={cn("text-xs font-black", selectedVariantIdx === idx ? "text-white" : "text-foreground")}>{v.range} Range</p>
+                           <p className={cn("text-[10px] font-black", selectedVariantIdx === idx ? "text-white" : "text-primary")}>Price: {v.price}</p>
                          </div>
                        </button>
                      ))}
