@@ -145,7 +145,20 @@ export default function ScooterDetailsPage() {
     : [];
 
   const handleWhatsAppEnquiry = () => {
-    const message = `Hi Amresh Automobiles, I am interested in the ${scooter.model} (${currentVariantName} variant). Please tell me the current on-road price and delivery timeline.`;
+    const allOptions = [
+      { name: 'Standard', range: scooter.range, price: scooter.price },
+      ...(scooter.variants || [])
+    ];
+    
+    const rangeOptionsList = allOptions.map(opt => `- ${opt.name}: ${opt.range} (${opt.price})`).join('\n');
+
+    const message = `Hi Amresh Automobiles, I am interested in the ${scooter.model}.\n\n` +
+      `Current Selection: ${currentVariantName} variant\n` +
+      `Specs: ${currentRange} range | Price: ${currentPriceStr}\n\n` +
+      `Available Range Options:\n${rangeOptionsList}\n\n` +
+      `Direct Link: https://amreshautomobiles.in/scooter/${id}\n` +
+      `Image Reference: ${scooter.images?.[0] || ''}`;
+
     const encoded = encodeURIComponent(message);
     window.open(`https://wa.me/919798910854?text=${encoded}`, '_blank');
   };

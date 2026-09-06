@@ -1,11 +1,45 @@
 "use client"
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 export function FloatingWhatsApp() {
+  const pathname = usePathname();
+  const firestore = useFirestore();
+
+  // Hide on admin panel and login page
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/login')) {
+    return null;
+  }
+
+  // Detect if we are on a scooter page to provide context
+  const isScooterPage = pathname?.startsWith('/scooter/');
+  const scooterId = isScooterPage ? pathname.split('/')[2] : null;
+
+  const scooterRef = useMemoFirebase(() => {
+    if (!firestore || !scooterId) return null;
+    return doc(firestore, 'scooters', scooterId);
+  }, [firestore, scooterId]);
+
+  const { data: scooter } = useDoc(scooterRef);
+
+  let message = "Hi Amresh Automobiles, I visited your website and want to know more about your EV scooters.";
+  
+  if (scooter) {
+    message = `Hi Amresh Automobiles, I am interested in the ${scooter.model} displayed on your site.\n\n` +
+              `Model: ${scooter.model}\n` +
+              `Range: ${scooter.range}\n` +
+              `Reference: https://amreshautomobiles.in/scooter/${scooterId}\n` +
+              `Image: ${scooter.images?.[0] || ''}`;
+  }
+
+  const encodedMessage = encodeURIComponent(message);
+
   return (
     <motion.a
-      href="https://wa.me/919798910854?text=Hi%20Amresh%20Automobiles,%20I%20visited%20your%20website%20and%20want%20to%20know%20more%20about%20your%20EV%20scooters."
+      href={`https://wa.me/919798910854?text=${encodedMessage}`}
       target="_blank"
       rel="noopener noreferrer"
       initial={{ scale: 0, opacity: 0 }}
