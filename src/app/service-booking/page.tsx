@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -20,6 +19,7 @@ import { format, addYears, isAfter } from 'date-fns';
 import { sendServiceConfirmationEmail } from '@/app/actions/email';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 const searchSchema = z.object({
   identifier: z.string().min(3, 'Enter Mobile, Chassis or Invoice No.'),
