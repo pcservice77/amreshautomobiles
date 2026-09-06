@@ -14,6 +14,80 @@ const getResend = () => {
 };
 
 /**
+ * Generates a PDF buffer for the test ride booking slip.
+ */
+async function generateBookingSlipPDFBuffer(booking: any, showroom: any): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const buffers: Buffer[] = [];
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => resolve(Buffer.concat(buffers)));
+    doc.on('error', reject);
+
+    const primaryColor = '#10b981';
+    
+    // Showroom Info
+    doc.fillColor(primaryColor).fontSize(20).font('Helvetica-Bold').text(showroom.name || 'AMRESH AUTOMOBILES', { align: 'left' });
+    doc.fillColor('#666666').fontSize(10).font('Helvetica-Oblique').text(showroom.tagline || 'Drive Electric • Live Smart');
+    doc.moveDown(0.5);
+    doc.fillColor('#444444').font('Helvetica').fontSize(9).text(showroom.address || '', { width: 300 });
+    doc.text(`Contact: ${showroom.contact || ''}`);
+
+    doc.moveTo(50, 45).lineTo(545, 45).strokeColor('#eeeeee').stroke();
+    
+    doc.fillColor('#000000').fontSize(24).font('Helvetica-Bold').text('TEST RIDE SLIP', 300, 60, { align: 'right' });
+    doc.fillColor(primaryColor).fontSize(12).text(`# ${booking.id?.substring(0, 8).toUpperCase() || 'AA-TR'}`, 350, 90, { align: 'right', width: 195 });
+    doc.fillColor('#888888').fontSize(9).font('Helvetica').text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, { align: 'right' });
+
+    doc.moveDown(3);
+    const sectionY = doc.y;
+
+    // Rider Details Column
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('RIDER DETAILS', 50, sectionY);
+    doc.fillColor('#000000').fontSize(12).text(booking.customerName.toUpperCase(), 50, sectionY + 15);
+    doc.fillColor('#444444').fontSize(9).font('Helvetica').text(`Mobile: ${booking.mobile}`, 50, sectionY + 30);
+    doc.text(`Email: ${booking.email}`, 50, sectionY + 43);
+
+    // Appointment Column
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('APPOINTMENT', 300, sectionY);
+    doc.fillColor('#000000').fontSize(12).text(booking.scooterModel.toUpperCase(), 300, sectionY + 15);
+    doc.fillColor('#444444').fontSize(9).font('Helvetica').text(`Date: ${booking.date}`, 300, sectionY + 30);
+    doc.text(`Slot: ${booking.time}`, 300, sectionY + 43);
+
+    doc.moveDown(5);
+    
+    // Showroom Guidance Box
+    const boxY = doc.y;
+    doc.rect(50, boxY, 495, 80).fill('#f9f9f9').stroke('#eeeeee');
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('SHOWROOM LOCATION', 60, boxY + 15);
+    doc.fillColor('#000000').fontSize(11).text(showroom.name, 60, boxY + 30);
+    doc.fillColor('#444444').fontSize(9).font('Helvetica').text(showroom.address, 60, boxY + 45, { width: 450 });
+
+    if (showroom.googleMapUrl) {
+      doc.moveDown(6);
+      doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('Navigate to Showroom:', 50, doc.y);
+      doc.fillColor('blue').fontSize(9).text(showroom.googleMapUrl, { link: showroom.googleMapUrl, underline: true });
+    }
+
+    // Terms
+    doc.moveDown(3);
+    doc.fillColor('#000000').fontSize(10).font('Helvetica-Bold').text('IMPORTANT GUIDELINES:');
+    doc.fontSize(9).font('Helvetica').fillColor('#666666');
+    doc.text('1. Please carry your original Driving License.');
+    doc.text('2. Wearing a helmet is mandatory (Rider & Pillion).');
+    doc.text('3. Please report 15 minutes before your scheduled slot.');
+    doc.text('4. Booking is subject to vehicle availability and weather conditions.');
+
+    // Footer
+    doc.fillColor('#888888').fontSize(8).text('This is a computer-generated booking slip and does not require a signature.', 50, 720, { align: 'center', width: 495 });
+    doc.moveDown(1);
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text(`Team ${showroom.name || 'Amresh Automobiles'}`, { align: 'center', width: 495 });
+
+    doc.end();
+  });
+}
+
+/**
  * Generates a PDF buffer for the sales invoice.
  */
 async function generateInvoicePDFBuffer(sale: any, showroom: any): Promise<Buffer> {
@@ -422,7 +496,8 @@ export async function sendStatusUpdateEmail(email: string, details: {
   status: string;
   branchName: string;
   googleMapUrl?: string;
-}) {
+  id?: string;
+}, showroom: any) {
   const resend = getResend();
   if (!resend) return { success: false, error: 'API Key missing' };
 
@@ -430,10 +505,24 @@ export async function sendStatusUpdateEmail(email: string, details: {
   const subject = isConfirmed ? 'Test Ride Confirmed! - Amresh Automobiles' : 'Update on your Test Ride Booking';
   
   try {
+    let attachments = [];
+    if (isConfirmed) {
+      // Generate PDF for the confirmed booking
+      const pdfBuffer = await generateBookingSlipPDFBuffer({
+        ...details,
+      }, showroom);
+      
+      attachments.push({
+        filename: `BookingSlip_${details.customerName.replace(/\s/g, '_')}.pdf`,
+        content: pdfBuffer,
+      });
+    }
+
     const { data, error } = await resend.emails.send({
       from: 'Amresh Automobiles <bookings@contact.amreshautomobiles.in>',
       to: email,
       subject: subject,
+      attachments: attachments,
       html: `
         <div style="font-family: sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: ${isConfirmed ? '#10b981' : '#f59e0b'}; border-bottom: 2px solid ${isConfirmed ? '#10b981' : '#f59e0b'}; padding-bottom: 10px;">
@@ -447,6 +536,8 @@ export async function sendStatusUpdateEmail(email: string, details: {
             <p style="margin: 5px 0;"><strong>Confirmed Time:</strong> ${details.time}</p>
             ${isConfirmed && details.googleMapUrl ? `<p style="margin: 15px 0;"><a href="${details.googleMapUrl}" style="background-color: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Navigate to Showroom</a></p>` : ''}
           </div>
+
+          ${isConfirmed ? `<p>We have attached your official **Test Ride Slip** as a PDF. Please bring it along with a valid Driving License.</p>` : ''}
           
           <p>Best Regards,<br/><strong>Team Amresh Automobiles</strong></p>
         </div>

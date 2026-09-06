@@ -56,7 +56,8 @@ export default function BookingsPage() {
             status: status,
             branchName: branch?.name || 'Amresh Automobiles',
             googleMapUrl: branch?.googleMapUrl,
-          });
+            id: booking.id,
+          }, branch || {});
         }
       })
       .catch(() => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: bookingRef.path, operation: 'update' })));
