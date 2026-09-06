@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -14,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, where, getDocs, addDoc, orderBy, limit, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Wrench, Search, Loader2, Calendar, MapPin, CheckCircle2, History, Printer, Zap, Bike, ShieldCheck, FileText, Download, TrendingUp } from 'lucide-react';
+import { Wrench, Search, Loader2, Calendar, MapPin, CheckCircle2, History, Printer, Zap, Bike, ShieldCheck, FileText, Download, TrendingUp, IndianRupee } from 'lucide-react';
 import { format, addYears, isAfter } from 'date-fns';
 import { sendServiceConfirmationEmail } from '@/app/actions/email';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -514,28 +515,60 @@ export default function ServiceBookingPage() {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: idx * 0.1 }}
-                          className="group relative flex gap-6 p-6 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all"
+                          className="group relative flex flex-col gap-4 p-6 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all"
                         >
-                          <div className="flex flex-col items-center gap-2">
-                             <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border", s.status === 'completed' ? "bg-primary/10 border-primary/20 text-primary" : "bg-yellow-500/10 border-yellow-500/20 text-yellow-500")}>
-                               {s.status === 'completed' ? <CheckCircle2 className="h-5 w-5" /> : <Calendar className="h-5 w-5" />}
-                             </div>
-                             {idx < serviceHistory.length - 1 && <div className="w-[1px] h-full bg-white/10" />}
-                          </div>
-                          <div className="flex-1">
-                             <div className="flex justify-between items-start mb-2">
-                               <div>
-                                 <h5 className="font-bold text-lg">{s.serviceType} Service</h5>
-                                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{s.serviceNo}</p>
+                          <div className="flex gap-6">
+                            <div className="flex flex-col items-center gap-2">
+                               <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border", s.status === 'completed' ? "bg-primary/10 border-primary/20 text-primary" : "bg-yellow-500/10 border-yellow-500/20 text-yellow-500")}>
+                                 {s.status === 'completed' ? <CheckCircle2 className="h-5 w-5" /> : <Calendar className="h-5 w-5" />}
                                </div>
-                               <span className="text-[10px] font-black uppercase tracking-widest opacity-40">{format(new Date(s.preferredDate), 'dd MMM yyyy')}</span>
-                             </div>
-                             <div className="flex gap-4 items-center">
-                               <Badge variant="outline" className="bg-white/5 text-[9px] uppercase">{s.currentKm} KM</Badge>
-                               <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> {s.branchName}</span>
-                             </div>
-                             {s.notes && <p className="text-xs text-muted-foreground italic mt-3 border-l-2 border-primary/20 pl-3">{s.notes}</p>}
+                               {idx < serviceHistory.length - 1 && <div className="w-[1px] h-full bg-white/10" />}
+                            </div>
+                            <div className="flex-1">
+                               <div className="flex justify-between items-start mb-2">
+                                 <div>
+                                   <h5 className="font-bold text-lg">{s.serviceType} Service</h5>
+                                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{s.serviceNo}</p>
+                                 </div>
+                                 <div className="text-right">
+                                   <span className="text-[10px] font-black uppercase tracking-widest opacity-40">{format(new Date(s.preferredDate), 'dd MMM yyyy')}</span>
+                                   {s.totalAmount > 0 && <p className="text-primary font-black text-sm">₹ {s.totalAmount.toLocaleString()}</p>}
+                                 </div>
+                               </div>
+                               <div className="flex gap-4 items-center">
+                                 <Badge variant="outline" className="bg-white/5 text-[9px] uppercase">{s.currentKm} KM</Badge>
+                                 <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> {s.branchName}</span>
+                               </div>
+                               {s.notes && <p className="text-xs text-muted-foreground italic mt-3 border-l-2 border-primary/20 pl-3">{s.notes}</p>}
+                            </div>
                           </div>
+
+                          {/* Billing Breakdown in History */}
+                          {s.parts && s.parts.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                               <div className="space-y-2">
+                                 <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Parts Replaced</p>
+                                 <div className="space-y-1">
+                                   {s.parts.map((p: any, i: number) => (
+                                     <div key={i} className="flex justify-between text-[10px]">
+                                       <span className="text-white/60">{p.name}</span>
+                                       <span className="font-bold">₹ {p.price}</span>
+                                     </div>
+                                   ))}
+                                 </div>
+                               </div>
+                               <div className="bg-black/20 p-3 rounded-xl space-y-2">
+                                  <div className="flex justify-between text-[10px]">
+                                    <span className="text-muted-foreground">Labor/Service</span>
+                                    <span className="font-bold">₹ {s.laborCharge || 0}</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs pt-1 border-t border-white/5">
+                                    <span className="font-bold text-primary">BILL TOTAL</span>
+                                    <span className="font-black text-primary">₹ {s.totalAmount?.toLocaleString()}</span>
+                                  </div>
+                               </div>
+                            </div>
+                          )}
                         </motion.div>
                       )) : (
                         <div className="p-12 text-center border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.02]">

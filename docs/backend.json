@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -106,6 +107,7 @@
       "description": "A request for vehicle maintenance.",
       "type": "object",
       "properties": {
+        "serviceNo": { "type": "string" },
         "saleId": { "type": "string" },
         "customerName": { "type": "string" },
         "mobile": { "type": "string" },
@@ -119,6 +121,18 @@
         "preferredTime": { "type": "string" },
         "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled"] },
         "notes": { "type": "string" },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "price": { "type": "number" }
+            }
+          }
+        },
+        "laborCharge": { "type": "number" },
+        "totalAmount": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["saleId", "branchId", "currentKm", "preferredDate"]
