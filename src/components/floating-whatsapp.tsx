@@ -9,11 +9,6 @@ export function FloatingWhatsApp() {
   const pathname = usePathname();
   const firestore = useFirestore();
 
-  // Hide on admin panel and login page
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/login')) {
-    return null;
-  }
-
   // Detect if we are on a scooter page to provide context
   const isScooterPage = pathname?.startsWith('/scooter/');
   const scooterId = isScooterPage ? pathname.split('/')[2] : null;
@@ -24,6 +19,11 @@ export function FloatingWhatsApp() {
   }, [firestore, scooterId]);
 
   const { data: scooter } = useDoc(scooterRef);
+
+  // Hide on admin panel and login page - Moved after hooks to satisfy Rules of Hooks
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/login')) {
+    return null;
+  }
 
   let message = "Hi Amresh Automobiles, I visited your website and want to know more about your EV scooters.";
   
