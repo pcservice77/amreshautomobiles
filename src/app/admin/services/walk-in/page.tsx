@@ -1,7 +1,8 @@
+
 "use client"
 
-import { useState, useEffect, Suspense } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useState, useEffect, Suspense, useMemo } from 'react';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Search, Loader2, Wrench, Bike, IndianRupee, Plus, Trash2, Save, ArrowLeft } from 'lucide-react';
@@ -46,7 +47,6 @@ function WalkInServiceContent() {
   const [existingBooking, setExistingBooking] = useState<any>(null);
   const [searchInput, setSearchInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [total, setTotal] = useState(0);
 
   const branchesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -80,13 +80,14 @@ function WalkInServiceContent() {
     name: "parts"
   });
 
-  // Calculate Total
-  const labor = form.watch('laborCharge');
-  const parts = form.watch('parts');
-  useEffect(() => {
-    const partsTotal = parts?.reduce((acc, p) => acc + (Number(p.price) || 0), 0) || 0;
-    setTotal(partsTotal + (Number(labor) || 0));
-  }, [labor, parts]);
+  // REACTIVE CALCULATION: Grand Total
+  const watchedParts = useWatch({ control: form.control, name: 'parts' });
+  const watchedLabor = useWatch({ control: form.control, name: 'laborCharge' });
+
+  const totalAmount = useMemo(() => {
+    const partsTotal = watchedParts?.reduce((acc, p) => acc + (Number(p.price) || 0), 0) || 0;
+    return partsTotal + (Number(watchedLabor) || 0);
+  }, [watchedParts, watchedLabor]);
 
   // Load existing service if editing
   useEffect(() => {
@@ -166,7 +167,7 @@ function WalkInServiceContent() {
     const bookingData = {
       ...values,
       serviceNo,
-      totalAmount: total,
+      totalAmount: totalAmount, // Using memoized total
       saleId: matchingSale.id,
       customerName: matchingSale.customerName,
       mobile: matchingSale.mobile,
@@ -193,10 +194,20 @@ function WalkInServiceContent() {
         toast({ title: 'Service Saved & Billed' });
       }
 
-      // CRITICAL FIX: Pass the specific branch details for correct email branding
+      // BRANDING FIX: Pass the specific branch details for correct email branding
       if (matchingSale.email) {
         const branchData = branches?.find(b => b.id === values.branchId);
-        await sendServiceCompletionEmail(matchingSale.email, bookingData, branchData || showroom || {});
+        // Explicitly construct the identity object to ensure it has all fields for the PDF
+        const showroomIdentity = branchData ? {
+          name: branchData.name,
+          address: branchData.address,
+          gstin: branchData.gstin,
+          contact: branchData.contact,
+          tagline: branchData.tagline || 'Drive Electric • Live Smart',
+          logoUrl: branchData.imageUrl || showroom?.logoUrl,
+        } : (showroom || {});
+
+        await sendServiceCompletionEmail(matchingSale.email, bookingData, showroomIdentity);
       }
       
       router.push('/admin/services');
@@ -367,15 +378,15 @@ function WalkInServiceContent() {
                   <div className="pt-6 border-t border-white/10 space-y-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Parts Total</span>
-                      <span>₹ {parts?.reduce((acc, p) => acc + (Number(p.price) || 0), 0).toLocaleString()}</span>
+                      <span>₹ {(watchedParts?.reduce((acc, p) => acc + (Number(p.price) || 0), 0) || 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Labor Charge</span>
-                      <span>₹ {Number(labor).toLocaleString()}</span>
+                      <span>₹ {Number(watchedLabor).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-end pt-4 border-t-2 border-primary/20">
                       <span className="text-lg font-black uppercase">Grand Total</span>
-                      <span className="text-3xl font-black text-primary">₹ {total.toLocaleString()}</span>
+                      <span className="text-3xl font-black text-primary">₹ {totalAmount.toLocaleString()}</span>
                     </div>
                   </div>
 
