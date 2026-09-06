@@ -156,8 +156,7 @@ export default function ScooterDetailsPage() {
       `Current Selection: ${currentVariantName} variant\n` +
       `Specs: ${currentRange} range | Price: ${currentPriceStr}\n\n` +
       `Available Range Options:\n${rangeOptionsList}\n\n` +
-      `Direct Link: https://amreshautomobiles.in/scooter/${id}\n` +
-      `Image Reference: ${scooter.images?.[0] || ''}`;
+      `Direct Link: https://amreshautomobiles.in/scooter/${id}`;
 
     const encoded = encodeURIComponent(message);
     window.open(`https://wa.me/919798910854?text=${encoded}`, '_blank');

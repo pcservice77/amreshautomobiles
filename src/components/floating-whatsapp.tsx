@@ -31,8 +31,7 @@ export function FloatingWhatsApp() {
     message = `Hi Amresh Automobiles, I am interested in the ${scooter.model} displayed on your site.\n\n` +
               `Model: ${scooter.model}\n` +
               `Range: ${scooter.range}\n` +
-              `Reference: https://amreshautomobiles.in/scooter/${scooterId}\n` +
-              `Image: ${scooter.images?.[0] || ''}`;
+              `Reference: https://amreshautomobiles.in/scooter/${scooterId}`;
   }
 
   const encodedMessage = encodeURIComponent(message);
