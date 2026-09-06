@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,7 +10,8 @@ export interface UserProfile {
   uid: string;
   email: string;
   name: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'branch_admin';
+  assignedBranchId?: string;
 }
 
 export function useUser() {
@@ -24,7 +26,7 @@ export function useUser() {
     return onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const userDocRef = doc(firestore, 'users', firebaseUser.uid);
-        return onSnapshot(userDocRef, (docSnap) => {
+        const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
             setUser({ ...firebaseUser, ...(docSnap.data() as UserProfile) });
           } else {
@@ -32,6 +34,7 @@ export function useUser() {
           }
           setLoading(false);
         });
+        return unsubscribe;
       } else {
         setUser(null);
         setLoading(false);

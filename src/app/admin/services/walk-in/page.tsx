@@ -1,6 +1,7 @@
+
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -33,7 +34,7 @@ const serviceBillSchema = z.object({
   })).default([]),
 });
 
-export default function WalkInServicePage() {
+function WalkInServiceContent() {
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
@@ -179,25 +180,40 @@ export default function WalkInServicePage() {
 
     try {
       if (editId) {
-        await updateDoc(doc(firestore, 'service-bookings', editId), bookingData);
-        toast({ title: 'Record Updated' });
+        const docRef = doc(firestore, 'service-bookings', editId);
+        updateDoc(docRef, bookingData)
+          .then(() => {
+             toast({ title: 'Record Updated' });
+             router.push('/admin/services');
+          })
+          .catch((err) => {
+             errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: bookingData,
+              }));
+          });
       } else {
-        await addDoc(collection(firestore, 'service-bookings'), bookingData);
-        toast({ title: 'Service Saved & Billed' });
+        addDoc(collection(firestore, 'service-bookings'), bookingData)
+          .then(() => {
+             toast({ title: 'Service Saved & Billed' });
+             router.push('/admin/services');
+          })
+          .catch((err) => {
+             errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: 'service-bookings',
+                operation: 'create',
+                requestResourceData: bookingData,
+              }));
+          });
       }
 
       // Send Completion Email with Bill
       if (matchingSale.email) {
         await sendServiceCompletionEmail(matchingSale.email, bookingData, showroom || {});
       }
-
-      router.push('/admin/services');
     } catch (e) {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: 'service-bookings',
-        operation: editId ? 'update' : 'create',
-        requestResourceData: bookingData,
-      }));
+      console.error(e);
     } finally {
       setIsSaving(false);
     }
@@ -387,5 +403,13 @@ export default function WalkInServicePage() {
         </Form>
       )}
     </div>
+  );
+}
+
+export default function WalkInServicePage() {
+  return (
+    <Suspense fallback={<div>Loading garage desk...</div>}>
+      <WalkInServiceContent />
+    </Suspense>
   );
 }
