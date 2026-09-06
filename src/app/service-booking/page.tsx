@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -12,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, where, getDocs, addDoc, orderBy, limit, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -339,7 +339,7 @@ export default function ServiceBookingPage() {
                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                   <p className="text-primary font-black uppercase text-[10px] tracking-widest mb-2 flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4" /> Verified Ownership
-                  </p>
+                  </p color="text-primary">
                   <h2 className="text-5xl font-headline font-bold uppercase tracking-tight">{matchingSale.model}</h2>
                   <p className="text-muted-foreground text-lg italic">Belongs to {matchingSale.customerName}</p>
                </motion.div>
