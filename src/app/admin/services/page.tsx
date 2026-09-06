@@ -187,7 +187,7 @@ export default function AdminServicesPage() {
                   <h1 className="text-2xl font-black text-primary uppercase">{showroomName}</h1>
                   <p className="text-[10px] text-gray-500 font-bold italic mb-1">Drive Electric • Live Smart</p>
                   <p className="text-[9px] text-gray-500 leading-tight max-w-[250px]">{showroomAddress}</p>
-                  <p className="text-[10px] text-gray-800 font-bold mt-1">GSTIN: {showroomGtin || 'N/A'}</p>
+                  <p className="text-[10px] text-gray-800 font-bold mt-1">GSTIN: {showroomGstin || 'N/A'}</p>
                 </div>
               </div>
               <div className="text-right">
