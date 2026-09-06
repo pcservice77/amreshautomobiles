@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFirestore, useCollection, useUser, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, query, where, getDocs, addDoc, orderBy, limit, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, orderBy, limit, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -44,6 +44,7 @@ function WalkInServiceContent() {
 
   const [isSearching, setIsSearching] = useState(false);
   const [matchingSale, setMatchingSale] = useState<any>(null);
+  const [existingBooking, setExistingBooking] = useState<any>(null);
   const [searchInput, setSearchInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [total, setTotal] = useState(0);
@@ -94,24 +95,25 @@ function WalkInServiceContent() {
       getDoc(doc(firestore, 'service-bookings', editId)).then(snap => {
         if (snap.exists()) {
           const data = snap.data();
+          setExistingBooking({ ...data, id: snap.id });
           form.reset({
-            branchId: data.branchId,
-            currentKm: data.currentKm,
-            serviceType: data.serviceType,
-            preferredDate: data.preferredDate,
-            preferredTime: data.preferredTime,
+            branchId: data.branchId || user?.assignedBranchId || '',
+            currentKm: data.currentKm || 0,
+            serviceType: data.serviceType || 'Routine',
+            preferredDate: data.preferredDate || format(new Date(), 'yyyy-MM-dd'),
+            preferredTime: data.preferredTime || 'Walk-in',
             notes: data.notes || '',
             laborCharge: data.laborCharge || 0,
             parts: data.parts || [],
           });
-          // Also need to set the sale context
+          // Fetch linked sale details
           getDoc(doc(firestore, 'sales', data.saleId)).then(sSnap => {
             if (sSnap.exists()) setMatchingSale({ ...sSnap.data(), id: sSnap.id });
           });
         }
       });
     }
-  }, [editId, firestore, form]);
+  }, [editId, firestore, form, user?.assignedBranchId]);
 
   const onSearch = async () => {
     if (!firestore || !searchInput) return;
@@ -159,7 +161,7 @@ function WalkInServiceContent() {
     if (!firestore || !matchingSale) return;
     setIsSaving(true);
 
-    const serviceNo = editId ? matchingSale.serviceNo : await generateServiceNo();
+    const serviceNo = editId ? (existingBooking?.serviceNo || 'AA/SR/REPRINT') : await generateServiceNo();
     const branch = branches?.find(b => b.id === values.branchId);
 
     const bookingData = {
@@ -173,7 +175,6 @@ function WalkInServiceContent() {
       chassisNumber: matchingSale.chassisNumber,
       model: matchingSale.model,
       status: 'completed',
-      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       branchName: branch?.name || 'Amresh Automobiles',
     };
@@ -181,39 +182,31 @@ function WalkInServiceContent() {
     try {
       if (editId) {
         const docRef = doc(firestore, 'service-bookings', editId);
-        updateDoc(docRef, bookingData)
-          .then(() => {
-             toast({ title: 'Record Updated' });
-             router.push('/admin/services');
-          })
-          .catch((err) => {
-             errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: bookingData,
-              }));
-          });
+        await updateDoc(docRef, {
+          ...bookingData,
+          // Don't overwrite createdAt on update
+        });
+        toast({ title: 'Record Updated' });
       } else {
-        addDoc(collection(firestore, 'service-bookings'), bookingData)
-          .then(() => {
-             toast({ title: 'Service Saved & Billed' });
-             router.push('/admin/services');
-          })
-          .catch((err) => {
-             errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: 'service-bookings',
-                operation: 'create',
-                requestResourceData: bookingData,
-              }));
-          });
+        await addDoc(collection(firestore, 'service-bookings'), {
+          ...bookingData,
+          createdAt: new Date().toISOString(),
+        });
+        toast({ title: 'Service Saved & Billed' });
       }
 
       // Send Completion Email with Bill
       if (matchingSale.email) {
         await sendServiceCompletionEmail(matchingSale.email, bookingData, showroom || {});
       }
-    } catch (e) {
-      console.error(e);
+      
+      router.push('/admin/services');
+    } catch (err: any) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: editId ? `service-bookings/${editId}` : 'service-bookings',
+        operation: editId ? 'update' : 'create',
+        requestResourceData: bookingData,
+      }));
     } finally {
       setIsSaving(false);
     }
@@ -296,7 +289,7 @@ function WalkInServiceContent() {
                   <FormField control={form.control} name="serviceType" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Service Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                         <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                         <SelectContent>
                           <SelectItem value="Routine">Routine Maintenance</SelectItem>
@@ -390,9 +383,13 @@ function WalkInServiceContent() {
                   <div className="pt-8 space-y-4">
                     <Button type="submit" className="w-full h-14 font-black uppercase text-xs tracking-widest glow-primary" disabled={isSaving}>
                       {isSaving ? <Loader2 className="animate-spin h-5 w-5" /> : <Save className="h-5 w-5 mr-2" />}
-                      Save & Email Bill
+                      {editId ? 'Update & Email Bill' : 'Save & Email Bill'}
                     </Button>
-                    <Button type="button" variant="outline" className="w-full h-12" onClick={() => setMatchingSale(null)}>
+                    <Button type="button" variant="outline" className="w-full h-12" onClick={() => {
+                      setMatchingSale(null);
+                      setExistingBooking(null);
+                      router.push('/admin/services/walk-in');
+                    }}>
                       Switch Vehicle
                     </Button>
                   </div>
