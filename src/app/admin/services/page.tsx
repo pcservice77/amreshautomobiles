@@ -2,21 +2,30 @@
 "use client"
 
 import { useState } from 'react';
-import { Search, Calendar, Phone, CheckCircle2, Clock, XCircle, Wrench, Bike, User, FileText, PlusCircle, Eye, Printer, CreditCard } from 'lucide-react';
+import { Search, Calendar, Phone, CheckCircle2, Clock, XCircle, Wrench, Bike, User, FileText, PlusCircle, Eye, Printer, CreditCard, Trash2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, doc, updateDoc, query, where } from 'firebase/firestore';
+import { collection, doc, updateDoc, query, where, deleteDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
 import Image from 'next/image';
-import { Zap } from 'lucide-react';
 
 export default function AdminServicesPage() {
   const firestore = useFirestore();
@@ -24,6 +33,7 @@ export default function AdminServicesPage() {
   const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [selectedService, setSelectedService] = useState<any>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const servicesQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -57,6 +67,23 @@ export default function AdminServicesPage() {
         toast({ title: 'Service Updated', description: `Status changed to ${status}.` });
       })
       .catch(() => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: serviceRef.path, operation: 'update' })));
+  };
+
+  const executeDelete = async () => {
+    if (!firestore || !deleteId) return;
+    const docRef = doc(firestore, 'service-bookings', deleteId);
+    
+    try {
+      await deleteDoc(docRef);
+      toast({ title: 'Record Removed', description: 'Service record has been deleted.' });
+    } catch (err) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: docRef.path,
+        operation: 'delete',
+      }));
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   const filteredServices = services?.filter(s => 
@@ -158,6 +185,14 @@ export default function AdminServicesPage() {
                         </Button>
                       </Link>
                     )}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      onClick={() => setDeleteId(service.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -165,6 +200,24 @@ export default function AdminServicesPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Service Record?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this service log and billing details. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete Record
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Service Invoice Dialog */}
       <Dialog open={!!selectedService} onOpenChange={(open) => !open && setSelectedService(null)}>
