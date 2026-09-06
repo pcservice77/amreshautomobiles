@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -70,11 +71,6 @@ export default function Home() {
     return collection(firestore, 'branches');
   }, [firestore]);
 
-  const salesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'sales');
-  }, [firestore]);
-
   const showroomRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return doc(firestore, 'settings', 'showroom');
@@ -82,13 +78,7 @@ export default function Home() {
 
   const { data: scooters, loading } = useCollection(scootersQuery);
   const { data: branches } = useCollection(branchesQuery);
-  const { data: sales } = useCollection(salesQuery);
   const { data: showroom } = useDoc(showroomRef);
-
-  // Impact Calculations
-  const salesCount = sales?.length || 0;
-  const co2Saved = (salesCount * 1.5).toFixed(1); // 1.5 Tons per EV per year
-  const petrolSaved = (salesCount * 450).toLocaleString(); // 450L per EV per year
 
   return (
     <main className="min-h-screen pb-20 bg-[#050505]">
@@ -223,41 +213,6 @@ export default function Home() {
             ))}
           </div>
         )}
-      </section>
-
-      {/* Impact Section */}
-      <section className="py-40 relative bg-zinc-950 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-20">
-            <h2 className="text-4xl md:text-6xl font-headline font-bold uppercase tracking-tight mb-6">THE AMRESH <span className="text-primary italic">IMPACT.</span></h2>
-            <p className="text-muted-foreground text-lg">Every scooter from our showroom contributes to a cleaner, greener India. Here is our collective milestone.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <ImpactCard 
-              icon={Globe} 
-              value={`${co2Saved} Tons`} 
-              label="CO2 Emissions Saved" 
-              desc="Cumulative carbon footprint reduced by our community."
-              delay={0.1}
-            />
-            <ImpactCard 
-              icon={TrendingDown} 
-              value={`${petrolSaved} L`} 
-              label="Petrol Saved Yearly" 
-              desc="Total fuel consumption avoided by switching to EV."
-              delay={0.2}
-            />
-            <ImpactCard 
-              icon={CheckCircle2} 
-              value={salesCount.toString()} 
-              label="Happy EV Families" 
-              desc="Households leading the change in Jharkhand."
-              delay={0.3}
-            />
-          </div>
-        </div>
       </section>
 
       <section id="features" className="py-40 bg-secondary/30 relative overflow-hidden">
@@ -491,24 +446,5 @@ function FeatureItem({ icon: Icon, label }: { icon: any; label: string }) {
       </div>
       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80 group-hover:text-primary transition-colors">{label}</span>
     </div>
-  );
-}
-
-function ImpactCard({ icon: Icon, value, label, desc, delay }: { icon: any, value: string, label: string, desc: string, delay: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay }}
-      className="p-10 rounded-[3rem] bg-white/5 border border-white/5 flex flex-col items-center text-center group hover:bg-primary/5 hover:border-primary/20 transition-all"
-    >
-      <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-        <Icon className="h-8 w-8 text-primary" />
-      </div>
-      <h3 className="text-5xl font-black text-white tracking-tighter mb-4">{value}</h3>
-      <p className="text-primary text-[10px] font-black uppercase tracking-widest mb-4">{label}</p>
-      <p className="text-muted-foreground text-xs leading-relaxed max-w-[200px]">{desc}</p>
-    </motion.div>
   );
 }

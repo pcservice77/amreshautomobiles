@@ -11,13 +11,15 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, where, getDocs, addDoc, orderBy, limit, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Wrench, Search, Loader2, Calendar, MapPin, CheckCircle2, History, Printer, Zap, Bike } from 'lucide-react';
-import { format } from 'date-fns';
+import { Wrench, Search, Loader2, Calendar, MapPin, CheckCircle2, History, Printer, Zap, Bike, ShieldCheck, FileText, Download, TrendingUp } from 'lucide-react';
+import { format, addYears, isAfter } from 'date-fns';
 import { sendServiceConfirmationEmail } from '@/app/actions/email';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 const searchSchema = z.object({
   identifier: z.string().min(3, 'Enter Mobile, Chassis or Invoice No.'),
@@ -37,10 +39,11 @@ export default function ServiceBookingPage() {
   const { toast } = useToast();
   
   const [matchingSale, setMatchingSale] = useState<any>(null);
-  const [lastService, setLastService] = useState<any>(null);
+  const [serviceHistory, setServiceHistory] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isBooking, setIsSubmitting] = useState(false);
   const [bookedDetails, setBookedDetails] = useState<any>(null);
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
   const branchesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -92,7 +95,7 @@ export default function ServiceBookingPage() {
     if (!firestore) return;
     setIsSearching(true);
     setMatchingSale(null);
-    setLastService(null);
+    setServiceHistory([]);
 
     try {
       const salesRef = collection(firestore, 'sales');
@@ -108,16 +111,15 @@ export default function ServiceBookingPage() {
         const sale = { ...snap.docs[0].data(), id: snap.docs[0].id };
         setMatchingSale(sale);
 
+        // Fetch full service history
         try {
           const servicesRef = collection(firestore, 'service-bookings');
           const sSnap = await getDocs(query(
             servicesRef, 
             where('chassisNumber', '==', sale.chassisNumber),
-            where('status', '==', 'completed'),
-            orderBy('createdAt', 'desc'),
-            limit(1)
+            orderBy('createdAt', 'desc')
           ));
-          if (!sSnap.empty) setLastService(sSnap.docs[0].data());
+          setServiceHistory(sSnap.docs.map(d => ({ ...d.data(), id: d.id })));
         } catch (historyError) {
           console.warn('Vehicle history lookup restricted or index missing');
         }
@@ -179,6 +181,27 @@ export default function ServiceBookingPage() {
     }
   };
 
+  const amountToWords = (amount: number) => {
+    const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    if (amount === 0) return 'Zero';
+    let words = '';
+    if (amount >= 100000) { words += amountToWords(Math.floor(amount / 100000)) + ' Lakh '; amount %= 100000; }
+    if (amount >= 1000) { words += amountToWords(Math.floor(amount / 1000)) + ' Thousand '; amount %= 1000; }
+    if (amount >= 100) { words += amountToWords(Math.floor(amount / 100)) + ' Hundred '; amount %= 100; }
+    if (amount > 0) {
+      if (words !== '') words += 'and ';
+      if (amount < 10) words += units[amount];
+      else if (amount < 20) words += teens[amount - 10];
+      else { words += tens[Math.floor(amount / 10)]; if (amount % 10 > 0) words += ' ' + units[amount % 10]; }
+    }
+    return words.trim();
+  };
+
+  const warrantyExpiry = matchingSale?.soldAt ? addYears(new Date(matchingSale.soldAt), 3) : null;
+  const isUnderWarranty = warrantyExpiry ? isAfter(warrantyExpiry, new Date()) : false;
+
   if (bookedDetails) {
     return (
       <main className="min-h-screen bg-background text-foreground">
@@ -222,18 +245,6 @@ export default function ServiceBookingPage() {
                   </div>
                 </div>
               </div>
-
-              <div className="bg-primary/5 border border-primary/10 rounded-2xl p-6">
-                <h4 className="font-bold mb-2 flex items-center gap-2">
-                  <Bike className="h-4 w-4 text-primary" />
-                  Arrival Guidelines
-                </h4>
-                <ul className="text-xs text-muted-foreground space-y-2 list-disc pl-4">
-                  <li>Please arrive 15 minutes before your scheduled slot.</li>
-                  <li>Ensure your vehicle has at least 20% battery remaining.</li>
-                  <li>Bring this digital slip or your original invoice.</li>
-                </ul>
-              </div>
             </CardContent>
             
             <CardFooter className="p-8 border-t border-white/5 flex gap-4 no-print">
@@ -241,7 +252,7 @@ export default function ServiceBookingPage() {
                 <Printer className="h-4 w-4" /> Print Service Slip
               </Button>
               <Button variant="outline" className="flex-1 h-12" onClick={() => window.location.reload()}>
-                Book Another
+                Garage Home
               </Button>
             </CardFooter>
           </Card>
@@ -251,174 +262,371 @@ export default function ServiceBookingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#050505] text-foreground">
+    <main className="min-h-screen bg-[#050505] text-foreground pb-32">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-32 pb-20">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
-          
-          <div className="lg:col-span-5 space-y-8">
+      <div className="container mx-auto px-4 pt-32">
+        {!matchingSale ? (
+          <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-12"
             >
-              <h1 className="text-6xl font-headline font-bold mb-6 tracking-tighter leading-none">
-                SMART <br/><span className="text-primary italic">SERVICE.</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-6">
+                <ShieldCheck className="h-3 w-3" /> Secure Owner Access
+              </div>
+              <h1 className="text-5xl md:text-7xl font-headline font-bold mb-6 tracking-tighter uppercase leading-[0.9]">
+                OWNER'S <br/><span className="text-primary italic">GARAGE.</span>
               </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Expert maintenance for your high-performance EV. Enter your details to retrieve vehicle history and book your next checkup.
+              <p className="text-xl text-muted-foreground max-w-xl mx-auto">
+                Access your full service history, warranty details, and digital invoices. Experience high-tech ownership.
               </p>
             </motion.div>
 
-            <div className="space-y-6">
-               <FeatureCard icon={History} title="Recall History" desc="View all past services and technical notes for your unit." />
-               <FeatureCard icon={MapPin} title="Flexible Centers" desc="Select any Amresh Showroom in Jharkhand for your repair." />
-               <FeatureCard icon={Wrench} title="Authentic Parts" desc="Only original LFP batteries and components used by certified tech." />
+            <Card className="w-full max-w-2xl border-white/10 bg-card/30 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl relative group">
+              <div className="absolute inset-0 bg-primary/5 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              <Form {...searchForm}>
+                <form onSubmit={searchForm.handleSubmit(onSearch)} className="space-y-6 relative z-10">
+                  <FormField control={searchForm.control} name="identifier" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Identify Your Ride</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input placeholder="Mobile No. / Chassis / Invoice" className="h-16 pl-14 bg-white/5 border-white/10 rounded-2xl text-lg font-bold" {...field} />
+                          <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <Button type="submit" size="lg" className="w-full h-16 font-black uppercase text-xs tracking-widest gap-3 rounded-2xl glow-primary" disabled={isSearching}>
+                    {isSearching ? <Loader2 className="animate-spin h-5 w-5" /> : <Zap className="h-5 w-5" />}
+                    Enter Digital Garage
+                  </Button>
+                </form>
+              </Form>
+            </Card>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16 w-full max-w-3xl">
+              <SimpleFeature icon={History} label="Service Logs" />
+              <SimpleFeature icon={ShieldCheck} label="Warranty Tracking" />
+              <SimpleFeature icon={FileText} label="Digital Invoices" />
             </div>
           </div>
+        ) : (
+          <div className="max-w-6xl mx-auto space-y-12">
+             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
+               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                  <p className="text-primary font-black uppercase text-[10px] tracking-widest mb-2 flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4" /> Verified Ownership
+                  </p>
+                  <h2 className="text-5xl font-headline font-bold uppercase tracking-tight">{matchingSale.model}</h2>
+                  <p className="text-muted-foreground text-lg italic">Belongs to {matchingSale.customerName}</p>
+               </motion.div>
+               <div className="flex gap-3">
+                 <Button variant="outline" className="h-12 px-6 rounded-xl gap-2 border-primary/20 text-primary hover:bg-primary/10" onClick={() => setIsInvoiceOpen(true)}>
+                   <FileText className="h-4 w-4" /> View Invoice
+                 </Button>
+                 <Button variant="ghost" className="h-12 px-6 rounded-xl" onClick={() => setMatchingSale(null)}>Exit Garage</Button>
+               </div>
+             </div>
 
-          <div className="lg:col-span-7">
-            <AnimatePresence mode="wait">
-              {!matchingSale ? (
-                <motion.div
-                  key="search"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  <Card className="border-white/10 bg-card/30 backdrop-blur-xl p-8 rounded-[2rem]">
-                    <CardHeader className="p-0 mb-8">
-                      <CardTitle className="text-2xl font-headline font-bold uppercase tracking-tight">Identify Your Vehicle</CardTitle>
-                      <CardDescription>Enter one identifier to fetch your data from Amresh archives.</CardDescription>
-                    </CardHeader>
-                    <Form {...searchForm}>
-                      <form onSubmit={searchForm.handleSubmit(onSearch)} className="space-y-6">
-                        <FormField control={searchForm.control} name="identifier" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Mobile / Chassis / Invoice</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input placeholder="e.g. 9876543210 or AA/..." className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl" {...field} />
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+               {/* Vehicle Identity */}
+               <Card className="bg-card/40 border-white/10 rounded-3xl p-8 space-y-8 h-fit">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-2xl">
+                      <Bike className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold uppercase">Specifications</h3>
+                  </div>
+
+                  <div className="space-y-6">
+                    <DataPoint label="Invoice No" value={matchingSale.invoiceNo} />
+                    <DataPoint label="Chassis No" value={matchingSale.chassisNumber} />
+                    {matchingSale.batterySerialNumber && <DataPoint label="Battery S/N" value={matchingSale.batterySerialNumber} />}
+                    <DataPoint label="Purchase Date" value={format(new Date(matchingSale.soldAt), 'dd MMM yyyy')} />
+                    
+                    <div className="pt-4 border-t border-white/5">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Warranty Status</span>
+                        <span className={isUnderWarranty ? "text-primary text-[10px] font-black uppercase" : "text-destructive text-[10px] font-black uppercase"}>
+                          {isUnderWarranty ? "Active" : "Expired"}
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div className={cn("h-full transition-all", isUnderWarranty ? "bg-primary w-2/3" : "bg-destructive w-full")} />
+                      </div>
+                      <p className="text-[9px] text-muted-foreground mt-2 italic">Standard 3-year coverage ends {warrantyExpiry ? format(warrantyExpiry, 'dd MMM yyyy') : 'N/A'}</p>
+                    </div>
+                  </div>
+               </Card>
+
+               {/* Service Hub */}
+               <div className="lg:col-span-2 space-y-8">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <Card className="bg-primary/5 border-primary/20 rounded-3xl p-8 space-y-6">
+                       <div className="flex items-center gap-4">
+                         <div className="p-3 bg-primary/20 rounded-2xl">
+                           <Wrench className="h-6 w-6 text-primary" />
+                         </div>
+                         <h3 className="text-xl font-bold uppercase">Schedule Next</h3>
+                       </div>
+                       <p className="text-sm text-muted-foreground leading-relaxed">Book a slot for routine maintenance or battery health checkup.</p>
+                       <Dialog>
+                         <DialogTrigger asChild>
+                           <Button className="w-full h-12 rounded-xl font-black uppercase text-[10px] tracking-widest glow-primary">
+                             Book Appointment Now
+                           </Button>
+                         </DialogTrigger>
+                         <DialogContent className="bg-[#050505] border-white/10 max-w-lg">
+                           <DialogHeader>
+                             <DialogTitle>Service Registration</DialogTitle>
+                             <DialogDescription>Select your preferred showroom and slot for {matchingSale.model}.</DialogDescription>
+                           </DialogHeader>
+                           <Form {...serviceForm}>
+                            <form onSubmit={serviceForm.handleSubmit(onBookService)} className="space-y-6 pt-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <FormField control={serviceForm.control} name="branchId" render={({ field }) => (
+                                  <FormItem className="sm:col-span-2">
+                                    <FormLabel>Showroom Center</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                      <FormControl><SelectTrigger className="bg-white/5"><SelectValue placeholder="Nearest Center" /></SelectTrigger></FormControl>
+                                      <SelectContent>{branches?.map(b => (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}</SelectContent>
+                                    </Select>
+                                  </FormItem>
+                                )} />
+                                <FormField control={serviceForm.control} name="serviceType" render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Type</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <FormControl><SelectTrigger className="bg-white/5"><SelectValue /></SelectTrigger></FormControl>
+                                      <SelectContent>
+                                        <SelectItem value="Routine">Routine</SelectItem>
+                                        <SelectItem value="Repair">Repair</SelectItem>
+                                        <SelectItem value="Battery Check">Battery Check</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </FormItem>
+                                )} />
+                                <FormField control={serviceForm.control} name="currentKm" render={({ field }) => (
+                                  <FormItem><FormLabel>Odometer (KM)</FormLabel><FormControl><Input type="number" className="bg-white/5" {...field} /></FormControl></FormItem>
+                                )} />
+                                <FormField control={serviceForm.control} name="preferredDate" render={({ field }) => (
+                                  <FormItem><FormLabel>Date</FormLabel><FormControl><Input type="date" className="bg-white/5" {...field} /></FormControl></FormItem>
+                                )} />
+                                <FormField control={serviceForm.control} name="preferredTime" render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Time Slot</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <FormControl><SelectTrigger className="bg-white/5"><SelectValue /></SelectTrigger></FormControl>
+                                      <SelectContent>
+                                        <SelectItem value="10:00 AM">10 AM - 12 PM</SelectItem>
+                                        <SelectItem value="12:00 PM">12 PM - 2 PM</SelectItem>
+                                        <SelectItem value="02:00 PM">2 PM - 4 PM</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </FormItem>
+                                )} />
                               </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <Button type="submit" size="lg" className="w-full h-14 font-black uppercase text-xs tracking-widest gap-2 rounded-2xl" disabled={isSearching}>
-                          {isSearching ? <Loader2 className="animate-spin h-5 w-5" /> : <Zap className="h-4 w-4" />}
-                          Access Dashboard
-                        </Button>
-                      </form>
-                    </Form>
-                  </Card>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="booking"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <Card className="border-white/10 bg-card/30 backdrop-blur-xl p-8 rounded-[2rem]">
-                    <div className="flex justify-between items-start mb-10 pb-6 border-b border-white/5">
-                      <div>
-                        <h3 className="text-3xl font-headline font-bold text-primary">{matchingSale.model}</h3>
-                        <p className="text-sm text-muted-foreground">Owned by {matchingSale.customerName}</p>
-                      </div>
-                      <Button variant="ghost" size="sm" className="text-[10px] uppercase font-bold" onClick={() => setMatchingSale(null)}>Change Vehicle</Button>
+                              <Button type="submit" className="w-full h-14 font-black uppercase text-xs tracking-widest glow-primary" disabled={isBooking}>
+                                {isBooking ? <Loader2 className="animate-spin h-5 w-5" /> : 'Confirm Booking'}
+                              </Button>
+                            </form>
+                           </Form>
+                         </DialogContent>
+                       </Dialog>
+                    </Card>
+
+                    <Card className="bg-accent/5 border-accent/20 rounded-3xl p-8 space-y-6">
+                       <div className="flex items-center gap-4">
+                         <div className="p-3 bg-accent/20 rounded-2xl">
+                           <ShieldCheck className="h-6 w-6 text-accent" />
+                         </div>
+                         <h3 className="text-xl font-bold uppercase">LFP Insights</h3>
+                       </div>
+                       <div className="space-y-4">
+                         <div className="flex justify-between text-xs">
+                           <span className="text-muted-foreground">Next Scheduled Service</span>
+                           <span className="font-bold">In {(serviceHistory.length + 1) * 3000} KM</span>
+                         </div>
+                         <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                           <div className="h-full bg-accent w-1/2" />
+                         </div>
+                       </div>
+                       <p className="text-[10px] text-muted-foreground italic">Maintaining your EV properly ensures maximum battery life cycle and resale value.</p>
+                    </Card>
+                 </div>
+
+                 {/* History Timeline */}
+                 <div className="space-y-6">
+                    <div className="flex items-center gap-3">
+                      <History className="h-5 w-5 text-primary" />
+                      <h4 className="font-black text-xs uppercase tracking-[0.4em] text-muted-foreground">Digital Service Log</h4>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-10">
-                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                        <p className="text-[10px] text-muted-foreground font-black uppercase mb-1">Purchased From</p>
-                        <p className="font-bold text-xs">{(branches?.find(b => b.id === matchingSale.branchId))?.name || 'Main Showroom'}</p>
-                      </div>
-                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                        <p className="text-[10px] text-muted-foreground font-black uppercase mb-1">Last Service</p>
-                        <p className="font-bold text-xs">{lastService ? format(new Date(lastService.createdAt), 'dd MMM yyyy') : 'First Service'}</p>
-                      </div>
-                    </div>
-
-                    <Form {...serviceForm}>
-                      <form onSubmit={serviceForm.handleSubmit(onBookService)} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <FormField control={serviceForm.control} name="branchId" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Service Center</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="h-12 bg-white/5 rounded-xl border-white/10">
-                                    <SelectValue placeholder="Select Showroom" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {branches?.map(b => (
-                                    <SelectItem key={b.id} value={b.id}>{b.name} ({b.city})</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )} />
-                          <FormField control={serviceForm.control} name="serviceType" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Service Type</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="h-12 bg-white/5 rounded-xl border-white/10">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Routine">Routine Service</SelectItem>
-                                  <SelectItem value="Repair">General Repair</SelectItem>
-                                  <SelectItem value="Warranty">Warranty Claim</SelectItem>
-                                  <SelectItem value="Battery Check">Battery Health Check</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormItem>
-                          )} />
-                          <FormField control={serviceForm.control} name="currentKm" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Current Reading (KM)</FormLabel>
-                              <FormControl><Input type="number" className="h-12 bg-white/5 rounded-xl border-white/10" {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )} />
-                          <FormField control={serviceForm.control} name="preferredDate" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Preferred Date</FormLabel>
-                              <FormControl><Input type="date" className="h-12 bg-white/5 rounded-xl border-white/10" {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )} />
+                    <div className="space-y-4">
+                      {serviceHistory.length > 0 ? serviceHistory.map((s, idx) => (
+                        <motion.div 
+                          key={s.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: idx * 0.1 }}
+                          className="group relative flex gap-6 p-6 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all"
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                             <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border", s.status === 'completed' ? "bg-primary/10 border-primary/20 text-primary" : "bg-yellow-500/10 border-yellow-500/20 text-yellow-500")}>
+                               {s.status === 'completed' ? <CheckCircle2 className="h-5 w-5" /> : <Calendar className="h-5 w-5" />}
+                             </div>
+                             {idx < serviceHistory.length - 1 && <div className="w-[1px] h-full bg-white/10" />}
+                          </div>
+                          <div className="flex-1">
+                             <div className="flex justify-between items-start mb-2">
+                               <div>
+                                 <h5 className="font-bold text-lg">{s.serviceType} Service</h5>
+                                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{s.serviceNo}</p>
+                               </div>
+                               <span className="text-[10px] font-black uppercase tracking-widest opacity-40">{format(new Date(s.preferredDate), 'dd MMM yyyy')}</span>
+                             </div>
+                             <div className="flex gap-4 items-center">
+                               <Badge variant="outline" className="bg-white/5 text-[9px] uppercase">{s.currentKm} KM</Badge>
+                               <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> {s.branchName}</span>
+                             </div>
+                             {s.notes && <p className="text-xs text-muted-foreground italic mt-3 border-l-2 border-primary/20 pl-3">{s.notes}</p>}
+                          </div>
+                        </motion.div>
+                      )) : (
+                        <div className="p-12 text-center border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.02]">
+                           <History className="h-10 w-10 text-muted-foreground opacity-20 mx-auto mb-4" />
+                           <p className="text-muted-foreground font-medium">No service records found for this unit.</p>
+                           <p className="text-[10px] uppercase tracking-widest text-primary mt-2">Ready for first checkup!</p>
                         </div>
-                        <Button type="submit" size="lg" className="w-full h-14 font-black uppercase text-xs tracking-widest glow-primary rounded-2xl" disabled={isBooking}>
-                          {isBooking ? <Loader2 className="animate-spin h-5 w-5" /> : 'Confirm Service Appointment'}
-                        </Button>
-                      </form>
-                    </Form>
-                  </Card>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      )}
+                    </div>
+                 </div>
+               </div>
+             </div>
           </div>
-        </div>
+        )}
       </div>
+
+      {/* Digital Invoice Modal */}
+      <Dialog open={isInvoiceOpen} onOpenChange={setIsInvoiceOpen}>
+        <DialogContent className="max-w-[210mm] w-full max-h-[95vh] overflow-y-auto bg-white text-black p-0 border-none print:max-h-none print:fixed print:inset-0 print:m-0 print:w-full">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Digital Invoice</DialogTitle>
+          </DialogHeader>
+          <div className="print-container relative bg-white p-[20mm] text-black">
+            <div className="flex justify-between items-start border-b-4 border-primary pb-6 mb-8">
+              <div className="flex gap-4">
+                <div className="bg-primary p-2 rounded-xl h-16 w-16 flex items-center justify-center relative overflow-hidden">
+                  {showroom?.logoUrl ? (
+                    <Image src={showroom.logoUrl} alt="Logo" fill className="object-cover" unoptimized />
+                  ) : (
+                    <Zap className="h-8 w-8 text-white fill-current" />
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-2xl font-black text-primary uppercase">{showroom?.name || 'AMRESH AUTOMOBILE'}</h1>
+                  <p className="text-[10px] text-gray-500 font-bold italic mb-1">{showroom?.tagline || 'Drive Electric • Live Smart'}</p>
+                  <p className="text-[9px] text-gray-500 leading-tight max-w-[250px]">{showroom?.address}</p>
+                  <p className="text-[10px] text-gray-800 font-bold mt-1">GSTIN: {showroom?.gstin || 'N/A'}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <h2 className="text-4xl font-black text-black">INVOICE</h2>
+                <p className="text-sm font-bold text-primary">{matchingSale?.invoiceNo}</p>
+                <p className="text-xs text-gray-400">{matchingSale?.soldAt ? format(new Date(matchingSale.soldAt), 'dd/MM/yyyy') : 'N/A'}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 mb-8">
+              <div className="border border-black p-4 rounded-xl">
+                <p className="text-[9px] font-black uppercase text-gray-400 mb-2">Buyer</p>
+                <p className="text-lg font-black uppercase">{matchingSale?.customerName}</p>
+                <p className="text-xs font-bold text-gray-600">{matchingSale?.address}, {matchingSale?.city}</p>
+                <p className="text-xs font-bold text-gray-600">Mob: {matchingSale?.mobile}</p>
+              </div>
+              <div className="border border-black p-4 rounded-xl">
+                <p className="text-[9px] font-black uppercase text-gray-400 mb-2">Vehicle Details</p>
+                <p className="text-lg font-black uppercase text-primary">{matchingSale?.model}</p>
+                <p className="text-xs font-bold">Chassis: {matchingSale?.chassisNumber}</p>
+                {matchingSale?.batterySerialNumber && <p className="text-xs font-bold">Battery S/N: {matchingSale?.batterySerialNumber}</p>}
+                <p className="text-xs font-bold">Color: {matchingSale?.color}</p>
+              </div>
+            </div>
+
+            <table className="w-full border-collapse border border-black mb-8">
+              <thead>
+                <tr className="bg-primary text-white">
+                  <th className="border border-black p-2 text-left">Description</th>
+                  <th className="border border-black p-2 text-center w-24">HSN</th>
+                  <th className="border border-black p-2 text-right w-32">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-black p-4 align-top">
+                    <p className="font-black uppercase">{matchingSale?.model}</p>
+                    <p className="text-[10px] text-gray-500">Electric Vehicle • High Performance EV</p>
+                  </td>
+                  <td className="border border-black p-4 text-center font-bold align-top">{matchingSale?.hsn || '871160'}</td>
+                  <td className="border border-black p-4 text-right font-black align-top">₹ {matchingSale?.price?.toLocaleString()}.00</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div className="flex justify-between">
+              <div className="w-1/2">
+                <p className="text-[10px] font-black text-gray-400 uppercase">Rupees In Words</p>
+                <p className="text-sm font-black uppercase text-primary">{amountToWords(matchingSale?.price || 0)} Only</p>
+              </div>
+              <div className="w-1/3 bg-gray-50 p-4 border-2 border-black rounded-xl">
+                <div className="flex justify-between font-black text-lg"><span>Total</span> <span>₹ {matchingSale?.price?.toLocaleString()}</span></div>
+              </div>
+            </div>
+
+            <div className="mt-20 flex justify-between items-end">
+              <div className="text-center">
+                <div className="w-40 border-t border-gray-300 mb-1"></div>
+                <p className="text-[10px] font-bold">Buyer Signature</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-black uppercase mb-10 text-primary">For {showroom?.name || 'Amresh Automobiles'}</p>
+                <div className="w-56 border-t-2 border-black mb-1"></div>
+                <p className="text-[10px] font-bold">Authorized Signatory</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 border-t flex justify-end gap-3 no-print bg-secondary">
+             <Button className="gap-2 h-12" onClick={() => window.print()}>
+               <Printer className="h-4 w-4" /> Print GST Invoice
+             </Button>
+             <Button variant="outline" className="h-12" onClick={() => setIsInvoiceOpen(false)}>Close Window</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
 
-function FeatureCard({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) {
+function SimpleFeature({ icon: Icon, label }: { icon: any, label: string }) {
   return (
-    <div className="flex gap-4 group">
-      <div className="p-3 bg-primary/10 rounded-2xl h-fit border border-primary/20 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-        <Icon className="h-5 w-5" />
-      </div>
-      <div>
-        <h4 className="font-bold mb-1">{title}</h4>
-        <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-      </div>
+    <div className="flex flex-col items-center gap-3 p-6 bg-white/[0.03] border border-white/5 rounded-2xl group hover:bg-primary/5 hover:border-primary/20 transition-all">
+       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+         <Icon className="h-6 w-6 text-primary" />
+       </div>
+       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-white transition-colors">{label}</span>
+    </div>
+  );
+}
+
+function DataPoint({ label, value }: { label: string, value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{label}</p>
+      <p className="font-bold text-sm tracking-tight">{value}</p>
     </div>
   );
 }
