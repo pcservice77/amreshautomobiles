@@ -199,8 +199,16 @@ export default function ServiceBookingPage() {
     return words.trim();
   };
 
-  const warrantyExpiry = matchingSale?.soldAt ? addYears(new Date(matchingSale.soldAt), 3) : null;
-  const isUnderWarranty = warrantyExpiry ? isAfter(warrantyExpiry, new Date()) : false;
+  const soldDate = matchingSale?.soldAt ? new Date(matchingSale.soldAt) : null;
+  
+  // Warranty Periods
+  const vehicleExpiry = soldDate ? addYears(soldDate, 1) : null;
+  const chargerExpiry = soldDate ? addYears(soldDate, 1) : null;
+  const batteryExpiry = soldDate ? addYears(soldDate, 3) : null;
+
+  const isVehicleActive = vehicleExpiry ? isAfter(vehicleExpiry, new Date()) : false;
+  const isChargerActive = chargerExpiry ? isAfter(chargerExpiry, new Date()) : false;
+  const isBatteryActive = batteryExpiry ? isAfter(batteryExpiry, new Date()) : false;
 
   if (bookedDetails) {
     return (
@@ -333,7 +341,7 @@ export default function ServiceBookingPage() {
              </div>
 
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-               {/* Vehicle Identity */}
+               {/* Vehicle Identity & Warranties */}
                <Card className="bg-card/40 border-white/10 rounded-3xl p-8 space-y-8 h-fit">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-2xl">
@@ -348,17 +356,50 @@ export default function ServiceBookingPage() {
                     {matchingSale.batterySerialNumber && <DataPoint label="Battery S/N" value={matchingSale.batterySerialNumber} />}
                     <DataPoint label="Purchase Date" value={format(new Date(matchingSale.soldAt), 'dd MMM yyyy')} />
                     
-                    <div className="pt-4 border-t border-white/5">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Warranty Status</span>
-                        <span className={isUnderWarranty ? "text-primary text-[10px] font-black uppercase" : "text-destructive text-[10px] font-black uppercase"}>
-                          {isUnderWarranty ? "Active" : "Expired"}
-                        </span>
+                    <div className="pt-6 border-t border-white/5 space-y-6">
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Warranty Coverage</h4>
+                      
+                      {/* Vehicle Warranty */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-bold uppercase text-white/70">Scooty (1 Year)</span>
+                          <span className={isVehicleActive ? "text-primary text-[8px] font-black uppercase" : "text-destructive text-[8px] font-black uppercase"}>
+                            {isVehicleActive ? "Active" : "Expired"}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div className={cn("h-full transition-all duration-700", isVehicleActive ? "bg-primary w-full" : "bg-destructive w-full")} />
+                        </div>
+                        <p className="text-[8px] text-muted-foreground italic">Ends: {vehicleExpiry ? format(vehicleExpiry, 'dd MMM yyyy') : 'N/A'}</p>
                       </div>
-                      <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className={cn("h-full transition-all", isUnderWarranty ? "bg-primary w-2/3" : "bg-destructive w-full")} />
+
+                      {/* Charger Warranty */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-bold uppercase text-white/70">Charger (1 Year)</span>
+                          <span className={isChargerActive ? "text-primary text-[8px] font-black uppercase" : "text-destructive text-[8px] font-black uppercase"}>
+                            {isChargerActive ? "Active" : "Expired"}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div className={cn("h-full transition-all duration-700", isChargerActive ? "bg-primary w-full" : "bg-destructive w-full")} />
+                        </div>
+                        <p className="text-[8px] text-muted-foreground italic">Ends: {chargerExpiry ? format(chargerExpiry, 'dd MMM yyyy') : 'N/A'}</p>
                       </div>
-                      <p className="text-[9px] text-muted-foreground mt-2 italic">Standard 3-year coverage ends {warrantyExpiry ? format(warrantyExpiry, 'dd MMM yyyy') : 'N/A'}</p>
+
+                      {/* Battery Warranty */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-bold uppercase text-primary">Battery (3 Years)</span>
+                          <span className={isBatteryActive ? "text-primary text-[8px] font-black uppercase" : "text-destructive text-[8px] font-black uppercase"}>
+                            {isBatteryActive ? "Active" : "Expired"}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div className={cn("h-full transition-all duration-700", isBatteryActive ? "bg-primary w-full" : "bg-destructive w-full")} />
+                        </div>
+                        <p className="text-[8px] text-muted-foreground italic">Ends: {batteryExpiry ? format(batteryExpiry, 'dd MMM yyyy') : 'N/A'}</p>
+                      </div>
                     </div>
                   </div>
                </Card>
