@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, Suspense } from 'react';
@@ -184,7 +183,6 @@ function WalkInServiceContent() {
         const docRef = doc(firestore, 'service-bookings', editId);
         await updateDoc(docRef, {
           ...bookingData,
-          // Don't overwrite createdAt on update
         });
         toast({ title: 'Record Updated' });
       } else {
@@ -195,9 +193,10 @@ function WalkInServiceContent() {
         toast({ title: 'Service Saved & Billed' });
       }
 
-      // Send Completion Email with Bill
+      // CRITICAL FIX: Pass the specific branch details for correct email branding
       if (matchingSale.email) {
-        await sendServiceCompletionEmail(matchingSale.email, bookingData, showroom || {});
+        const branchData = branches?.find(b => b.id === values.branchId);
+        await sendServiceCompletionEmail(matchingSale.email, bookingData, branchData || showroom || {});
       }
       
       router.push('/admin/services');

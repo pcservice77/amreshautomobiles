@@ -67,12 +67,18 @@ export default function BillingPage() {
     return collection(firestore, 'scooters');
   }, [firestore]);
 
+  const branchesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'branches');
+  }, [firestore]);
+
   const showroomRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return doc(firestore, 'settings', 'showroom');
   }, [firestore]);
 
   const { data: scooters } = useCollection(scootersQuery);
+  const { data: branches } = useCollection(branchesQuery);
   const { data: showroom } = useDoc(showroomRef);
   
   const { toast } = useToast();
@@ -133,6 +139,7 @@ export default function BillingPage() {
     if (!firestore || !user) return;
     setIsSubmitting(true);
     
+    const branchId = user.assignedBranchId || 'main_showroom';
     const invNo = await generateInvoiceNo();
     const saleData = {
       ...data,
@@ -140,7 +147,7 @@ export default function BillingPage() {
       gstin: showroom?.gstin || '',
       soldAt: new Date().toISOString(),
       createdAt: serverTimestamp(),
-      branchId: user.assignedBranchId || 'main_showroom',
+      branchId: branchId,
     };
 
     try {
@@ -148,7 +155,9 @@ export default function BillingPage() {
       setLastSavedSale(saleData);
       
       if (data.email) {
-        await sendInvoiceEmail(data.email, saleData, showroom || {});
+        // CRITICAL FIX: Find the specific branch details for the email branding
+        const branchData = branches?.find(b => b.id === branchId);
+        await sendInvoiceEmail(data.email, saleData, branchData || showroom || {});
       }
 
       setIsSaved(true);
@@ -204,22 +213,29 @@ export default function BillingPage() {
   }, [watchModel, scooters, form]);
 
   if (isSaved && lastSavedSale) {
+    const branchForPrint = branches?.find(b => b.id === lastSavedSale.branchId);
+    const printShowroomName = branchForPrint?.name || showroom?.name || 'AMRESH AUTOMOBILE';
+    const printShowroomTagline = branchForPrint?.tagline || showroom?.tagline || 'Drive Electric • Live Smart';
+    const printShowroomAddress = branchForPrint?.address || showroom?.address;
+    const printShowroomGstin = branchForPrint?.gstin || showroom?.gstin;
+    const printShowroomLogo = branchForPrint?.imageUrl || showroom?.logoUrl;
+
     return (
       <div className="print-container bg-white text-black p-[15mm]">
         <div className="flex justify-between items-start border-b-4 border-primary pb-6 mb-8">
           <div className="flex gap-4">
             <div className="bg-primary p-2 rounded-xl h-16 w-16 flex items-center justify-center relative overflow-hidden">
-              {showroom?.logoUrl ? (
-                <Image src={showroom.logoUrl} alt="Logo" fill className="object-cover" unoptimized />
+              {printShowroomLogo ? (
+                <Image src={printShowroomLogo} alt="Logo" fill className="object-cover" unoptimized />
               ) : (
                 <Zap className="h-8 w-8 text-white fill-current" />
               )}
             </div>
             <div>
-              <h1 className="text-2xl font-black text-primary uppercase">{showroom?.name || 'AMRESH AUTOMOBILE'}</h1>
-              <p className="text-[10px] text-gray-500 font-bold italic mb-1">{showroom?.tagline}</p>
-              <p className="text-[9px] text-gray-500 leading-tight max-w-[250px]">{showroom?.address}</p>
-              <p className="text-[10px] text-gray-800 font-bold mt-1">GSTIN: {showroom?.gstin || 'N/A'}</p>
+              <h1 className="text-2xl font-black text-primary uppercase">{printShowroomName}</h1>
+              <p className="text-[10px] text-gray-500 font-bold italic mb-1">{printShowroomTagline}</p>
+              <p className="text-[9px] text-gray-500 leading-tight max-w-[250px]">{printShowroomAddress}</p>
+              <p className="text-[10px] text-gray-800 font-bold mt-1">GSTIN: {printShowroomGstin || 'N/A'}</p>
             </div>
           </div>
           <div className="text-right">
@@ -282,7 +298,7 @@ export default function BillingPage() {
             <p className="text-[10px] font-bold">Buyer Signature</p>
           </div>
           <div className="text-center">
-            <p className="text-xs font-black uppercase mb-10 text-primary">For {showroom?.name}</p>
+            <p className="text-xs font-black uppercase mb-10 text-primary">For {printShowroomName}</p>
             <div className="w-56 border-t-2 border-black mb-1"></div>
             <p className="text-[10px] font-bold">Authorized Signatory</p>
           </div>

@@ -162,6 +162,8 @@ export default function ServiceBookingPage() {
       await addDoc(collection(firestore, 'service-bookings'), bookingData);
       
       if (matchingSale.email) {
+        // CRITICAL FIX: Find and pass specific branch details for the confirmation email
+        const branchData = branches?.find(b => b.id === data.branchId);
         await sendServiceConfirmationEmail(matchingSale.email, {
           serviceNo,
           customerName: matchingSale.customerName,
@@ -173,7 +175,7 @@ export default function ServiceBookingPage() {
           currentKm: data.currentKm,
           chassisNumber: matchingSale.chassisNumber,
           notes: data.notes,
-        }, showroom || {});
+        }, branchData || showroom || {});
       }
 
       setBookedDetails(bookingData);
@@ -673,7 +675,7 @@ export default function ServiceBookingPage() {
                 <p className="text-[10px] font-black text-gray-400 uppercase">Rupees In Words</p>
                 <p className="text-sm font-black uppercase text-primary">{amountToWords(matchingSale?.price || 0)} Only</p>
               </div>
-              <div className="w-1/3 bg-gray-50 p-4 border border-2 border-black rounded-xl">
+              <div className="w-1/3 bg-gray-50 p-4 border border-2 border-black rounded-xl h-fit">
                 <div className="flex justify-between font-black text-lg"><span>Total</span> <span>₹ {matchingSale?.price?.toLocaleString()}</span></div>
               </div>
             </div>
