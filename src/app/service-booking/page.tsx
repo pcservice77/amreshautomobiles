@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -292,7 +293,7 @@ export default function ServiceBookingPage() {
               animate={{ opacity: 1, y: 0 }}
               className="mb-12"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-6">
                 <ShieldCheck className="h-3 w-3" /> Secure Owner Access
               </div>
               <h1 className="text-5xl md:text-7xl font-headline font-bold mb-6 tracking-tighter uppercase leading-[0.9]">
@@ -303,7 +304,7 @@ export default function ServiceBookingPage() {
               </p>
             </motion.div>
 
-            <Card className="w-full max-w-2xl border-white/10 bg-card/30 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl relative group">
+            <Card className="w-full max-w-2xl border border-white/10 bg-card/30 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl relative group">
               <div className="absolute inset-0 bg-primary/5 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
               <Form {...searchForm}>
                 <form onSubmit={searchForm.handleSubmit(onSearch)} className="space-y-6 relative z-10">
@@ -312,7 +313,7 @@ export default function ServiceBookingPage() {
                       <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Identify Your Ride</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Input placeholder="Mobile No. / Chassis / Invoice" className="h-16 pl-14 bg-white/5 border-white/10 rounded-2xl text-lg font-bold" {...field} />
+                          <Input placeholder="Mobile No. / Chassis / Invoice" className="h-16 pl-14 bg-white/5 border border-white/10 rounded-2xl text-lg font-bold" {...field} />
                           <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
                         </div>
                       </FormControl>
@@ -339,12 +340,12 @@ export default function ServiceBookingPage() {
                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                   <p className="text-primary font-black uppercase text-[10px] tracking-widest mb-2 flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4" /> Verified Ownership
-                  </p color="text-primary">
+                  </p>
                   <h2 className="text-5xl font-headline font-bold uppercase tracking-tight">{matchingSale.model}</h2>
                   <p className="text-muted-foreground text-lg italic">Belongs to {matchingSale.customerName}</p>
                </motion.div>
                <div className="flex gap-3">
-                 <Button variant="outline" className="h-12 px-6 rounded-xl gap-2 border-primary/20 text-primary hover:bg-primary/10" onClick={() => setIsInvoiceOpen(true)}>
+                 <Button variant="outline" className="h-12 px-6 rounded-xl gap-2 border border-primary/20 text-primary hover:bg-primary/10" onClick={() => setIsInvoiceOpen(true)}>
                    <FileText className="h-4 w-4" /> View Sales Invoice
                  </Button>
                  <Button variant="ghost" className="h-12 px-6 rounded-xl" onClick={() => setMatchingSale(null)}>Exit Garage</Button>
@@ -352,7 +353,7 @@ export default function ServiceBookingPage() {
              </div>
 
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-               <Card className="bg-card/40 border-white/10 rounded-3xl p-8 space-y-8 h-fit">
+               <Card className="bg-card/40 border border-white/10 rounded-3xl p-8 space-y-8 h-fit">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-2xl">
                       <Bike className="h-6 w-6 text-primary" />
@@ -413,7 +414,7 @@ export default function ServiceBookingPage() {
 
                <div className="lg:col-span-2 space-y-8">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <Card className="bg-primary/5 border-primary/20 rounded-3xl p-8 space-y-6">
+                    <Card className="bg-primary/5 border border-primary/20 rounded-3xl p-8 space-y-6">
                        <div className="flex items-center gap-4">
                          <div className="p-3 bg-primary/20 rounded-2xl">
                            <Wrench className="h-6 w-6 text-primary" />
@@ -427,7 +428,7 @@ export default function ServiceBookingPage() {
                              Book Appointment Now
                            </Button>
                          </DialogTrigger>
-                         <DialogContent className="bg-[#050505] border-white/10 max-w-lg">
+                         <DialogContent className="bg-[#050505] border border-white/10 max-w-lg">
                            <DialogHeader>
                              <DialogTitle>Service Registration</DialogTitle>
                              <DialogDescription>Select your preferred showroom and slot for {matchingSale.model}.</DialogDescription>
@@ -486,7 +487,7 @@ export default function ServiceBookingPage() {
                        </Dialog>
                     </Card>
 
-                    <Card className="bg-accent/5 border-accent/20 rounded-3xl p-8 space-y-6">
+                    <Card className="bg-accent/5 border border-accent/20 rounded-3xl p-8 space-y-6">
                        <div className="flex items-center gap-4">
                          <div className="p-3 bg-accent/20 rounded-2xl">
                            <ShieldCheck className="h-6 w-6 text-accent" />
@@ -537,7 +538,7 @@ export default function ServiceBookingPage() {
                                  <div className="text-right flex flex-col items-end gap-2">
                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-40">{format(new Date(s.preferredDate), 'dd MMM yyyy')}</span>
                                    {s.status === 'completed' && (
-                                     <Button variant="outline" size="sm" className="h-8 text-[10px] gap-2 rounded-lg border-primary/20 text-primary hover:bg-primary/10" onClick={() => setSelectedHistoryBill(s)}>
+                                     <Button variant="outline" size="sm" className="h-8 text-[10px] gap-2 rounded-lg border border-primary/20 text-primary hover:bg-primary/10" onClick={() => setSelectedHistoryBill(s)}>
                                        <Eye className="h-3 w-3" /> View Bill
                                      </Button>
                                    )}
@@ -655,7 +656,7 @@ export default function ServiceBookingPage() {
                 <p className="text-[10px] font-black text-gray-400 uppercase">Rupees In Words</p>
                 <p className="text-sm font-black uppercase text-primary">{amountToWords(matchingSale?.price || 0)} Only</p>
               </div>
-              <div className="w-1/3 bg-gray-50 p-4 border-2 border-black rounded-xl">
+              <div className="w-1/3 bg-gray-50 p-4 border border-2 border-black rounded-xl">
                 <div className="flex justify-between font-black text-lg"><span>Total</span> <span>₹ {matchingSale?.price?.toLocaleString()}</span></div>
               </div>
             </div>
@@ -726,7 +727,7 @@ export default function ServiceBookingPage() {
             </table>
 
             <div className="flex justify-end">
-              <div className="w-1/3 bg-gray-50 p-4 border-2 border-black rounded-xl h-fit">
+              <div className="w-1/3 bg-gray-50 p-4 border border-2 border-black rounded-xl h-fit">
                 <div className="flex justify-between font-bold text-xs mb-2"><span>Subtotal</span> <span>₹ {selectedHistoryBill?.totalAmount?.toLocaleString()}</span></div>
                 <div className="flex justify-between font-black text-lg border-t border-black pt-2"><span>TOTAL BILL</span> <span>₹ {selectedHistoryBill?.totalAmount?.toLocaleString()}</span></div>
               </div>
