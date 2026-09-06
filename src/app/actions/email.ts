@@ -182,6 +182,84 @@ async function generateServiceSlipPDFBuffer(booking: any, showroom: any): Promis
   });
 }
 
+/**
+ * Generates a PDF buffer for the finalized service bill.
+ */
+async function generateServiceBillPDFBuffer(booking: any, showroom: any): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const buffers: Buffer[] = [];
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => resolve(Buffer.concat(buffers)));
+    doc.on('error', reject);
+
+    const primaryColor = '#10b981';
+    
+    // Showroom Header
+    doc.fillColor(primaryColor).fontSize(20).font('Helvetica-Bold').text(showroom.name || 'AMRESH AUTOMOBILES', { align: 'left' });
+    doc.fillColor('#666666').fontSize(10).font('Helvetica-Oblique').text(showroom.tagline || 'Drive Electric • Live Smart');
+    doc.moveDown(0.5);
+    doc.fillColor('#444444').font('Helvetica').fontSize(9).text(showroom.address || '', { width: 300 });
+    doc.text(`GSTIN: ${showroom.gstin || 'N/A'}`);
+    doc.text(`Contact: ${showroom.contact || ''}`);
+
+    doc.moveTo(50, 45).lineTo(545, 45).strokeColor('#eeeeee').stroke();
+    
+    doc.fillColor('#000000').fontSize(24).font('Helvetica-Bold').text('SERVICE BILL', 300, 60, { align: 'right' });
+    doc.fillColor(primaryColor).fontSize(12).text(`# ${booking.serviceNo}`, { align: 'right' });
+    doc.fillColor('#888888').fontSize(9).font('Helvetica').text(`Date: ${new Date().toLocaleDateString('en-IN')}`, { align: 'right' });
+
+    doc.moveDown(3);
+    const sectionY = doc.y;
+
+    // Customer
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('CUSTOMER', 50, sectionY);
+    doc.fillColor('#000000').fontSize(12).text(booking.customerName.toUpperCase(), 50, sectionY + 15);
+    doc.fillColor('#444444').fontSize(9).font('Helvetica').text(`Mobile: ${booking.mobile}`, 50, sectionY + 30);
+
+    // Vehicle
+    doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold').text('VEHICLE', 300, sectionY);
+    doc.fillColor('#000000').fontSize(12).text(booking.model.toUpperCase(), 300, sectionY + 15);
+    doc.fillColor('#444444').fontSize(9).font('Helvetica').text(`Chassis: ${booking.chassisNumber}`, 300, sectionY + 30);
+    doc.text(`Odometer: ${booking.currentKm} KM`, 300, sectionY + 43);
+
+    doc.moveDown(6);
+    const tableTop = doc.y;
+
+    // Table Headers
+    doc.rect(50, tableTop, 495, 25).fill(primaryColor);
+    doc.fillColor('#ffffff').fontSize(10).font('Helvetica-Bold').text('JOB / PART DESCRIPTION', 60, tableTop + 7);
+    doc.text('AMOUNT (INR)', 470, tableTop + 7, { align: 'right', width: 70 });
+
+    let currentY = tableTop + 35;
+    
+    // Labor Charge Row
+    doc.fillColor('#000000').font('Helvetica').text(`${booking.serviceType} Service Charge (Labor)`, 60, currentY);
+    doc.text(booking.laborCharge.toLocaleString('en-IN'), 470, currentY, { align: 'right', width: 70 });
+    currentY += 20;
+
+    // Parts Rows
+    if (booking.parts && booking.parts.length > 0) {
+      booking.parts.forEach((part: any) => {
+        doc.text(part.name.toUpperCase(), 60, currentY);
+        doc.text(part.price.toLocaleString('en-IN'), 470, currentY, { align: 'right', width: 70 });
+        currentY += 20;
+      });
+    }
+
+    doc.moveTo(50, currentY).lineTo(545, currentY).strokeColor('#eeeeee').stroke();
+    currentY += 15;
+
+    // Total
+    doc.fillColor(primaryColor).fontSize(14).font('Helvetica-Bold').text('TOTAL BILL', 300, currentY);
+    doc.text(`INR ${booking.totalAmount?.toLocaleString('en-IN')}`, 450, currentY, { align: 'right', width: 90 });
+
+    // Footer
+    doc.fillColor('#888888').fontSize(8).text('This is a computer-generated service bill.', 50, 720, { align: 'center', width: 495 });
+    doc.end();
+  });
+}
+
 export async function sendBookingConfirmationEmail(email: string, details: {
   customerName: string;
   scooterModel: string;
@@ -255,7 +333,7 @@ export async function sendServiceConfirmationEmail(email: string, details: {
       ],
       html: `
         <div style="font-family: sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px;">
-          <h2 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 10px;">Service Request Received</h2>
+          <h2 style="color: #10b981; border-bottom: 20px solid #10b981; padding-bottom: 10px;">Service Request Received</h2>
           <p>Hi <strong>${details.customerName}</strong>,</p>
           <p>Your <strong>${details.serviceType}</strong> appointment for your <strong>${details.scooterModel}</strong> has been successfully registered.</p>
           
@@ -268,6 +346,63 @@ export async function sendServiceConfirmationEmail(email: string, details: {
           
           <p>We have attached your official <strong>Service Slip (PDF)</strong> to this email. Please bring it with you for a faster check-in process.</p>
           <p>Best Regards,<br/><strong>Amresh Automobiles Service Team</strong></p>
+        </div>
+      `,
+    });
+
+    if (error) return { success: false, error };
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error };
+  }
+}
+
+export async function sendServiceCompletionEmail(email: string, details: {
+  serviceNo: string;
+  customerName: string;
+  model: string;
+  preferredDate: string;
+  branchName: string;
+  serviceType: string;
+  totalAmount: number;
+  parts: any[];
+  laborCharge: number;
+  currentKm: number;
+  chassisNumber: string;
+}, showroom: any) {
+  const resend = getResend();
+  if (!resend) return { success: false, error: 'API Key missing' };
+
+  try {
+    // Generate PDF Buffer for final bill
+    const pdfBuffer = await generateServiceBillPDFBuffer(details, showroom);
+
+    const { data, error } = await resend.emails.send({
+      from: 'Amresh Automobiles Service <service@contact.amreshautomobiles.in>',
+      to: email,
+      subject: `Service Completed - ${details.serviceNo}`,
+      attachments: [
+        {
+          filename: `ServiceBill_${details.serviceNo.replace(/\//g, '_')}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px;">
+          <h2 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 10px;">Service Completed!</h2>
+          <p>Hi <strong>${details.customerName}</strong>,</p>
+          <p>Your <strong>${details.model}</strong> has been serviced and is ready for pickup.</p>
+          
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+            <p style="margin: 5px 0;"><strong>Service Number:</strong> ${details.serviceNo}</p>
+            <p style="margin: 5px 0;"><strong>Type:</strong> ${details.serviceType}</p>
+            <p style="margin: 5px 0;"><strong>Total Amount:</strong> ₹ ${details.totalAmount.toLocaleString('en-IN')}</p>
+            <p style="margin: 5px 0;"><strong>Center:</strong> ${details.branchName}</p>
+          </div>
+          
+          <p>Please find your detailed **Digital Service Bill** attached as a PDF.</p>
+          <p>Thank you for choosing Amresh Automobiles for your maintenance needs.</p>
+          <p>Best Regards,<br/><strong>Team Amresh Automobiles Service</strong></p>
         </div>
       `,
     });

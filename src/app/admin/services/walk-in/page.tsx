@@ -1,30 +1,30 @@
-
 "use client"
 
 import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Search, Loader2, Wrench, Bike, User, IndianRupee, Plus, Trash2, Save, Printer, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Search, Loader2, Wrench, Bike, IndianRupee, Plus, Trash2, Save, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useFirestore, useCollection, useUser, useMemoFirebase } from '@/firebase';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useFirestore, useCollection, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, query, where, getDocs, addDoc, orderBy, limit, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { sendServiceCompletionEmail } from '@/app/actions/email';
 
 const serviceBillSchema = z.object({
   branchId: z.string().min(1, 'Select a center'),
   currentKm: z.coerce.number().min(0, 'Required'),
   serviceType: z.string().default('Routine'),
   preferredDate: z.string().default(format(new Date(), 'yyyy-MM-dd')),
-  preferredTime: z.string().default('10:00 AM'),
+  preferredTime: z.string().default('Walk-in'),
   notes: z.string().optional(),
   laborCharge: z.coerce.number().default(0),
   parts: z.array(z.object({
@@ -52,7 +52,13 @@ export default function WalkInServicePage() {
     return collection(firestore, 'branches');
   }, [firestore]);
 
+  const showroomRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return doc(firestore, 'settings', 'showroom');
+  }, [firestore]);
+
   const { data: branches } = useCollection(branchesQuery);
+  const { data: showroom } = useDoc(showroomRef);
 
   const form = useForm<z.infer<typeof serviceBillSchema>>({
     resolver: zodResolver(serviceBillSchema),
@@ -152,8 +158,12 @@ export default function WalkInServicePage() {
     if (!firestore || !matchingSale) return;
     setIsSaving(true);
 
+    const serviceNo = editId ? matchingSale.serviceNo : await generateServiceNo();
+    const branch = branches?.find(b => b.id === values.branchId);
+
     const bookingData = {
       ...values,
+      serviceNo,
       totalAmount: total,
       saleId: matchingSale.id,
       customerName: matchingSale.customerName,
@@ -164,6 +174,7 @@ export default function WalkInServicePage() {
       status: 'completed',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      branchName: branch?.name || 'Amresh Automobiles',
     };
 
     try {
@@ -171,10 +182,15 @@ export default function WalkInServicePage() {
         await updateDoc(doc(firestore, 'service-bookings', editId), bookingData);
         toast({ title: 'Record Updated' });
       } else {
-        const serviceNo = await generateServiceNo();
-        await addDoc(collection(firestore, 'service-bookings'), { ...bookingData, serviceNo });
+        await addDoc(collection(firestore, 'service-bookings'), bookingData);
         toast({ title: 'Service Saved & Billed' });
       }
+
+      // Send Completion Email with Bill
+      if (matchingSale.email) {
+        await sendServiceCompletionEmail(matchingSale.email, bookingData, showroom || {});
+      }
+
       router.push('/admin/services');
     } catch (e) {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -281,7 +297,7 @@ export default function WalkInServicePage() {
                   <FormField control={form.control} name="branchId" render={({ field }) => (
                     <FormItem className="sm:col-span-2">
                       <FormLabel>Servicing Center</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger></FormControl>
                         <SelectContent>{branches?.map(b => (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}</SelectContent>
                       </Select>
@@ -358,7 +374,7 @@ export default function WalkInServicePage() {
                   <div className="pt-8 space-y-4">
                     <Button type="submit" className="w-full h-14 font-black uppercase text-xs tracking-widest glow-primary" disabled={isSaving}>
                       {isSaving ? <Loader2 className="animate-spin h-5 w-5" /> : <Save className="h-5 w-5 mr-2" />}
-                      Save & Complete Service
+                      Save & Email Bill
                     </Button>
                     <Button type="button" variant="outline" className="w-full h-12" onClick={() => setMatchingSale(null)}>
                       Switch Vehicle

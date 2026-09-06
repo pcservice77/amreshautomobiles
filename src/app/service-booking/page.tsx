@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -16,10 +15,10 @@ import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, where, getDocs, addDoc, orderBy, limit, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Wrench, Search, Loader2, Calendar, MapPin, CheckCircle2, History, Printer, Zap, Bike, ShieldCheck, FileText, Download, TrendingUp, IndianRupee, Eye } from 'lucide-react';
+import { Wrench, Search, Loader2, Calendar, MapPin, CheckCircle2, History, Printer, Zap, Bike, ShieldCheck, FileText, IndianRupee, Eye } from 'lucide-react';
 import { format, addYears, isAfter } from 'date-fns';
 import { sendServiceConfirmationEmail } from '@/app/actions/email';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -114,7 +113,7 @@ export default function ServiceBookingPage() {
         const sale = { ...snap.docs[0].data(), id: snap.docs[0].id };
         setMatchingSale(sale);
 
-        // Fetch full service history - Sort client side to avoid index issues
+        // Fetch full service history
         try {
           const servicesRef = collection(firestore, 'service-bookings');
           const sSnap = await getDocs(query(
@@ -123,7 +122,6 @@ export default function ServiceBookingPage() {
           ));
           
           const history = sSnap.docs.map(d => ({ ...d.data(), id: d.id }));
-          // Sort by preferredDate (latest first)
           history.sort((a, b) => new Date(b.preferredDate).getTime() - new Date(a.preferredDate).getTime());
           
           setServiceHistory(history);
@@ -207,7 +205,6 @@ export default function ServiceBookingPage() {
   };
 
   const soldDate = matchingSale?.soldAt ? new Date(matchingSale.soldAt) : null;
-  
   const vehicleExpiry = soldDate ? addYears(soldDate, 1) : null;
   const chargerExpiry = soldDate ? addYears(soldDate, 1) : null;
   const batteryExpiry = soldDate ? addYears(soldDate, 3) : null;
@@ -293,7 +290,7 @@ export default function ServiceBookingPage() {
               animate={{ opacity: 1, y: 0 }}
               className="mb-12"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-6">
                 <ShieldCheck className="h-3 w-3" /> Secure Owner Access
               </div>
               <h1 className="text-5xl md:text-7xl font-headline font-bold mb-6 tracking-tighter uppercase leading-[0.9]">
@@ -329,9 +326,18 @@ export default function ServiceBookingPage() {
             </Card>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16 w-full max-w-3xl">
-              <SimpleFeature icon={History} label="Service Logs" />
-              <SimpleFeature icon={ShieldCheck} label="Warranty Tracking" />
-              <SimpleFeature icon={FileText} label="Digital Invoices" />
+              <div className="flex flex-col items-center gap-3 p-6 bg-white/[0.03] border border-white/5 rounded-2xl group hover:bg-primary/5 hover:border-primary/20 transition-all">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform"><History className="h-6 w-6 text-primary" /></div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-white transition-colors">Service Logs</span>
+              </div>
+              <div className="flex flex-col items-center gap-3 p-6 bg-white/[0.03] border border-white/5 rounded-2xl group hover:bg-primary/5 hover:border-primary/20 transition-all">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform"><ShieldCheck className="h-6 w-6 text-primary" /></div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-white transition-colors">Warranty Tracking</span>
+              </div>
+              <div className="flex flex-col items-center gap-3 p-6 bg-white/[0.03] border border-white/5 rounded-2xl group hover:bg-primary/5 hover:border-primary/20 transition-all">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform"><FileText className="h-6 w-6 text-primary" /></div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-white transition-colors">Digital Invoices</span>
+              </div>
             </div>
           </div>
         ) : (
@@ -362,10 +368,24 @@ export default function ServiceBookingPage() {
                   </div>
 
                   <div className="space-y-6">
-                    <DataPoint label="Invoice No" value={matchingSale.invoiceNo} />
-                    <DataPoint label="Chassis No" value={matchingSale.chassisNumber} />
-                    {matchingSale.batterySerialNumber && <DataPoint label="Battery S/N" value={matchingSale.batterySerialNumber} />}
-                    <DataPoint label="Purchase Date" value={format(new Date(matchingSale.soldAt), 'dd MMM yyyy')} />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Invoice No</p>
+                      <p className="font-bold text-sm tracking-tight">{matchingSale.invoiceNo}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Chassis No</p>
+                      <p className="font-bold text-sm tracking-tight">{matchingSale.chassisNumber}</p>
+                    </div>
+                    {matchingSale.batterySerialNumber && (
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Battery S/N</p>
+                        <p className="font-bold text-sm tracking-tight">{matchingSale.batterySerialNumber}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Purchase Date</p>
+                      <p className="font-bold text-sm tracking-tight">{format(new Date(matchingSale.soldAt), 'dd MMM yyyy')}</p>
+                    </div>
                     
                     <div className="pt-6 border-t border-white/5 space-y-6">
                       <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Warranty Coverage</h4>
@@ -515,11 +535,8 @@ export default function ServiceBookingPage() {
 
                     <div className="space-y-4">
                       {serviceHistory.length > 0 ? serviceHistory.map((s, idx) => (
-                        <motion.div 
+                        <div 
                           key={s.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.1 }}
                           className="group relative flex flex-col gap-4 p-6 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all"
                         >
                           <div className="flex gap-6">
@@ -577,7 +594,7 @@ export default function ServiceBookingPage() {
                                </div>
                             </div>
                           )}
-                        </motion.div>
+                        </div>
                       )) : (
                         <div className="p-12 text-center border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.02]">
                            <History className="h-10 w-10 text-muted-foreground opacity-20 mx-auto mb-4" />
@@ -745,23 +762,5 @@ export default function ServiceBookingPage() {
         </DialogContent>
       </Dialog>
     </main>
-  );
-}
-
-function SimpleFeature({ icon: Icon, label }: { icon: any, label: string }) {
-  return (
-    <div className="flex flex-col items-center gap-3 p-6 bg-white/[0.03] border border-white/5 rounded-2xl group hover:bg-primary/5 hover:border-primary/20 transition-all">
-       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform"><Icon className="h-6 w-6 text-primary" /></div>
-       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-white transition-colors">{label}</span>
-    </div>
-  );
-}
-
-function DataPoint({ label, value }: { label: string, value: string }) {
-  return (
-    <div>
-      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{label}</p>
-      <p className="font-bold text-sm tracking-tight">{value}</p>
-    </div>
   );
 }
