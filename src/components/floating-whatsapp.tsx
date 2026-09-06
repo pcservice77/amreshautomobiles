@@ -20,8 +20,12 @@ export function FloatingWhatsApp() {
 
   const { data: scooter } = useDoc(scooterRef);
 
-  // Hide on admin panel and login page - Moved after hooks to satisfy Rules of Hooks
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/login')) {
+  // Hide on admin panel, login page, and service portal
+  if (
+    pathname?.startsWith('/admin') || 
+    pathname?.startsWith('/login') || 
+    pathname?.startsWith('/service-booking')
+  ) {
     return null;
   }
 
